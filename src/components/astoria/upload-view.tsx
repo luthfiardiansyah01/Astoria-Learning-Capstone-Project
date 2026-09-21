@@ -217,7 +217,7 @@ export function UploadView() {
         <Card className="border-dashed">
           <CardContent className="p-4 text-sm text-muted-foreground space-y-1.5">
             <p className="font-medium text-foreground flex items-center gap-2">
-              <Lightbulb className="h-4 w-4 text-amber-500" /> Apa yang terjadi setelah unggah?
+              <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-400" /> Apa yang terjadi setelah unggah?
             </p>
             <p>
               1. Dokumen dipecah menjadi potongan (chunk) untuk pencarian jawaban RAG.

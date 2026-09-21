@@ -296,7 +296,11 @@ export function QuizView() {
                     <div className="flex flex-wrap items-center gap-3">
                       <Badge
                         className={`text-sm px-2.5 py-1 ${
-                          r.skor >= 70 ? "" : r.skor >= 40 ? "bg-amber-500" : "bg-red-500"
+                          r.skor >= 70
+                            ? ""
+                            : r.skor >= 40
+                              ? "bg-amber-400 text-amber-950 hover:bg-amber-400"
+                              : "bg-red-600 hover:bg-red-600"
                         }`}
                       >
                         Skor {r.skor}
@@ -310,7 +314,7 @@ export function QuizView() {
                     {/* Feedback motivasional */}
                     <div className="rounded-xl bg-muted/70 p-3.5">
                       <p className="text-sm flex items-start gap-2">
-                        <Sparkles className="h-4 w-4 mt-0.5 shrink-0 text-amber-500" />
+                        <Sparkles className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
                         <span>{r.feedback}</span>
                       </p>
                     </div>
@@ -342,7 +346,7 @@ export function QuizView() {
                     )}
 
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Flame className="h-3.5 w-3.5 text-orange-500" />
+                      <Flame className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
                       Total XP kamu sekarang: {r.totalXp} XP
                     </div>
                   </motion.div>
@@ -355,13 +359,13 @@ export function QuizView() {
 
       {questions.length > 0 && Object.keys(results).length === questions.length && (
         <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-          <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-0">
+          <Card className="bg-gradient-to-r from-emerald-700 to-teal-800 text-white border-0">
             <CardContent className="p-6 text-center">
-              <Trophy className="h-10 w-10 mx-auto text-amber-300" />
+              <Trophy className="h-10 w-10 mx-auto text-amber-200" />
               <h3 className="mt-3 text-xl font-bold">
                 Semua soal selesai! 🎉
               </h3>
-              <p className="mt-1 text-emerald-100">
+              <p className="mt-1 text-white font-medium">
                 Kamu menjawab {questions.length} soal dan mengumpulkan{" "}
                 {Object.values(results).reduce((a, b) => a + b.xpDiperoleh, 0)} XP dari sesi ini.
                 Tanya Mentor AI untuk memperdalam materi, atau coba dokumen lain!

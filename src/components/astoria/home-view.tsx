@@ -103,10 +103,10 @@ export function HomeView() {
   const p = data.profile;
 
   const stats = [
-    { label: "Total XP", value: p.xp, icon: Zap, color: "text-amber-600 bg-amber-100 dark:bg-amber-950" },
-    { label: "Level", value: p.level, icon: GraduationCap, color: "text-emerald-600 bg-emerald-100 dark:bg-emerald-950" },
-    { label: "Streak", value: `${p.streak} hari`, icon: Flame, color: "text-orange-600 bg-orange-100 dark:bg-orange-950" },
-    { label: "Modul", value: p.docCount, icon: BookOpen, color: "text-teal-600 bg-teal-100 dark:bg-teal-950" },
+    { label: "Total XP", value: p.xp, icon: Zap, color: "text-amber-700 bg-amber-100 dark:bg-amber-950" },
+    { label: "Level", value: p.level, icon: GraduationCap, color: "text-emerald-700 bg-emerald-100 dark:bg-emerald-950" },
+    { label: "Streak", value: `${p.streak} hari`, icon: Flame, color: "text-orange-700 bg-orange-100 dark:bg-orange-950" },
+    { label: "Modul", value: p.docCount, icon: BookOpen, color: "text-teal-700 bg-teal-100 dark:bg-teal-950" },
   ];
 
   return (
@@ -116,20 +116,20 @@ export function HomeView() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 p-6 sm:p-8 text-white"
+        className="relative overflow-hidden rounded-2xl border border-emerald-800/40 bg-gradient-to-br from-emerald-700 via-emerald-800 to-teal-900 p-6 sm:p-8 text-white shadow-inner"
       >
         <div className="absolute -right-8 -top-8 opacity-10">
           <GraduationCap className="h-44 w-44" strokeWidth={1} />
         </div>
         <div className="relative">
-          <div className="flex items-center gap-2 text-emerald-100 text-sm">
+          <div className="flex items-center gap-2 text-white font-semibold text-sm">
             <Sparkles className="h-4 w-4" />
             <span>Sapaan Mentor • {data.waktu}</span>
           </div>
           <h1 className="mt-3 text-2xl sm:text-3xl font-bold leading-snug max-w-2xl">
             {data.greeting}
           </h1>
-          <p className="mt-2 text-emerald-100/90 max-w-xl">
+          <p className="mt-2 text-white font-medium max-w-xl">
             Halo <strong>{p.nama}</strong>! Teruslah bertanya, menjawab kuis, dan raih lencana —
             belajar jarak jauh kini terasa dekat bersama Mentor AI Astoria.
           </p>
@@ -180,7 +180,7 @@ export function HomeView() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Zap className="h-4 w-4 text-amber-500" /> Progres Level {p.level}
+              <Zap className="h-4 w-4 text-amber-600 dark:text-amber-400" /> Progres Level {p.level}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -197,7 +197,7 @@ export function HomeView() {
             {/* Katalog badge */}
             <div>
               <p className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-amber-500" /> Lencana ({p.badgeCatalog.filter((b) => b.earned).length}/4)
+                <Trophy className="h-4 w-4 text-amber-600 dark:text-amber-400" /> Lencana ({p.badgeCatalog.filter((b) => b.earned).length}/4)
               </p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {p.badgeCatalog.map((b) => (

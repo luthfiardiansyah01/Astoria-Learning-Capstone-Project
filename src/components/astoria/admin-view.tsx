@@ -248,7 +248,7 @@ export function AdminView() {
                         <div className="rounded-lg bg-muted/60 p-3 text-xs space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
                             <span className="flex items-center gap-1.5 text-muted-foreground">
-                              <Sparkles className="h-3.5 w-3.5 text-amber-500" /> AI Content Moderator:
+                              <Sparkles className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" /> AI Content Moderator:
                             </span>
                             <Badge
                               variant={d.moderation.layak ? "default" : "destructive"}
@@ -378,7 +378,7 @@ export function AdminView() {
           <Card className="border-primary/30 bg-gradient-to-b from-primary/5 to-transparent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Sparkles className="h-4 w-4 text-amber-500" /> Insight AI
+                <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" /> Insight AI
                 <Button
                   size="sm"
                   variant="ghost"

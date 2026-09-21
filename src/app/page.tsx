@@ -100,7 +100,7 @@ export default function AstoriaPage() {
               <div className="w-36" title={`${xp} XP — Level ${level}`}>
                 <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
                   <span className="flex items-center gap-1">
-                    <Zap className="h-3 w-3 text-amber-500" /> {xp} XP
+                    <Zap className="h-3 w-3 text-amber-600 dark:text-amber-400" /> {xp} XP
                   </span>
                   <span>Lv. {level}</span>
                 </div>
