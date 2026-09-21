@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Mahasiswa PJJ Universitas Terbuka + admin platform
+model User {
+  id            String        @id @default(cuid())
+  name          String
+  role          String        @default("mahasiswa") // mahasiswa | admin
+  xp            Int           @default(0)
+  level         Int           @default(1)
+  streakDays    Int           @default(0)
+  lastActive    DateTime      @default(now())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  documents     Document[]
+  chatMessages  ChatMessage[]
+  quizAttempts  QuizAttempt[]
+  badges        Badge[]
+}
+
+// Dokumen modul yang diunggah mahasiswa
+model Document {
+  id          String         @id @default(cuid())
+  fileName    String
+  content     String
+  wordCount   Int
+  metadata    String? // JSON hasil Document Processor AI (struktur, topik, kata kunci)
+  status      String         @default("pending") // pending | approved | rejected
+  moderation  String? // JSON hasil Content Moderator AI (layak, skor, tag, rekomendasi)
+  uploaderId  String
+  uploader    User           @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  chunks      Chunk[]
+  chatMessages ChatMessage[]
+  quizQuestions QuizQuestion[]
+  quizAttempts  QuizAttempt[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+// Potongan dokumen untuk retrieval RAG
+model Chunk {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  content    String
+  chunkIndex Int
+  keywords   String // kata kunci terindeks untuk scoring
+}
+
+// Riwayat chat Mentor AI
+model ChatMessage {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documentId String?
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  role       String // user | assistant
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+// Soal kuis yang dihasilkan dari dokumen
+model QuizQuestion {
+  id         String        @id @default(cuid())
+  documentId String
+  document   Document      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  soal       String
+  kunci      String
+  tingkat    String        @default("Menengah") // Dasar | Menengah | Lanjut
+  createdAt  DateTime      @default(now())
+  attempts   QuizAttempt[]
+}
+
+// Riwayat jawaban kuis mahasiswa + hasil evaluasi gamifikasi
+model QuizAttempt {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId  String
+  question    QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  documentId  String
+  document    Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  jawaban     String
+  skor        Int
+  xpDiperoleh Int
+  badgeBaru   String?
+  feedback    String
+  koreksi     String?
+  createdAt   DateTime     @default(now())
+}
+
+// Lencana yang diperoleh mahasiswa
+model Badge {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String // Pembaca Setia | Pejuang Streak | Bintang Kelas | Pemberani
+  earnedAt  DateTime @default(now())
+
+  @@unique([userId, name])
+}

@@ -1,0 +1,83 @@
+// POST /api/quiz/generate — buat 5 soal dari dokumen (basis kuis gamifikasi)
+
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { QUIZ_GENERATOR_PROMPT, PARAMS } from "@/lib/prompts";
+import { chatJSON } from "@/lib/ai";
+import { retrieveRelevantChunks } from "@/lib/rag";
+import { FALLBACK_RESPONSES } from "@/lib/fallback";
+
+// Generator kuis butuh ruang JSON besar → gunakan param quiz_gen (bukan gamif_eval)
+const QUIZ_GEN_PARAMS = PARAMS.quiz_gen;
+
+interface GeneratedQuiz {
+  soal: { soal: string; kunci: string; tingkat: string }[];
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const { documentId } = await req.json();
+    if (!documentId) {
+      return NextResponse.json({ error: "Pilih dokumen dulu ya!" }, { status: 400 });
+    }
+
+    const doc = await db.document.findUnique({
+      where: { id: documentId },
+      include: { chunks: { orderBy: { chunkIndex: "asc" } } },
+    });
+    if (!doc) {
+      return NextResponse.json({ error: FALLBACK_RESPONSES.no_document }, { status: 404 });
+    }
+
+    // Ambil konten paling representatif (awal + tengah dokumen, maks 6000 karakter)
+    const { context } = retrieveRelevantChunks(
+      doc.metadata ? JSON.parse(doc.metadata).topik_utama?.join(" ") ?? "" : doc.fileName,
+      doc.chunks.map((c) => ({ content: c.content, keywords: c.keywords }))
+    );
+    const fullContext = doc.content.slice(0, 6000).length >= doc.content.length
+      ? doc.content
+      : `${doc.content.slice(0, 3000)}\n\n${context}`;
+
+    const quiz = await chatJSON<GeneratedQuiz>(
+      [
+        { role: "system", content: QUIZ_GENERATOR_PROMPT },
+        {
+          role: "user",
+          content: `Nama file: ${doc.fileName}\nTotal kata: ${doc.wordCount}\n\nKONTEN DOKUMEN:\n${fullContext}`,
+        },
+      ],
+      QUIZ_GEN_PARAMS
+    );
+
+    if (!quiz.soal || !Array.isArray(quiz.soal) || quiz.soal.length === 0) {
+      throw new Error("Format kuis tidak valid");
+    }
+
+    const created = await Promise.all(
+      quiz.soal.slice(0, 5).map((q) =>
+        db.quizQuestion.create({
+          data: {
+            documentId: doc.id,
+            soal: q.soal,
+            kunci: q.kunci,
+            tingkat: ["Dasar", "Menengah", "Lanjut"].includes(q.tingkat) ? q.tingkat : "Menengah",
+          },
+        })
+      )
+    );
+
+    return NextResponse.json({
+      questions: created.map((q) => ({
+        id: q.id,
+        soal: q.soal,
+        tingkat: q.tingkat,
+      })),
+    });
+  } catch (e) {
+    console.error("[/api/quiz/generate]", e);
+    return NextResponse.json(
+      { error: FALLBACK_RESPONSES.api_error, code: "api_error" },
+      { status: 500 }
+    );
+  }
+}
