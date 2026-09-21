@@ -37,3 +37,19 @@ Work Log:
 Stage Summary:
 - Rating kontras keseluruhan: 6.5/10 → 9/10; seluruh elemen teks PASS WCAG AA (4.5:1) menurut verifikasi VLM pada semua view.
 - Tanpa error konsol; hot-reload berfungsi normal.
+
+---
+Task ID: 3
+Agent: Super Z (main agent)
+Task: Perbaiki tombol "Unggah Modul" di Beranda yang tidak terlihat (permintaan user: "Tulisan pada 'Unggah Modul' pada laman 'Beranda' masih tidak terlihat")
+
+Work Log:
+- Diagnosis akar masalah: varian `outline` pada komponen Button (shadcn/ui) membawa `bg-background` (krem mendekati putih). Tombol "Unggah Modul" di kartu hero menggunakan `variant="outline"` + `text-white` → teks putih di atas latar hampir putih = tidak terlihat.
+- Audit semua penggunaan `variant="outline"` di seluruh komponen Astoria (7 lokasi): hanya tombol hero home-view.tsx yang bermasalah (di atas gradien hijau); sisanya di atas kartu putih sehingga aman.
+- Perbaikan home-view.tsx: tambah `bg-transparent` (override bg-background), border diperkuat white/40 → white/60, hover bg-white/10 → white/15, plus `shadow-none`.
+- Verifikasi via agent-browser: screenshot kondisi normal + hover state, keduanya dikonfirmasi VLM "VISIBLE and READABLE" (teks putih di atas gradien hijau gelap).
+- Cek error konsol: bersih.
+
+Stage Summary:
+- Tombol "Unggah Modul" kini terlihat jelas: teks putih + border putih di atas latar transparan (gradien hijau terlihat), termasuk state hover.
+- Tidak ada regresi pada tombol outline lain.

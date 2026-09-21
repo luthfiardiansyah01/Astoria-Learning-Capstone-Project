@@ -143,7 +143,7 @@ export function HomeView() {
             <Button
               variant="outline"
               onClick={() => setView("unggah")}
-              className="border-white/40 text-white hover:bg-white/10 hover:text-white"
+              className="border-white/60 bg-transparent text-white shadow-none hover:bg-white/15 hover:text-white"
             >
               <Upload className="mr-2 h-4 w-4" /> Unggah Modul
             </Button>
