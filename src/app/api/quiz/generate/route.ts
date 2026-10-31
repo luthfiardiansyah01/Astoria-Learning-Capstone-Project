@@ -6,6 +6,11 @@ import { QUIZ_GENERATOR_PROMPT, PARAMS } from "@/lib/prompts";
 import { chatJSON } from "@/lib/ai";
 import { retrieveRelevantChunks } from "@/lib/rag";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
+import { requireUser, canUseDocument, forbidden } from "@/lib/current-user";
+import { guardAi } from "@/lib/rate-limit";
+import { quizGenerateSchema, readBody } from "@/lib/validation";
+
+export const maxDuration = 60;
 
 // Generator kuis butuh ruang JSON besar → gunakan param quiz_gen (bukan gamif_eval)
 const QUIZ_GEN_PARAMS = PARAMS.quiz_gen;
@@ -16,10 +21,13 @@ interface GeneratedQuiz {
 
 export async function POST(req: NextRequest) {
   try {
-    const { documentId } = await req.json();
-    if (!documentId) {
-      return NextResponse.json({ error: "Pilih dokumen dulu ya!" }, { status: 400 });
-    }
+    const auth = await requireUser();
+    if (auth.res) return auth.res;
+    const limited = await guardAi(auth.user.id);
+    if (limited) return limited;
+    const parsed = await readBody(req, quizGenerateSchema);
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const documentId = parsed.data.documentId;
 
     const doc = await db.document.findUnique({
       where: { id: documentId },
@@ -28,6 +36,8 @@ export async function POST(req: NextRequest) {
     if (!doc) {
       return NextResponse.json({ error: FALLBACK_RESPONSES.no_document }, { status: 404 });
     }
+
+    if (!canUseDocument(auth.user, doc)) return forbidden("Dokumen ini bukan milikmu.");
 
     // Ambil konten paling representatif (awal + tengah dokumen, maks 6000 karakter)
     const { context } = retrieveRelevantChunks(

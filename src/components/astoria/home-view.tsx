@@ -131,7 +131,7 @@ export function HomeView() {
           </h1>
           <p className="mt-2 text-white font-medium max-w-xl">
             Halo <strong>{p.nama}</strong>! Teruslah bertanya, menjawab kuis, dan raih lencana —
-            belajar jarak jauh kini terasa dekat bersama Mentor AI Astoria.
+            belajar jarak jauh kini terasa dekat bersama Mentor AI SOBAT ADI.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Button

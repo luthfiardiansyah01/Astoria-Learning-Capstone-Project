@@ -4,9 +4,17 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { ANALYTICS_SUMMARIZER_PROMPT, PARAMS } from "@/lib/prompts";
 import { chatComplete } from "@/lib/ai";
+import { requireAdmin } from "@/lib/current-user";
+import { guardAi } from "@/lib/rate-limit";
+
+export const maxDuration = 60;
 
 export async function GET() {
   try {
+    const auth = await requireAdmin();
+    if (auth.res) return auth.res;
+    const limited = await guardAi(auth.user.id);
+    if (limited) return limited;
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const [totalUsers, docsThisWeek, totalChats, docStats, attemptStats] = await Promise.all([

@@ -1,7 +1,10 @@
-// Astoria Learning — halaman utama (single-page app dengan 5 view)
+// SOBAT ADI — halaman utama (single-page app dengan 5 view)
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import {
   GraduationCap,
   Home,
@@ -12,6 +15,8 @@ import {
   Flame,
   Zap,
   Sparkles,
+  Users,
+  LogOut,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { XP_LEVELS } from "@/lib/gamif";
@@ -34,10 +39,21 @@ const XP_LEVELS_CLIENT = XP_LEVELS;
 
 export default function AstoriaPage() {
   const { view, setView, stats, refreshStats } = useAstoria();
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const isAdmin = session?.user?.role === "admin";
 
   useEffect(() => {
-    refreshStats();
-  }, [refreshStats]);
+    if (status === "unauthenticated") router.replace("/login");
+  }, [status, router]);
+
+  useEffect(() => {
+    if (status === "authenticated") refreshStats();
+  }, [status, refreshStats]);
+
+  useEffect(() => {
+    if (status === "authenticated" && !isAdmin && view === "admin") setView("beranda");
+  }, [status, isAdmin, view, setView]);
 
   // Progres XP untuk header
   const xp = stats?.xp ?? 0;
@@ -45,6 +61,14 @@ export default function AstoriaPage() {
   const floor = XP_LEVELS_CLIENT[level - 1] ?? 0;
   const next = XP_LEVELS_CLIENT[level] ?? floor + 1000;
   const pct = Math.min(100, Math.round(((xp - floor) / (next - floor)) * 100));
+
+  if (status !== "authenticated") {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+        Memuat...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -56,13 +80,13 @@ export default function AstoriaPage() {
             <button
               onClick={() => setView("beranda")}
               className="flex items-center gap-2.5 shrink-0"
-              aria-label="Astoria Learning — kembali ke beranda"
+              aria-label="SOBAT ADI — kembali ke beranda"
             >
               <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 p-2">
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <div className="hidden sm:block text-left">
-                <p className="font-bold leading-none tracking-tight">Astoria</p>
+                <p className="font-bold leading-none tracking-tight">SOBAT ADI</p>
                 <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
                   Learning · PJJ UT
                 </p>
@@ -71,7 +95,7 @@ export default function AstoriaPage() {
 
             {/* Navigasi */}
             <nav className="flex items-center gap-1 overflow-x-auto astoria-scroll" aria-label="Navigasi utama">
-              {NAV.map((n) => (
+              {NAV.filter((n) => n.key !== "admin" || isAdmin).map((n) => (
                 <button
                   key={n.key}
                   onClick={() => setView(n.key)}
@@ -90,6 +114,13 @@ export default function AstoriaPage() {
 
             {/* Statistik ringkas: streak + XP */}
             <div className="hidden md:flex items-center gap-3 shrink-0">
+              <Link
+                href="/collab"
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors whitespace-nowrap"
+              >
+                <Users className="h-3.5 w-3.5" />
+                Collab
+              </Link>
               <div
                 className="flex items-center gap-1.5 text-sm font-medium text-orange-600 dark:text-orange-400"
                 title={`Streak belajar ${stats?.streak ?? 0} hari`}
@@ -107,6 +138,16 @@ export default function AstoriaPage() {
                 <Progress value={pct} className="h-1.5" />
               </div>
             </div>
+
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors whitespace-nowrap shrink-0"
+              aria-label="Keluar"
+              title={`Keluar (${session?.user?.name ?? ""})`}
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Keluar</span>
+            </button>
           </div>
         </div>
       </header>
@@ -117,7 +158,7 @@ export default function AstoriaPage() {
         {view === "mentor" && <ChatView />}
         {view === "unggah" && <UploadView />}
         {view === "kuis" && <QuizView />}
-        {view === "admin" && <AdminView />}
+        {view === "admin" && isAdmin && <AdminView />}
       </main>
 
       {/* ── Footer (sticky bottom) ── */}
@@ -125,7 +166,7 @@ export default function AstoriaPage() {
         <div className="mx-auto max-w-6xl px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
           <p className="flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            Astoria Learning — platform belajar bertenaga AI untuk mahasiswa PJJ Universitas Terbuka
+            SOBAT ADI — platform belajar bertenaga AI untuk mahasiswa PJJ Universitas Terbuka
           </p>
           <p>Mentor AI • Dokumen RAG • Gamifikasi XP • Moderasi Konten</p>
         </div>

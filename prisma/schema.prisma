@@ -3,25 +3,153 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // Mahasiswa PJJ Universitas Terbuka + admin platform
 model User {
-  id            String        @id @default(cuid())
-  name          String
-  role          String        @default("mahasiswa") // mahasiswa | admin
-  xp            Int           @default(0)
-  level         Int           @default(1)
-  streakDays    Int           @default(0)
-  lastActive    DateTime      @default(now())
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  documents     Document[]
-  chatMessages  ChatMessage[]
-  quizAttempts  QuizAttempt[]
-  badges        Badge[]
+  id               String            @id @default(cuid())
+  name             String
+  role             String            @default("mahasiswa") // mahasiswa | admin
+  email            String?           @unique
+  passwordHash     String?
+  xp               Int               @default(0)
+  level            Int               @default(1)
+  streakDays       Int               @default(0)
+  lastActive       DateTime          @default(now())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  documents        Document[]
+  chatMessages     ChatMessage[]
+  quizAttempts     QuizAttempt[]
+  badges           Badge[]
+  teamMemberships  TeamMember[]
+  assignedTasks    Task[]            @relation("TaskAssignee")
+  taskChatMessages TaskChatMessage[]
+  activityEvents   ActivityEvent[]
+  notifications    Notification[]
+}
+
+// ===== Astoria Collab =====
+
+// Kelompok/tim mahasiswa yang berkolaborasi pada satu atau lebih proyek
+model Team {
+  id         String          @id @default(cuid())
+  name       String
+  xp         Int             @default(0)
+  level      Int             @default(1)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  members    TeamMember[]
+  projects   Project[]
+  activities ActivityEvent[]
+  badges     TeamBadge[]
+}
+
+// Lencana yang diperoleh tim (dihitung deterministik di server)
+model TeamBadge {
+  id       String   @id @default(cuid())
+  teamId   String
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  name     String
+  earnedAt DateTime @default(now())
+
+  @@unique([teamId, name])
+}
+
+// Notifikasi in-app untuk pengguna
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // member_added | team_level_up | badge_earned | task_due_soon | task_overdue
+  title     String
+  body      String?
+  link      String?
+  dedupeKey String? // mencegah notifikasi ganda untuk kejadian yang sama
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, readAt])
+}
+
+// Keanggotaan mahasiswa dalam tim
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     String   @default("member") // owner | member
+  joinedAt DateTime @default(now())
+
+  @@unique([teamId, userId])
+}
+
+// Proyek kolaboratif milik sebuah tim
+model Project {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  teamId      String
+  team        Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  tasks       Task[]
+  activities  ActivityEvent[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+// Tugas pada papan Kanban sebuah proyek
+model Task {
+  id            String            @id @default(cuid())
+  projectId     String
+  project       Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  status        String            @default("todo") // todo | in_progress | review | done
+  order         Int               @default(0)
+  assigneeId    String?
+  assignee      User?             @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  xpReward      Int               @default(10)
+  dueDate       DateTime?
+  documentId    String?
+  document      Document?         @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  aiSuggestions String? // JSON saran Mentor AI kontekstual untuk task ini
+  chatMessages  TaskChatMessage[]
+  activities    ActivityEvent[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+// Riwayat chat Mentor AI kontekstual per task
+model TaskChatMessage {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String // user | assistant
+  content   String
+  createdAt DateTime @default(now())
+}
+
+// Log aktivitas tim/proyek untuk activity feed
+model ActivityEvent {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  taskId    String?
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type      String // task_created | task_moved | task_completed | member_joined | ai_mentor_used | xp_awarded
+  payload   String? // JSON detail event
+  createdAt DateTime @default(now())
 }
 
 // Dokumen modul yang diunggah mahasiswa
@@ -37,6 +165,7 @@ model Document {
   uploader    User           @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
   chunks      Chunk[]
   chatMessages ChatMessage[]
+  tasks        Task[]
   quizQuestions QuizQuestion[]
   quizAttempts  QuizAttempt[]
   createdAt   DateTime       @default(now())
@@ -51,6 +180,7 @@ model Chunk {
   content    String
   chunkIndex Int
   keywords   String // kata kunci terindeks untuk scoring
+  embedding  String? // JSON array vektor embedding (semantic search)
 }
 
 // Riwayat chat Mentor AI

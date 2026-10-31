@@ -5,7 +5,11 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { GREETING_PROMPT, buildGreetingUserTurn, PARAMS } from "@/lib/prompts";
 import { chatComplete } from "@/lib/ai";
-import { getOrCreateUsers, formatLastActive, wibNow } from "@/lib/user";
+import { formatLastActive, wibNow } from "@/lib/user";
+import { requireUser } from "@/lib/current-user";
+import { guardAi } from "@/lib/rate-limit";
+
+export const maxDuration = 60;
 
 function localGreeting(nama: string, hour: number, streak: number): string {
   let waktu = "Halo";
@@ -26,7 +30,11 @@ function localGreeting(nama: string, hour: number, streak: number): string {
 
 export async function GET() {
   try {
-    const { student } = await getOrCreateUsers();
+    const auth = await requireUser();
+    if (auth.res) return auth.res;
+    const student = auth.user;
+    const limited = await guardAi(student.id);
+    if (limited) return limited;
     const { clock, label } = wibNow();
 
     // Modul aktif = dokumen terakhir yang dipakai chat / diunggah

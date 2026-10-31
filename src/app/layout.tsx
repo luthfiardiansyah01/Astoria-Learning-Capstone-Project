@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { AstoriaSessionProvider } from "@/components/providers/session-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,11 +17,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Astoria Learning — Platform Belajar AI untuk Mahasiswa PJJ UT",
+  title: "SOBAT ADI — Solusi Belajar Terbaik, Asisten Digital Interaktif",
   description:
-    "Platform belajar bertenaga AI untuk mahasiswa pendidikan jarak jauh (PJJ) Universitas Terbuka: Mentor AI berbasis dokumen, kuis gamifikasi XP & badge, serta moderasi konten.",
-  keywords: ["Astoria", "Astoria Learning", "Universitas Terbuka", "PJJ", "Mentor AI", "RAG", "gamifikasi"],
-  authors: [{ name: "Astoria Learning Team" }],
+    "SOBAT ADI — Solusi Belajar Terbaik, Asisten Digital Interaktif: platform belajar bertenaga AI dan kolaborasi tim untuk mahasiswa pendidikan jarak jauh (PJJ) Universitas Terbuka.",
+  keywords: ["SOBAT ADI", "Universitas Terbuka", "PJJ", "Mentor AI", "RAG", "gamifikasi"],
+  authors: [{ name: "SOBAT ADI Team" }],
   icons: { icon: "/logo.svg" },
 };
 
@@ -32,8 +35,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        {children}
-        <Toaster />
+        <AstoriaSessionProvider>
+          <QueryProvider>
+            {children}
+            <Toaster />
+            <SonnerToaster />
+          </QueryProvider>
+        </AstoriaSessionProvider>
       </body>
     </html>
   );

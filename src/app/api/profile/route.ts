@@ -2,12 +2,14 @@
 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getOrCreateUsers } from "@/lib/user";
+import { requireUser } from "@/lib/current-user";
 import { BADGE_META, xpForNextLevel } from "@/lib/gamif";
 
 export async function GET() {
   try {
-    const { student } = await getOrCreateUsers();
+    const auth = await requireUser();
+    if (auth.res) return auth.res;
+    const student = auth.user;
 
     const [badges, attempts, docCount] = await Promise.all([
       db.badge.findMany({ where: { userId: student.id }, orderBy: { earnedAt: "desc" } }),
@@ -42,7 +44,7 @@ export async function GET() {
         badges: badges.map((b) => ({
           name: b.name,
           emoji: BADGE_META[b.name]?.emoji ?? "🏅",
-          desc: BADGE_META[b.name]?.desc ?? "Lencana Astoria",
+          desc: BADGE_META[b.name]?.desc ?? "Lencana SOBAT ADI",
           earnedAt: b.earnedAt,
         })),
         badgeCatalog: Object.entries(BADGE_META).map(([name, m]) => ({

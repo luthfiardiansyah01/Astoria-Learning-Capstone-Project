@@ -215,7 +215,7 @@ export function ChatView() {
               <GraduationCap className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-sm leading-tight">Mentor AI Astoria</p>
+              <p className="font-semibold text-sm leading-tight">Mentor AI SOBAT ADI</p>
               <p className="text-xs text-muted-foreground truncate">
                 {activeDoc ? `Aktif: ${activeDoc.fileName}` : "Pilih dokumen di panel kiri"}
               </p>

@@ -24,7 +24,7 @@ export async function getOrCreateUsers() {
   const admin = await db.user.upsert({
     where: { id: DEMO_ADMIN_ID },
     update: {},
-    create: { id: DEMO_ADMIN_ID, name: "Admin Astoria", role: "admin" },
+    create: { id: DEMO_ADMIN_ID, name: "Admin SOBAT ADI", role: "admin" },
   });
 
   return { student, admin };

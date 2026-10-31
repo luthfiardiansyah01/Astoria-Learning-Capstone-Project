@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { chunkDocument, countWords, MAX_DOC_LENGTH } from "@/lib/rag";
+import { ensureChunkEmbeddings } from "@/lib/rag-semantic";
 import {
   DOC_PROCESSOR_PROMPT,
   CONTENT_MODERATOR_PROMPT,
@@ -16,7 +17,11 @@ import {
 } from "@/lib/prompts";
 import { chatJSON } from "@/lib/ai";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
-import { getOrCreateUsers } from "@/lib/user";
+import { requireUser } from "@/lib/current-user";
+import { guardAi, LIMITS, rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { documentUploadSchema, readBody } from "@/lib/validation";
+
+export const maxDuration = 60;
 
 interface DocMetadata {
   judul_dokumen: string;
@@ -38,7 +43,11 @@ interface ModerationResult {
 
 export async function GET() {
   try {
+    const auth = await requireUser();
+    if (auth.res) return auth.res;
+    const me = auth.user;
     const documents = await db.document.findMany({
+      where: me.role === "admin" ? {} : { OR: [{ uploaderId: me.id }, { status: "approved" }] },
       orderBy: { createdAt: "desc" },
       include: { uploader: { select: { name: true } } },
     });
@@ -63,16 +72,17 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const fileName: string = (body.fileName ?? "").toString().trim() || "dokumen-tanpa-nama.txt";
-    const content: string = (body.content ?? "").toString().trim();
-
-    if (!content) {
-      return NextResponse.json(
-        { error: "Konten dokumen kosong. Tempel teks modul kamu dulu ya!" },
-        { status: 400 }
-      );
-    }
+    const auth = await requireUser();
+    if (auth.res) return auth.res;
+    const student = auth.user;
+    const limited = await guardAi(student.id);
+    if (limited) return limited;
+    const uploadLimit = await rateLimit("upload", student.id, LIMITS.upload.max, LIMITS.upload.windowSec);
+    if (!uploadLimit.ok) return tooManyRequests(uploadLimit);
+    const parsed = await readBody(req, documentUploadSchema);
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const fileName = parsed.data.fileName || "dokumen-tanpa-nama.txt";
+    const content = parsed.data.content;
 
     if (content.length > MAX_DOC_LENGTH) {
       return NextResponse.json(
@@ -81,7 +91,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { student } = await getOrCreateUsers();
     const wordCount = countWords(content);
 
     // Simpan dokumen + chunks RAG
@@ -104,6 +113,17 @@ export async function POST(req: NextRequest) {
         keywords: c.keywords,
       })),
     });
+
+    // Embedding chunk untuk semantic search (non-fatal: gagal → diisi otomatis saat chat pertama)
+    try {
+      const saved = await db.chunk.findMany({
+        where: { documentId: doc.id },
+        select: { id: true, content: true, keywords: true, embedding: true },
+      });
+      await ensureChunkEmbeddings(saved);
+    } catch (e) {
+      console.error("[/api/documents] embedding chunk dilewati:", e);
+    }
 
     // ── AI Document Processor: ekstraksi struktur (Seksi 4) ──
     let metadata: DocMetadata | null = null;

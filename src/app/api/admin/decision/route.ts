@@ -2,13 +2,16 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/lib/current-user";
+import { adminDecisionSchema, readBody } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
   try {
-    const { documentId, decision } = await req.json();
-    if (!documentId || !["approved", "pending", "rejected"].includes(decision)) {
-      return NextResponse.json({ error: "Keputusan tidak valid" }, { status: 400 });
-    }
+    const auth = await requireAdmin();
+    if (auth.res) return auth.res;
+    const parsed = await readBody(req, adminDecisionSchema);
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const { documentId, decision } = parsed.data;
 
     const doc = await db.document.update({
       where: { id: documentId },

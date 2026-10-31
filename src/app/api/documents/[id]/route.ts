@@ -3,12 +3,15 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireUser, canUseDocument, canManageDocument, forbidden } from "@/lib/current-user";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireUser();
+    if (auth.res) return auth.res;
     const { id } = await params;
     const doc = await db.document.findUnique({
       where: { id },
@@ -21,6 +24,8 @@ export async function GET(
     if (!doc) {
       return NextResponse.json({ error: "Dokumen tidak ditemukan" }, { status: 404 });
     }
+
+    if (!canUseDocument(auth.user, doc)) return forbidden("Dokumen ini bukan milikmu.");
 
     return NextResponse.json({
       document: {
@@ -48,7 +53,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireUser();
+    if (auth.res) return auth.res;
     const { id } = await params;
+    const doc = await db.document.findUnique({ where: { id }, select: { uploaderId: true } });
+    if (!doc) return NextResponse.json({ error: "Dokumen tidak ditemukan" }, { status: 404 });
+    if (!canManageDocument(auth.user, doc)) return forbidden("Hanya pemilik atau admin yang bisa menghapus.");
     await db.document.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (e) {

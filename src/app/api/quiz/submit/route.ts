@@ -17,7 +17,12 @@ import {
   levelFromXp,
   BADGE_META,
 } from "@/lib/gamif";
-import { getOrCreateUsers, updateStreak } from "@/lib/user";
+import { updateStreak } from "@/lib/user";
+import { requireUser, canUseDocument, forbidden } from "@/lib/current-user";
+import { guardAi } from "@/lib/rate-limit";
+import { quizSubmitSchema, readBody } from "@/lib/validation";
+
+export const maxDuration = 60;
 
 interface EvalResult {
   skor: number;
@@ -30,15 +35,15 @@ interface EvalResult {
 
 export async function POST(req: NextRequest) {
   try {
-    const { questionId, jawaban } = await req.json();
-    if (!questionId || !jawaban?.trim()) {
-      return NextResponse.json(
-        { error: "Tulis jawaban kamu dulu ya sebelum mengirim!" },
-        { status: 400 }
-      );
-    }
+    const auth = await requireUser();
+    if (auth.res) return auth.res;
+    const student = auth.user;
+    const limited = await guardAi(student.id);
+    if (limited) return limited;
+    const parsed = await readBody(req, quizSubmitSchema);
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const { questionId, jawaban } = parsed.data;
 
-    const { student } = await getOrCreateUsers();
     const question = await db.quizQuestion.findUnique({
       where: { id: questionId },
       include: { document: true },
@@ -46,6 +51,8 @@ export async function POST(req: NextRequest) {
     if (!question) {
       return NextResponse.json({ error: "Soal tidak ditemukan" }, { status: 404 });
     }
+
+    if (!canUseDocument(student, question.document)) return forbidden("Soal ini bukan dari dokumenmu.");
 
     // ── Data kontekstual untuk evaluator & trigger badge ──
     const [answeredInThisDoc, last5, earnedBadges, firstLanjutDone] = await Promise.all([

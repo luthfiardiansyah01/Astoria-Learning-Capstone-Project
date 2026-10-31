@@ -4,10 +4,14 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
+// Di produksi jangan log setiap query (berisik + bisa membocorkan data).
+const logLevels: ('query' | 'error' | 'warn')[] =
+  process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['query', 'warn', 'error']
+
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: ['query'],
+    log: logLevels,
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
