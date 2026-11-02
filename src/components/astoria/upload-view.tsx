@@ -2,6 +2,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   UploadCloud,
@@ -16,6 +17,8 @@ import {
   Lightbulb,
   ShieldCheck,
   AlertTriangle,
+  RotateCcw,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,10 +62,12 @@ const MAX_CONTENT_CHARS = 20_000;
 export function UploadView() {
   const { toast } = useToast();
   const { setActiveDocument, setView } = useAstoria();
+  const queryClient = useQueryClient();
   const [fileName, setFileName] = useState("");
   const [content, setContent] = useState("");
   const [processing, setProcessing] = useState(false);
   const [readingFile, setReadingFile] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [fileInfo, setFileInfo] = useState<{ kind: "pdf" | "text"; pages?: number; chars: number } | null>(null);
   const [result, setResult] = useState<UploadResult["document"] | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -203,6 +208,9 @@ export function UploadView() {
       }
       setResult(data.document);
       setActiveDocument(data.document.id);
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["greeting"] });
       if (data.document.aiWarnings?.length) {
         toast({
           title: "Sebagian proses AI gagal",
@@ -218,6 +226,38 @@ export function UploadView() {
       toast({ title: "Gagal mengunggah", description: "Coba lagi beberapa saat.", variant: "destructive" });
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const resetForm = () => {
+    setResult(null);
+    setFileName("");
+    setContent("");
+    setFileInfo(null);
+    setActiveDocument(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const deleteUploaded = async () => {
+    if (!result) return;
+    if (!window.confirm(`Hapus dokumen "${result.fileName}" beserta cache/indeksnya?`)) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/documents/${result.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: "Gagal menghapus", description: data.error, variant: "destructive" });
+        return;
+      }
+      resetForm();
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["greeting"] });
+      toast({ title: "Dokumen dihapus", description: "Dokumen, chunk, dan cache terkait sudah dibersihkan." });
+    } catch {
+      toast({ title: "Gagal menghapus", description: "Coba lagi beberapa saat.", variant: "destructive" });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -360,9 +400,22 @@ export function UploadView() {
                 )}
               </Button>
               {result && (
-                <Button variant="outline" onClick={() => setView("mentor")}>
-                  Tanya Mentor tentang dokumen ini →
-                </Button>
+                <>
+                  <Button variant="outline" onClick={() => setView("mentor")}>
+                    Tanya Mentor tentang dokumen ini →
+                  </Button>
+                  <Button variant="ghost" onClick={resetForm} className="gap-1.5">
+                    <RotateCcw className="h-4 w-4" /> Unggah dokumen lain
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={deleteUploaded}
+                    disabled={deleting}
+                    className="gap-1.5 text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" /> {deleting ? "Menghapus..." : "Hapus dokumen"}
+                  </Button>
+                </>
               )}
             </div>
           </CardContent>
