@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Sparkles,
@@ -58,6 +58,7 @@ interface HomeData {
 export function HomeView() {
   const { setView, setActiveDocument } = useAstoria();
   const setStats = useAstoria((s) => s.setStats);
+  const queryClient = useQueryClient();
 
   const greetingQuery = useQuery<{ greeting: string; waktu: string }>({
     queryKey: ["greeting"],
@@ -92,6 +93,12 @@ export function HomeView() {
       avgSkor: p.avgSkor,
     });
   }, [profileQuery.data, setStats]);
+
+  useEffect(() => {
+    if (greetingQuery.data) {
+      queryClient.invalidateQueries({ queryKey: ["ai-usage"] });
+    }
+  }, [greetingQuery.data, queryClient]);
 
   if (profileQuery.isLoading) {
     return (
