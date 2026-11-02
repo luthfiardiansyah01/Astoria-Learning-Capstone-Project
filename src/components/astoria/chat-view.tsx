@@ -37,6 +37,23 @@ interface DocItem {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  createdAt?: string;
+  durationMs?: number;
+}
+
+const wibTime = new Intl.DateTimeFormat("id-ID", {
+  timeZone: "Asia/Jakarta",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+
+function formatWib(iso?: string) {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  return wibTime.format(date);
 }
 
 export function ChatView() {
@@ -110,7 +127,12 @@ export function ChatView() {
     }
 
     setInput("");
-    setMessages((m) => [...m, { role: "user", content: question }]);
+    const askedAt = new Date();
+    const startedAt = Date.now();
+    setMessages((m) => [
+      ...m,
+      { role: "user", content: question, createdAt: askedAt.toISOString() },
+    ]);
     setSending(true);
 
     try {
@@ -120,14 +142,26 @@ export function ChatView() {
         body: JSON.stringify({ documentId: activeDocumentId, question }),
       });
       const data = await res.json();
-      setMessages((m) => [...m, { role: "assistant", content: data.reply ?? data.error ?? "Terjadi kesalahan." }]);
+      const finishedAt = Date.now();
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: data.reply ?? data.error ?? "Terjadi kesalahan.",
+          createdAt: new Date(finishedAt).toISOString(),
+          durationMs: finishedAt - startedAt,
+        },
+      ]);
     } catch {
+      const finishedAt = Date.now();
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
           content:
             "Mentor AI sedang istirahat sebentar 😅. Coba lagi dalam beberapa detik. Jika masalah berlanjut, refresh halaman.",
+          createdAt: new Date(finishedAt).toISOString(),
+          durationMs: finishedAt - startedAt,
         },
       ]);
     } finally {
@@ -267,38 +301,62 @@ export function ChatView() {
             </div>
           )}
 
-          {messages.map((m, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex gap-3 ${m.role === "user" ? "justify-end" : ""}`}
-            >
-              {m.role === "assistant" && (
-                <div className="rounded-full bg-primary/10 p-2 h-9 w-9 shrink-0">
-                  <GraduationCap className="h-5 w-5 text-primary" />
-                </div>
-              )}
-              <div
-                className={`rounded-2xl px-4 py-3 max-w-[85%] sm:max-w-[78%] ${
-                  m.role === "user"
-                    ? "bg-primary text-primary-foreground rounded-br-md"
-                    : "bg-muted rounded-bl-md"
-                }`}
+          {messages.map((m, i) => {
+            const prev = messages[i - 1];
+            const answerMs =
+              m.durationMs ??
+              (m.role === "assistant" && prev?.role === "user" && prev.createdAt && m.createdAt
+                ? new Date(m.createdAt).getTime() - new Date(prev.createdAt).getTime()
+                : null);
+            const sentAt = formatWib(m.createdAt);
+
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex gap-3 ${m.role === "user" ? "justify-end" : ""}`}
               >
-                {m.role === "assistant" ? (
-                  <Markdown content={m.content} />
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                {m.role === "assistant" && (
+                  <div className="rounded-full bg-primary/10 p-2 h-9 w-9 shrink-0">
+                    <GraduationCap className="h-5 w-5 text-primary" />
+                  </div>
                 )}
-              </div>
-              {m.role === "user" && (
-                <div className="rounded-full bg-secondary border p-2 h-9 w-9 shrink-0">
-                  <UserIcon className="h-5 w-5 text-secondary-foreground" />
+                <div
+                  className={`rounded-2xl px-4 py-3 max-w-[85%] sm:max-w-[78%] ${
+                    m.role === "user"
+                      ? "bg-primary text-primary-foreground rounded-br-md"
+                      : "bg-muted rounded-bl-md"
+                  }`}
+                >
+                  {m.role === "assistant" ? (
+                    <Markdown content={m.content} />
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                  )}
+                  {sentAt && (
+                    <p
+                      className={`mt-1 text-[10px] ${
+                        m.role === "user"
+                          ? "text-right text-primary-foreground/75"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {m.role === "user" ? "Dikirim" : "Dijawab"} {sentAt} WIB
+                      {m.role === "assistant" && answerMs != null && answerMs >= 0
+                        ? ` • ${(answerMs / 1000).toFixed(1).replace(".", ",")} dtk`
+                        : ""}
+                    </p>
+                  )}
                 </div>
-              )}
-            </motion.div>
-          ))}
+                {m.role === "user" && (
+                  <div className="rounded-full bg-secondary border p-2 h-9 w-9 shrink-0">
+                    <UserIcon className="h-5 w-5 text-secondary-foreground" />
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
 
           {sending && (
             <div className="flex gap-3">
