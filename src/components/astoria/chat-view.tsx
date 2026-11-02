@@ -3,6 +3,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   BookOpen,
@@ -25,6 +26,7 @@ import { useAstoria } from "./store";
 import { Markdown } from "./markdown";
 import { RealtimeClock } from "./realtime-clock";
 import { ElapsedTimer } from "./elapsed-timer";
+import { AiQuotaBadge } from "./ai-quota-badge";
 
 interface DocItem {
   id: string;
@@ -59,6 +61,7 @@ function formatWib(iso?: string) {
 export function ChatView() {
   const { setView, activeDocumentId, setActiveDocument } = useAstoria();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [docs, setDocs] = useState<DocItem[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -166,8 +169,9 @@ export function ChatView() {
       ]);
     } finally {
       setSending(false);
+      queryClient.invalidateQueries({ queryKey: ["ai-usage"] });
     }
-  }, [input, activeDocumentId, toast]);
+  }, [input, activeDocumentId, toast, queryClient]);
 
   const clearChat = async () => {
     if (!activeDocumentId) return;
@@ -258,7 +262,8 @@ export function ChatView() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <RealtimeClock className="hidden sm:inline text-[11px] text-muted-foreground" />
+            <AiQuotaBadge className="hidden sm:inline-flex" />
+            <RealtimeClock className="hidden md:inline text-[11px] text-muted-foreground" />
             {activeDocumentId && messages.length > 0 && (
               <Button size="sm" variant="ghost" onClick={clearChat} title="Bersihkan riwayat">
                 <Trash2 className="h-4 w-4" />

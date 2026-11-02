@@ -211,6 +211,7 @@ export function UploadView() {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["greeting"] });
+      queryClient.invalidateQueries({ queryKey: ["ai-usage"] });
       if (data.document.aiWarnings?.length) {
         toast({
           title: "Sebagian proses AI gagal",
@@ -253,6 +254,7 @@ export function UploadView() {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["greeting"] });
+      queryClient.invalidateQueries({ queryKey: ["ai-usage"] });
       toast({ title: "Dokumen dihapus", description: "Dokumen, chunk, dan cache terkait sudah dibersihkan." });
     } catch {
       toast({ title: "Gagal menghapus", description: "Coba lagi beberapa saat.", variant: "destructive" });

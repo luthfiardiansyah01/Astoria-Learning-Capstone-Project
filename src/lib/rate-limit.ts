@@ -12,7 +12,18 @@ export const LIMITS = {
   upload: { max: 10, windowSec: 3600 },
 } as const;
 
-export type RateLimitResult = { ok: boolean; remaining: number; retryAfter: number };
+export type RateLimitResult = {
+  ok: boolean;
+  remaining: number;
+  retryAfter: number;
+};
+
+export type RateLimitStatus = {
+  used: number;
+  remaining: number;
+  limit: number;
+  resetAt: number;
+};
 
 type MemoryEntry = { count: number; reset: number };
 
@@ -120,6 +131,63 @@ export function tooManyRequests(result: RateLimitResult) {
     },
     { status: 429, headers: { "Retry-After": String(result.retryAfter) } }
   );
+}
+
+function memoryStatus(key: string, max: number, windowSec: number): RateLimitStatus {
+  const now = Date.now();
+  const entry = memory.get(key);
+  if (!entry || entry.reset <= now) {
+    return { used: 0, remaining: max, limit: max, resetAt: now + windowSec * 1000 };
+  }
+  return {
+    used: entry.count,
+    remaining: Math.max(0, max - entry.count),
+    limit: max,
+    resetAt: entry.reset,
+  };
+}
+
+/** Baca pemakaian saat ini tanpa menambah counter. */
+export async function getRateLimitStatus(
+  name: string,
+  id: string,
+  max: number,
+  windowSec: number
+): Promise<RateLimitStatus> {
+  const key = `sobadi:rl:${name}:${id}`;
+  const cfg = redisConfig();
+  if (!cfg) return memoryStatus(key, max, windowSec);
+
+  try {
+    const res = await fetch(`${cfg.url}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${cfg.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([
+        ["GET", key],
+        ["TTL", key],
+      ]),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`Upstash ${res.status}`);
+
+    const data = (await res.json()) as { result?: number | string | null; error?: string }[];
+    if (data.some((d) => d.error)) throw new Error(data.find((d) => d.error)?.error);
+
+    const used = Number(data[0]?.result ?? 0);
+    const ttl = Number(data[1]?.result ?? 0);
+    return {
+      used,
+      remaining: Math.max(0, max - used),
+      limit: max,
+      resetAt: Date.now() + (ttl > 0 ? ttl : windowSec) * 1000,
+    };
+  } catch (e) {
+    console.error("[rate-limit] status Upstash gagal, pakai memori:", e instanceof Error ? e.message : e);
+    return memoryStatus(key, max, windowSec);
+  }
 }
 
 /** Batas gabungan untuk rute AI: per menit dan per hari. Null berarti boleh lanjut. */

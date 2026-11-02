@@ -26,6 +26,7 @@ import { ChatView } from "@/components/astoria/chat-view";
 import { UploadView } from "@/components/astoria/upload-view";
 import { QuizView } from "@/components/astoria/quiz-view";
 import { AdminView } from "@/components/astoria/admin-view";
+import { AiQuotaBadge } from "@/components/astoria/ai-quota-badge";
 
 const NAV: { key: ViewKey; label: string; icon: React.ElementType }[] = [
   { key: "beranda", label: "Beranda", icon: Home },
@@ -110,6 +111,7 @@ export default function AstoriaPage() {
 
             {/* Statistik ringkas: streak + XP */}
             <div className="hidden md:flex items-center gap-3 shrink-0">
+              <AiQuotaBadge />
               <Link
                 href="/collab"
                 className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors whitespace-nowrap"

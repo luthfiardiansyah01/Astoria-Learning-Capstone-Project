@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { TEAM_BADGE_META } from "@/lib/collab-badge-meta";
 import { RealtimeClock } from "../realtime-clock";
 import { ElapsedTimer } from "../elapsed-timer";
+import { AiQuotaBadge } from "../ai-quota-badge";
 
 interface TaskChatMessage {
   id: string;
@@ -63,10 +64,14 @@ export function TaskMentorChat({ taskId }: { taskId: string }) {
         toast.success(`Badge tim baru: ${TEAM_BADGE_META[badge]?.emoji ?? "🏅"} ${badge}`);
       }
       queryClient.invalidateQueries({ queryKey: ["collab", "leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["ai-usage"] });
       setQuestion("");
       queryClient.invalidateQueries({ queryKey });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      toast.error(e.message);
+      queryClient.invalidateQueries({ queryKey: ["ai-usage"] });
+    },
   });
 
   return (
@@ -75,7 +80,10 @@ export function TaskMentorChat({ taskId }: { taskId: string }) {
         <span className="flex items-center gap-1.5">
           <Sparkles className="h-4 w-4 text-primary" /> Mentor AI — Task Ini
         </span>
-        <RealtimeClock className="text-[10px] font-normal text-muted-foreground" />
+        <span className="flex items-center gap-1.5">
+          <AiQuotaBadge />
+          <RealtimeClock className="text-[10px] font-normal text-muted-foreground" />
+        </span>
       </div>
       <ScrollArea className="h-56 rounded-md border p-3">
         <div className="space-y-3">
