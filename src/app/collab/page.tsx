@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { ProjectList } from "@/components/astoria/collab/project-list";
 import { BackButton } from "@/components/astoria/collab/back-button";
+import { PageTransition } from "@/components/astoria/page-transition";
 
 export default async function CollabPage() {
   const session = await getServerSession(authOptions);
@@ -13,7 +14,9 @@ export default async function CollabPage() {
       <div className="mb-3">
         <BackButton href="/" label="Beranda" />
       </div>
-      <ProjectList />
+      <PageTransition>
+        <ProjectList />
+      </PageTransition>
     </main>
   );
 }

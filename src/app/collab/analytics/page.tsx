@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { NotificationBell } from "@/components/astoria/collab/notification-bell";
 import { AnalyticsDashboard } from "@/components/astoria/collab/analytics-dashboard";
 import { BackButton } from "@/components/astoria/collab/back-button";
+import { PageTransition } from "@/components/astoria/page-transition";
 
 export default async function AnalyticsPage() {
   const session = await getServerSession(authOptions);
@@ -15,7 +16,9 @@ export default async function AnalyticsPage() {
         <BackButton href="/collab" label="Tim & Proyek" />
         <NotificationBell />
       </div>
-      <AnalyticsDashboard />
+      <PageTransition>
+        <AnalyticsDashboard />
+      </PageTransition>
     </main>
   );
 }

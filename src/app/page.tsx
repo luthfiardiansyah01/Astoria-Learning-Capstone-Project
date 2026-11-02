@@ -95,9 +95,10 @@ export default function AstoriaPage() {
             {/* Navigasi */}
             <nav className="flex items-center gap-1 overflow-x-auto astoria-scroll" aria-label="Navigasi utama">
               {NAV.filter((n) => n.key !== "admin" || isAdmin).map((n) => (
-                <button
+                <motion.button
                   key={n.key}
                   onClick={() => setView(n.key)}
+                  whileTap={reduceMotion ? undefined : { scale: 0.96 }}
                   className={`relative isolate flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors whitespace-nowrap ${
                     view === n.key
                       ? "text-primary-foreground"
@@ -114,7 +115,7 @@ export default function AstoriaPage() {
                   )}
                   <n.icon className="h-3.5 w-3.5" />
                   <span className="hidden xs:inline sm:inline">{n.label}</span>
-                </button>
+                </motion.button>
               ))}
             </nav>
 

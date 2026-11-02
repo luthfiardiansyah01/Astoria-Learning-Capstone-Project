@@ -2,6 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { motion, useReducedMotion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { CalendarClock, User } from "lucide-react";
 
@@ -18,6 +19,7 @@ export interface CollabTask {
 }
 
 export function TaskCard({ task, onOpen }: { task: CollabTask; onOpen: (id: string) => void }) {
+  const reduceMotion = useReducedMotion();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
   });
@@ -29,14 +31,19 @@ export function TaskCard({ task, onOpen }: { task: CollabTask; onOpen: (id: stri
   };
 
   return (
-    <Card
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onClick={() => onOpen(task.id)}
-      className="p-3 cursor-grab active:cursor-grabbing hover:border-primary/50 transition-colors"
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
     >
+      <Card
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        onClick={() => onOpen(task.id)}
+        className="p-3 cursor-grab active:cursor-grabbing hover:border-primary/50 hover:shadow-md transition-[border-color,box-shadow]"
+      >
       <p className="text-sm font-medium leading-snug">{task.title}</p>
       {task.dueDate && (
         <p
@@ -58,6 +65,7 @@ export function TaskCard({ task, onOpen }: { task: CollabTask; onOpen: (id: stri
           +{task.xpReward} XP
         </span>
       </div>
-    </Card>
+      </Card>
+    </motion.div>
   );
 }
