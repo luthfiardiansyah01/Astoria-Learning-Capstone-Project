@@ -43,7 +43,7 @@ export function ActivityFeed({ projectId }: { projectId: string }) {
       if (!res.ok) throw new Error("Gagal memuat aktivitas.");
       return (await res.json()).activity as ActivityEvent[];
     },
-    refetchInterval: 5000,
+    refetchInterval: 15000,
   });
 
   return (

@@ -21,7 +21,7 @@ export const registerSchema = z.object({
   email: z.string().trim().email("Format email tidak valid.").max(160, "Email terlalu panjang."),
   password: z
     .string()
-    .min(6, "Password minimal 6 karakter.")
+    .min(8, "Password minimal 8 karakter.")
     .max(200, "Password terlalu panjang (maks 200 karakter)."),
 });
 

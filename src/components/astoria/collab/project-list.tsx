@@ -2,12 +2,15 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateTeamDialog } from "./create-team-dialog";
 import { CreateProjectDialog } from "./create-project-dialog";
 import { TeamMembers } from "./team-members";
 import { TeamBadges } from "./team-badges";
 import { NotificationBell } from "./notification-bell";
+import { TeamCardMenu } from "./team-card-menu";
+import { ProjectItemMenu } from "./project-item-menu";
 import { BarChart3, FolderKanban, Users2 } from "lucide-react";
 
 interface Team {
@@ -16,11 +19,12 @@ interface Team {
   xp: number;
   level: number;
   members: { userId: string; role: string; user: { id: string; name: string } }[];
-  projects: { id: string; name: string }[];
+  projects: { id: string; name: string; description: string | null }[];
   badges: { name: string }[];
 }
 
 export function ProjectList() {
+  const { data: session } = useSession();
   const { data, isLoading } = useQuery({
     queryKey: ["collab", "teams"],
     queryFn: async () => {
@@ -54,41 +58,53 @@ export function ProjectList() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {data?.map((team) => (
-          <Card key={team.id}>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-1.5 text-base">
-                  <Users2 className="h-4 w-4" /> {team.name}
-                </CardTitle>
-                <span className="text-xs text-muted-foreground">
-                  Lv.{team.level} · {team.xp} XP
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <TeamBadges badges={team.badges.map((b) => b.name)} />
-              <TeamMembers teamId={team.id} members={team.members} />
+        {data?.map((team) => {
+          const isOwner = team.members.some(
+            (m) => m.userId === session?.user?.id && m.role === "owner"
+          );
+          return (
+            <Card key={team.id}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="flex min-w-0 items-center gap-1.5 text-base">
+                    <Users2 className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{team.name}</span>
+                  </CardTitle>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground">
+                      Lv.{team.level} · {team.xp} XP
+                    </span>
+                    {isOwner && <TeamCardMenu team={team} />}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <TeamBadges badges={team.badges.map((b) => b.name)} />
+                <TeamMembers teamId={team.id} members={team.members} />
 
-              <div className="space-y-1.5">
-                {team.projects.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/collab/${p.id}`}
-                    className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
-                  >
-                    <FolderKanban className="h-3.5 w-3.5 text-primary" /> {p.name}
-                  </Link>
-                ))}
-                {team.projects.length === 0 && (
-                  <p className="text-xs text-muted-foreground px-2">Belum ada proyek.</p>
-                )}
-              </div>
+                <div className="space-y-1.5">
+                  {team.projects.map((p) => (
+                    <div key={p.id} className="flex items-center gap-1">
+                      <Link
+                        href={`/collab/${p.id}`}
+                        className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
+                      >
+                        <FolderKanban className="h-3.5 w-3.5 shrink-0 text-primary" />
+                        <span className="truncate">{p.name}</span>
+                      </Link>
+                      <ProjectItemMenu project={p} />
+                    </div>
+                  ))}
+                  {team.projects.length === 0 && (
+                    <p className="text-xs text-muted-foreground px-2">Belum ada proyek.</p>
+                  )}
+                </div>
 
-              <CreateProjectDialog teamId={team.id} />
-            </CardContent>
-          </Card>
-        ))}
+                <CreateProjectDialog teamId={team.id} />
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

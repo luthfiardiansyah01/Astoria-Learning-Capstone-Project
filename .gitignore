@@ -62,3 +62,6 @@ server.log
 
 # File kunci sementara Office (Word/Excel)
 ~$*
+
+# worker pdf.js (disalin otomatis oleh scripts/copy-pdf-worker.ts)
+/public/pdf.worker.min.mjs

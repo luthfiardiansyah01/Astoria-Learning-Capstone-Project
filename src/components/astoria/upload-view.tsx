@@ -15,6 +15,7 @@ import {
   BarChart3,
   Lightbulb,
   ShieldCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,8 +48,13 @@ interface UploadResult {
       tag_otomatis: string[];
       rekomendasi_admin: string;
     } | null;
+    aiWarnings?: string[];
   };
 }
+
+const MAX_TEXT_BYTES = 2 * 1024 * 1024;
+const MAX_PDF_BYTES = 10 * 1024 * 1024;
+const MAX_CONTENT_CHARS = 50_000;
 
 export function UploadView() {
   const { toast } = useToast();
@@ -56,35 +62,128 @@ export function UploadView() {
   const [fileName, setFileName] = useState("");
   const [content, setContent] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [readingFile, setReadingFile] = useState(false);
+  const [fileInfo, setFileInfo] = useState<{ kind: "pdf" | "text"; pages?: number; chars: number } | null>(null);
   const [result, setResult] = useState<UploadResult["document"] | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const charCount = content.length;
+  const tooLong = charCount > MAX_CONTENT_CHARS;
 
-  const readFile = (file: File) => {
-    if (file.size > 2 * 1024 * 1024) {
+  const readFile = async (file: File) => {
+    const lower = file.name.toLowerCase();
+    const isPdf = lower.endsWith(".pdf") || file.type === "application/pdf";
+    const isText =
+      /\.(txt|md|markdown)$/i.test(lower) ||
+      file.type === "text/plain" ||
+      file.type === "text/markdown";
+
+    if (!isPdf && !isText) {
       toast({
-        title: "File terlalu besar",
-        description: "Maksimal 2 MB untuk file teks. Coba potong per bab ya!",
+        title: "Format tidak didukung",
+        description: "Gunakan PDF, TXT, MD, atau tempel teks modul langsung.",
         variant: "destructive",
       });
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
+
+    const maxBytes = isPdf ? MAX_PDF_BYTES : MAX_TEXT_BYTES;
+    if (file.size > maxBytes) {
+      toast({
+        title: "File terlalu besar",
+        description: isPdf ? "Maksimal 10 MB untuk PDF." : "Maksimal 2 MB untuk file teks.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setReadingFile(true);
+    setResult(null);
+    setFileInfo(null);
+
+    try {
+      let text = "";
+      let pages: number | undefined;
+
+      if (isPdf) {
+        const pdfjs = await import("pdfjs-dist");
+        pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+        const buffer = await file.arrayBuffer();
+        const loadingTask = pdfjs.getDocument({ data: new Uint8Array(buffer) });
+        const pdf = await loadingTask.promise;
+        pages = pdf.numPages;
+        const parts: string[] = [];
+
+        for (let p = 1; p <= pdf.numPages; p++) {
+          const page = await pdf.getPage(p);
+          const pageContent = await page.getTextContent();
+          let pageText = "";
+          for (const item of pageContent.items) {
+            if (!("str" in item)) continue;
+            pageText += item.str;
+            pageText += item.hasEOL ? "\n" : " ";
+          }
+          parts.push(`[Halaman ${p}]\n${pageText.trim()}`);
+        }
+
+        await loadingTask.destroy();
+        text = parts
+          .join("\n\n")
+          .replace(/[ \t]+\n/g, "\n")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+
+        if (text.replace(/\[Halaman \d+\]/g, "").trim().length < 30) {
+          toast({
+            title: "PDF tidak berisi teks",
+            description:
+              "Kemungkinan PDF hasil scan/gambar. Gunakan PDF berbasis teks atau tempel isi modulnya.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else {
+        text = await file.text();
+      }
+
       setFileName(file.name);
-      setContent(String(reader.result ?? ""));
-      setResult(null);
-    };
-    reader.readAsText(file);
+      setContent(text);
+      setFileInfo({ kind: isPdf ? "pdf" : "text", pages, chars: text.length });
+      toast({
+        title: isPdf ? "PDF berhasil dibaca" : "File berhasil dibaca",
+        description: isPdf
+          ? `${pages} halaman • ${text.length.toLocaleString("id-ID")} karakter. Periksa hasilnya sebelum diproses.`
+          : `${text.length.toLocaleString("id-ID")} karakter. Periksa hasilnya sebelum diproses.`,
+      });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      const isPassword = /password/i.test(message);
+      toast({
+        title: isPassword ? "PDF terkunci password" : "Gagal membaca PDF",
+        description: isPassword
+          ? "Hapus password PDF terlebih dahulu, lalu unggah ulang."
+          : "Pastikan file PDF valid dan tidak rusak.",
+        variant: "destructive",
+      });
+    } finally {
+      setReadingFile(false);
+    }
   };
 
   const submit = async () => {
     if (!content.trim()) {
       toast({
         title: "Konten masih kosong",
-        description: "Pilih file .txt/.md atau tempel teks modul kamu dulu ya!",
+        description: "Pilih file .pdf/.txt/.md atau tempel teks modul kamu dulu ya!",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (tooLong) {
+      toast({
+        title: "Dokumen terlalu panjang",
+        description: `Maksimal ${MAX_CONTENT_CHARS.toLocaleString("id-ID")} karakter. Potong per bab atau unggah sebagian.`,
         variant: "destructive",
       });
       return;
@@ -104,6 +203,13 @@ export function UploadView() {
       }
       setResult(data.document);
       setActiveDocument(data.document.id);
+      if (data.document.aiWarnings?.length) {
+        toast({
+          title: "Sebagian proses AI gagal",
+          description: data.document.aiWarnings.join(" "),
+          variant: "destructive",
+        });
+      }
       toast({
         title: "Dokumen berhasil diproses! 🎉",
         description: `Struktur diekstrak • ${data.document.chunkCount} potongan terindeks`,
@@ -131,43 +237,79 @@ export function UploadView() {
               role="button"
               tabIndex={0}
               aria-label="Zona unggah file"
-              onClick={() => fileInputRef.current?.click()}
-              onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
+              onClick={() => {
+                if (!readingFile) fileInputRef.current?.click();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !readingFile) fileInputRef.current?.click();
+              }}
               onDragOver={(e) => {
                 e.preventDefault();
-                setDragOver(true);
+                if (!readingFile) setDragOver(true);
               }}
               onDragLeave={() => setDragOver(false)}
               onDrop={(e) => {
                 e.preventDefault();
                 setDragOver(false);
+                if (readingFile) return;
                 const file = e.dataTransfer.files?.[0];
-                if (file) readFile(file);
+                if (file) void readFile(file);
               }}
               className={`rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-colors ${
                 dragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-              }`}
+              } ${readingFile ? "pointer-events-none opacity-70" : ""}`}
             >
-              <UploadCloud className="h-10 w-10 mx-auto text-muted-foreground/60" />
-              <p className="mt-3 font-medium">Tarik & lepas file, atau klik untuk memilih</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Format .txt atau .md (maks 50.000 karakter)
-              </p>
+              {readingFile ? (
+                <>
+                  <Loader2 className="h-10 w-10 mx-auto text-primary animate-spin" />
+                  <p className="mt-3 font-medium">Membaca file…</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Mengekstrak teks dari PDF. Mohon tunggu.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="h-10 w-10 mx-auto text-muted-foreground/60" />
+                  <p className="mt-3 font-medium">Tarik & lepas file, atau klik untuk memilih</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    PDF, TXT, atau MD · PDF maks 10 MB, teks maks 2 MB
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    PDF harus berbasis teks (bukan hasil scan)
+                  </p>
+                </>
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".txt,.md,.markdown,text/plain"
+                accept=".pdf,.txt,.md,.markdown,application/pdf,text/plain,text/markdown"
                 className="sr-only"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
-                  if (f) readFile(f);
+                  if (f) void readFile(f);
+                  e.target.value = "";
                 }}
               />
             </div>
 
+            {fileInfo && (
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <FileText className="h-3.5 w-3.5" />
+                <span>
+                  {fileInfo.kind === "pdf" ? `PDF • ${fileInfo.pages} halaman` : "File teks"} •{" "}
+                  {fileInfo.chars.toLocaleString("id-ID")} karakter
+                </span>
+                {fileInfo.kind === "pdf" && (
+                  <Badge variant="secondary" className="text-[10px]">
+                    teks diekstrak
+                  </Badge>
+                )}
+              </div>
+            )}
+
             <div className="grid gap-2">
               <Input
-                placeholder="Nama dokumen (mis. modul-sim-bab4.txt)"
+                placeholder="Nama dokumen (mis. modul-sim-bab4.pdf)"
                 value={fileName}
                 onChange={(e) => setFileName(e.target.value)}
               />
@@ -177,6 +319,7 @@ export function UploadView() {
                   value={content}
                   onChange={(e) => {
                     setContent(e.target.value);
+                    setFileInfo(null);
                     setResult(null);
                   }}
                   rows={9}
@@ -184,19 +327,31 @@ export function UploadView() {
                 />
                 <span
                   className={`absolute bottom-2 right-3 text-[11px] ${
-                    charCount > 50000 ? "text-destructive font-semibold" : "text-muted-foreground"
+                    tooLong ? "text-destructive font-semibold" : "text-muted-foreground"
                   }`}
                 >
-                  {charCount.toLocaleString("id-ID")} / 50.000 karakter
+                  {charCount.toLocaleString("id-ID")} / {MAX_CONTENT_CHARS.toLocaleString("id-ID")} karakter
                 </span>
               </div>
+              {tooLong && (
+                <p className="text-xs text-destructive">
+                  Konten melebihi batas. Potong per bab atau unggah sebagian agar bisa diproses.
+                </p>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button onClick={submit} disabled={processing || !content.trim()}>
+              <Button
+                onClick={submit}
+                disabled={processing || readingFile || !content.trim() || tooLong}
+              >
                 {processing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Menganalisis dokumen…
+                  </>
+                ) : readingFile ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Membaca file…
                   </>
                 ) : (
                   <>
@@ -220,9 +375,14 @@ export function UploadView() {
               <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-400" /> Apa yang terjadi setelah unggah?
             </p>
             <p>
-              1. Dokumen dipecah menjadi potongan (chunk) untuk pencarian jawaban RAG.
-              2. AI mengekstrak struktur: bab, topik, kata kunci, mata kuliah terkait.
-              3. Content Moderator menilai kelayakan dokumen secara otomatis.
+              1. Untuk PDF, teks diekstrak di browser menjadi teks biasa sebelum dikirim.
+              2. Dokumen dipecah menjadi potongan (chunk) untuk pencarian jawaban RAG.
+              3. AI mengekstrak struktur: bab, topik, kata kunci, mata kuliah terkait.
+              4. Content Moderator menilai kelayakan dokumen secara otomatis.
+            </p>
+            <p className="text-xs">
+              PDF hasil scan/gambar belum didukung karena tidak memiliki lapisan teks. Tempel teksnya
+              secara manual atau gunakan PDF hasil ekspor dokumen.
             </p>
           </CardContent>
         </Card>
@@ -248,6 +408,23 @@ export function UploadView() {
 
         {result && !processing && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            {result.aiWarnings && result.aiWarnings.length > 0 && (
+              <Card className="border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40">
+                <CardContent className="p-4 text-sm space-y-1">
+                  <p className="flex items-center gap-2 font-semibold text-amber-800 dark:text-amber-300">
+                    <AlertTriangle className="h-4 w-4" /> Sebagian proses AI gagal
+                  </p>
+                  {result.aiWarnings.map((w) => (
+                    <p key={w} className="text-amber-800 dark:text-amber-300">
+                      • {w}
+                    </p>
+                  ))}
+                  <p className="text-xs text-amber-700/80 dark:text-amber-400/80">
+                    Dokumen tetap tersimpan. Coba proses ulang atau hubungi admin.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
             {/* Status moderasi */}
             <Card className={
               result.status === "approved"

@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { QUIZ_EVALUATOR_PROMPT, buildQuizEvaluatorUserTurn, PARAMS } from "@/lib/prompts";
-import { chatJSON } from "@/lib/ai";
+import { chatJSON, isAiQuotaError, aiQuotaMessage } from "@/lib/ai";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import {
   checkBadgeTriggers,
@@ -104,6 +104,9 @@ export async function POST(req: NextRequest) {
       );
     } catch (e) {
       console.error("[/api/quiz/submit] evaluator gagal:", e);
+      if (isAiQuotaError(e)) {
+        return NextResponse.json({ error: aiQuotaMessage(), code: "ai_quota" }, { status: 503 });
+      }
       return NextResponse.json(
         { error: FALLBACK_RESPONSES.api_error, code: "api_error" },
         { status: 500 }
@@ -181,6 +184,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (e) {
     console.error("[/api/quiz/submit]", e);
+    if (isAiQuotaError(e)) {
+      return NextResponse.json({ error: aiQuotaMessage(), code: "ai_quota" }, { status: 503 });
+    }
     return NextResponse.json(
       { error: FALLBACK_RESPONSES.api_error, code: "api_error" },
       { status: 500 }

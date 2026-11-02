@@ -65,3 +65,27 @@ export async function PATCH(
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Belum masuk." }, { status: 401 });
+
+    const { projectId } = await params;
+    const existing = await db.project.findUnique({ where: { id: projectId } });
+    if (!existing) return NextResponse.json({ error: "Proyek tidak ditemukan." }, { status: 404 });
+    await assertTeamMember(user.id, existing.teamId);
+
+    await db.project.delete({ where: { id: projectId } });
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    if (e instanceof ForbiddenError) {
+      return NextResponse.json({ error: e.message }, { status: 403 });
+    }
+    console.error("[/api/collab/projects/[projectId] DELETE]", e);
+    return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
+  }
+}

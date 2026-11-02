@@ -16,6 +16,7 @@ import {
   PARAMS,
 } from "@/lib/prompts";
 import { chatJSON } from "@/lib/ai";
+import { fallbackDocMetadata, fallbackModeration } from "@/lib/doc-fallback";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { requireUser } from "@/lib/current-user";
 import { guardAi, LIMITS, rateLimit, tooManyRequests } from "@/lib/rate-limit";
@@ -125,38 +126,39 @@ export async function POST(req: NextRequest) {
       console.error("[/api/documents] embedding chunk dilewati:", e);
     }
 
-    // ── AI Document Processor: ekstraksi struktur (Seksi 4) ──
-    let metadata: DocMetadata | null = null;
-    try {
-      metadata = await chatJSON<DocMetadata>(
+    // ── AI Document Processor + Content Moderator (paralel agar tidak lambat) ──
+    const [metadataResult, moderationResult] = await Promise.allSettled([
+      chatJSON<DocMetadata>(
         [
           { role: "system", content: DOC_PROCESSOR_PROMPT },
           { role: "user", content: buildDocProcessorUserTurn(fileName, content) },
         ],
         PARAMS.admin_ops
-      );
-    } catch (e) {
-      console.error("[doc-processor] ekstraksi gagal:", e);
-    }
-
-    // ── AI Content Moderator: moderasi kelayakan (Seksi 5.1) ──
-    let moderation: ModerationResult | null = null;
-    try {
-      moderation = await chatJSON<ModerationResult>(
+      ),
+      chatJSON<ModerationResult>(
         [
-          {
-            role: "system",
-            content: CONTENT_MODERATOR_PROMPT,
-          },
-          {
-            role: "user",
-            content: `Nama file: ${fileName}\n\n${content.slice(0, 2000)}`,
-          },
+          { role: "system", content: CONTENT_MODERATOR_PROMPT },
+          { role: "user", content: `Nama file: ${fileName}\n\n${content.slice(0, 2000)}` },
         ],
         PARAMS.admin_ops
-      );
-    } catch (e) {
-      console.error("[content-moderator] moderasi gagal:", e);
+      ),
+    ]);
+
+    const metadata =
+      metadataResult.status === "fulfilled"
+        ? metadataResult.value
+        : fallbackDocMetadata(fileName, content);
+    const moderation =
+      moderationResult.status === "fulfilled" ? moderationResult.value : fallbackModeration();
+    const aiWarnings: string[] = [];
+
+    if (metadataResult.status === "rejected") {
+      console.error("[doc-processor] ekstraksi gagal:", metadataResult.reason);
+      aiWarnings.push("AI struktur tidak tersedia; struktur diekstrak dengan metode lokal.");
+    }
+    if (moderationResult.status === "rejected") {
+      console.error("[content-moderator] moderasi gagal:", moderationResult.reason);
+      aiWarnings.push("AI moderasi tidak tersedia; dokumen menunggu review admin.");
     }
 
     // Status awal dari rekomendasi AI moderator
@@ -186,6 +188,7 @@ export async function POST(req: NextRequest) {
         status: updated.status,
         metadata,
         moderation,
+        aiWarnings,
         chunkCount: chunks.length,
         createdAt: updated.createdAt,
       },

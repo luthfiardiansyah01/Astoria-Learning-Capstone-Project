@@ -40,8 +40,23 @@ export async function getProjectWithTasks(projectId: string) {
   return db.project.findUnique({
     where: { id: projectId },
     include: {
-      team: { include: { members: { include: { user: true } } } },
-      tasks: { orderBy: [{ status: "asc" }, { order: "asc" }], include: { assignee: true } },
+      team: {
+        select: {
+          id: true,
+          name: true,
+          members: {
+            select: {
+              userId: true,
+              role: true,
+              user: { select: { id: true, name: true } },
+            },
+          },
+        },
+      },
+      tasks: {
+        orderBy: [{ status: "asc" }, { order: "asc" }],
+        include: { assignee: { select: { id: true, name: true } } },
+      },
     },
   });
 }

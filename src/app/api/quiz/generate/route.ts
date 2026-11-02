@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { QUIZ_GENERATOR_PROMPT, PARAMS } from "@/lib/prompts";
-import { chatJSON } from "@/lib/ai";
+import { chatJSON, isAiQuotaError, aiQuotaMessage } from "@/lib/ai";
 import { retrieveRelevantChunks } from "@/lib/rag";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { requireUser, canUseDocument, forbidden } from "@/lib/current-user";
@@ -85,6 +85,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (e) {
     console.error("[/api/quiz/generate]", e);
+    if (isAiQuotaError(e)) {
+      return NextResponse.json({ error: aiQuotaMessage(), code: "ai_quota" }, { status: 503 });
+    }
     return NextResponse.json(
       { error: FALLBACK_RESPONSES.api_error, code: "api_error" },
       { status: 500 }

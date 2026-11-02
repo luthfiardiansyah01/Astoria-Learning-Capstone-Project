@@ -1,7 +1,8 @@
 // Beranda — sapaan mentor proaktif (Seksi 6.3), statistik, katalog badge, aktivitas
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Sparkles,
@@ -56,27 +57,43 @@ interface HomeData {
 
 export function HomeView() {
   const { setView, setActiveDocument } = useAstoria();
-  const [data, setData] = useState<HomeData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const setStats = useAstoria((s) => s.setStats);
+
+  const greetingQuery = useQuery<{ greeting: string; waktu: string }>({
+    queryKey: ["greeting"],
+    queryFn: async () => {
+      const res = await fetch("/api/greeting");
+      if (!res.ok) throw new Error("Gagal memuat sapaan.");
+      return res.json();
+    },
+    staleTime: 5 * 60_000,
+  });
+
+  const profileQuery = useQuery<{ profile: HomeData["profile"] }>({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const res = await fetch("/api/profile");
+      if (!res.ok) throw new Error("Gagal memuat profil.");
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const [gRes, pRes] = await Promise.all([fetch("/api/greeting"), fetch("/api/profile")]);
-        const g = await gRes.json();
-        const p = await pRes.json();
-        if (mounted) setData({ greeting: g.greeting, waktu: g.waktu, profile: p.profile });
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    const p = profileQuery.data?.profile;
+    if (!p) return;
+    setStats({
+      nama: p.nama,
+      xp: p.xp,
+      level: p.level,
+      streak: p.streak,
+      totalQuiz: p.totalQuiz,
+      docCount: p.docCount,
+      avgSkor: p.avgSkor,
+    });
+  }, [profileQuery.data, setStats]);
 
-  if (loading) {
+  if (greetingQuery.isLoading || profileQuery.isLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-40 w-full rounded-2xl" />
@@ -90,7 +107,7 @@ export function HomeView() {
     );
   }
 
-  if (!data) {
+  if (greetingQuery.isError || profileQuery.isError || !greetingQuery.data || !profileQuery.data) {
     return (
       <Card>
         <CardContent className="p-8 text-center text-muted-foreground">
@@ -99,6 +116,12 @@ export function HomeView() {
       </Card>
     );
   }
+
+  const data: HomeData = {
+    greeting: greetingQuery.data.greeting,
+    waktu: greetingQuery.data.waktu,
+    profile: profileQuery.data.profile,
+  };
 
   const p = data.profile;
 

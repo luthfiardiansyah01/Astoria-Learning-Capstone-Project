@@ -31,4 +31,5 @@ if (isProduction) {
   console.log(`[vercel-build] VERCEL_ENV=${env} → migrasi dilewati`);
 }
 
+run("bun", ["scripts/copy-pdf-worker.ts"], "menyiapkan worker pdf.js");
 run("bun", ["x", "next", "build"], "build Next.js");

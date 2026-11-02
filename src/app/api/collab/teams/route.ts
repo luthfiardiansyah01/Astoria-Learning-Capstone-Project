@@ -16,7 +16,7 @@ export async function GET() {
       where: { members: { some: { userId: user.id } } },
       include: {
         members: { include: { user: { select: { id: true, name: true } } } },
-        projects: { select: { id: true, name: true } },
+        projects: { select: { id: true, name: true, description: true } },
         badges: { select: { name: true } },
       },
       orderBy: { createdAt: "desc" },

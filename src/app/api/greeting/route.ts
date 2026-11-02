@@ -38,14 +38,15 @@ export async function GET() {
     const { clock, label } = wibNow();
 
     // Modul aktif = dokumen terakhir yang dipakai chat / diunggah
-    const lastDoc = await db.document.findFirst({
-      where: { OR: [{ uploaderId: student.id }, { status: "approved" }] },
-      orderBy: { updatedAt: "desc" },
-      include: { chatMessages: { orderBy: { createdAt: "desc" }, take: 1 } },
-    });
-
-    const totalQuiz = await db.quizAttempt.count({ where: { userId: student.id } });
-    const docCount = await db.document.count({ where: { uploaderId: student.id } });
+    const [lastDoc, totalQuiz, docCount] = await Promise.all([
+      db.document.findFirst({
+        where: { OR: [{ uploaderId: student.id }, { status: "approved" }] },
+        orderBy: { updatedAt: "desc" },
+        select: { fileName: true },
+      }),
+      db.quizAttempt.count({ where: { userId: student.id } }),
+      db.document.count({ where: { uploaderId: student.id } }),
+    ]);
 
     const modulAktif = lastDoc?.fileName ?? "belum ada modul";
     const progressPct = Math.min(100, Math.round((totalQuiz / 15) * 100));
@@ -67,7 +68,8 @@ export async function GET() {
             }),
           },
         ],
-        PARAMS.gamif_eval
+        PARAMS.gamif_eval,
+        { timeoutMs: 2500, retries: 1 }
       );
       greeting = greeting.replace(/^(sapaan|greeting)\s*:\s*/i, "").trim();
     } catch (e) {

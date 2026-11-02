@@ -6,6 +6,7 @@ import { TeamLeaderboard } from "@/components/astoria/collab/team-leaderboard";
 import { ActivityFeed } from "@/components/astoria/collab/activity-feed";
 import { NotificationBell } from "@/components/astoria/collab/notification-bell";
 import { TaskDetailPanel } from "@/components/astoria/collab/task-detail-panel";
+import { BackButton } from "@/components/astoria/collab/back-button";
 
 export default async function ProjectBoardPage({
   params,
@@ -19,7 +20,10 @@ export default async function ProjectBoardPage({
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 grid gap-6 lg:grid-cols-[1fr_300px]">
-      <KanbanBoard projectId={projectId} />
+      <div className="min-w-0 space-y-3">
+        <BackButton fallback="/collab" />
+        <KanbanBoard projectId={projectId} />
+      </div>
       <div className="space-y-4">
         <div className="flex justify-end">
           <NotificationBell />

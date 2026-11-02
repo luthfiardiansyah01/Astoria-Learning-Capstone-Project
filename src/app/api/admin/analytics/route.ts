@@ -92,6 +92,16 @@ export async function GET() {
       );
     } catch (e) {
       console.error("[/api/admin/analytics] summarizer gagal:", e);
+      const topDoc = popular[0]?.fileName ?? "belum ada";
+      const topTopic = topTopics[0]?.kata ?? "belum ada";
+      insight = [
+        `1. Ringkasan performa: ${totalUsers} mahasiswa, ${docStats.length} dokumen, dan ${totalChats} interaksi chat.`,
+        `2. Dokumen paling populer: ${topDoc}. Topik yang paling sering ditanyakan: ${topTopic}.`,
+        `3. Rata-rata skor kuis: ${avgQuiz}. Dokumen menunggu review: ${statusBreakdown.pending}.`,
+        "4. Rekomendasi: tinjau dokumen berstatus review, lengkapi materi pada topik tersibuk, dan dorong mahasiswa menyelesaikan kuis.",
+        "",
+        "_Ringkasan lokal — layanan AI sedang tidak tersedia (kuota/limit)._",
+      ].join("\n");
     }
 
     return NextResponse.json({

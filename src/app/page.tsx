@@ -38,7 +38,7 @@ const NAV: { key: ViewKey; label: string; icon: React.ElementType }[] = [
 const XP_LEVELS_CLIENT = XP_LEVELS;
 
 export default function AstoriaPage() {
-  const { view, setView, stats, refreshStats } = useAstoria();
+  const { view, setView, stats } = useAstoria();
   const router = useRouter();
   const { data: session, status } = useSession();
   const isAdmin = session?.user?.role === "admin";
@@ -46,10 +46,6 @@ export default function AstoriaPage() {
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
   }, [status, router]);
-
-  useEffect(() => {
-    if (status === "authenticated") refreshStats();
-  }, [status, refreshStats]);
 
   useEffect(() => {
     if (status === "authenticated" && !isAdmin && view === "admin") setView("beranda");
@@ -88,7 +84,7 @@ export default function AstoriaPage() {
               <div className="hidden sm:block text-left">
                 <p className="font-bold leading-none tracking-tight">SOBAT ADI</p>
                 <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
-                  Learning · PJJ UT
+                  Belajar Tanpa Jarak
                 </p>
               </div>
             </button>

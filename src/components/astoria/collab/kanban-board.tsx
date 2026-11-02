@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import {
   DndContext,
   DragEndEvent,
@@ -14,6 +15,7 @@ import {
 } from "@dnd-kit/core";
 import { KanbanColumn } from "./kanban-column";
 import { TaskCard, type CollabTask } from "./task-card";
+import { ProjectItemMenu } from "./project-item-menu";
 import { useCollabUi } from "./collab-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +36,7 @@ interface ProjectData {
 
 export function KanbanBoard({ projectId }: { projectId: string }) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const setActiveTask = useCollabUi((s) => s.setActiveTask);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [draggingTask, setDraggingTask] = useState<CollabTask | null>(null);
@@ -153,9 +156,18 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold">{data.name}</h1>
-        <p className="text-sm text-muted-foreground">{data.team.name}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold">{data.name}</h1>
+          <p className="text-sm text-muted-foreground">{data.team.name}</p>
+        </div>
+        <ProjectItemMenu
+          project={data}
+          onDeleted={() => {
+            router.push("/collab");
+            router.refresh();
+          }}
+        />
       </div>
 
       <form

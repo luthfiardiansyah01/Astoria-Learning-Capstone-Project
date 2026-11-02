@@ -27,6 +27,34 @@ const CACHE_TTL_MS = 10 * 60 * 1000;
 const CACHE_MAX = 100;
 const answerCache = new Map<string, { value: string; expires: number }>();
 
+const QUOTA_MESSAGE =
+  "Kuota AI gratis sedang habis. Coba lagi setelah reset harian atau gunakan API key berbayar.";
+let quotaBlockedUntil = 0;
+
+function isQuotaError(message: string) {
+  return /(^|\D)429(\D|$)|rate limit|quota|kuota|free-models-per-day/i.test(message);
+}
+
+function quotaResetAt(message: string) {
+  const match = message.match(/X-RateLimit-Reset["']?\s*:\s*["']?(\d{10,13})/i);
+  if (!match) return 0;
+  const raw = Number(match[1]);
+  return raw > 10_000_000_000 ? raw : raw * 1000;
+}
+
+export function aiQuotaBlocked() {
+  return Date.now() < quotaBlockedUntil;
+}
+
+export function aiQuotaMessage() {
+  return QUOTA_MESSAGE;
+}
+
+export function isAiQuotaError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return isQuotaError(message);
+}
+
 interface AiConfig {
   baseUrl: string;
   apiKey: string;
@@ -64,16 +92,28 @@ async function getConfig(): Promise<AiConfig> {
   );
 }
 
-async function postJson(cfg: AiConfig, endpoint: string, body: unknown) {
-  const res = await fetch(`${cfg.baseUrl}${endpoint}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    throw new Error(`API request failed with status ${res.status}: ${(await res.text()).slice(0, 400)}`);
+async function postJson(cfg: AiConfig, endpoint: string, body: unknown, timeoutMs = 45_000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(`${cfg.baseUrl}${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      throw new Error(`API request failed with status ${res.status}: ${(await res.text()).slice(0, 400)}`);
+    }
+    return res.json();
+  } catch (e) {
+    if (e instanceof Error && e.name === "AbortError") {
+      throw new Error(`AI timeout setelah ${timeoutMs} ms`);
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
   }
-  return res.json();
 }
 
 export interface ChatMessageForAI {
@@ -94,27 +134,34 @@ function cacheKey(messages: ChatMessageForAI[], params?: RoleParams) {
 export async function chatComplete(
   messages: ChatMessageForAI[],
   params?: RoleParams,
-  options?: { cache?: boolean }
+  options?: { cache?: boolean; timeoutMs?: number; retries?: number }
 ): Promise<string> {
   const key = cacheKey(messages, params);
   const hit = options?.cache ? answerCache.get(key) : undefined;
   if (hit && hit.expires > Date.now()) return hit.value;
+  if (Date.now() < quotaBlockedUntil) throw new Error(QUOTA_MESSAGE);
 
   const cfg = await getConfig();
+  const maxAttempts = Math.max(1, options?.retries ?? 3);
 
   let lastError: Error | null = null;
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const model = AI_MODELS.length > 0 ? AI_MODELS[(attempt - 1) % AI_MODELS.length] : undefined;
     try {
-      const completion = await postJson(cfg, "/chat/completions", {
-        messages,
-        thinking: { type: "disabled" },
-        ...(model ? { model } : {}),
-        ...(params?.temperature !== undefined ? { temperature: params.temperature } : {}),
-        // Beberapa model gratis OpenRouter menolak top_p (400) → hanya kirim untuk provider default.
-        ...(params?.top_p !== undefined && !model ? { top_p: params.top_p } : {}),
-        ...(params?.max_tokens !== undefined ? { max_tokens: params.max_tokens } : {}),
-      });
+      const completion = await postJson(
+        cfg,
+        "/chat/completions",
+        {
+          messages,
+          thinking: { type: "disabled" },
+          ...(model ? { model } : {}),
+          ...(params?.temperature !== undefined ? { temperature: params.temperature } : {}),
+          // Beberapa model gratis OpenRouter menolak top_p (400) → hanya kirim untuk provider default.
+          ...(params?.top_p !== undefined && !model ? { top_p: params.top_p } : {}),
+          ...(params?.max_tokens !== undefined ? { max_tokens: params.max_tokens } : {}),
+        },
+        options?.timeoutMs ?? 45_000
+      );
 
       const content = completion.choices?.[0]?.message?.content;
       if (!content || content.trim().length === 0) {
@@ -132,7 +179,12 @@ export async function chatComplete(
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
       console.error(`[astoria-ai] Percobaan ${attempt} (${model ?? "default"}) gagal:`, lastError.message);
-      if (attempt < 3) {
+      if (isQuotaError(lastError.message)) {
+        const resetAt = quotaResetAt(lastError.message);
+        quotaBlockedUntil = resetAt > Date.now() ? resetAt : Date.now() + 5 * 60_000;
+        throw lastError;
+      }
+      if (attempt < maxAttempts) {
         await new Promise((r) => setTimeout(r, 1000 * attempt));
       }
     }
@@ -146,6 +198,7 @@ export async function chatComplete(
  */
 export async function embedTexts(texts: string[]): Promise<number[][] | null> {
   if (texts.length === 0) return [];
+  if (aiQuotaBlocked()) return null;
   try {
     const cfg = await getConfig();
     const json = await postJson(cfg, "/embeddings", { model: EMBED_MODEL, input: texts });
@@ -166,32 +219,61 @@ export function extractJSON<T>(raw: string): T | null {
   const cleaned = raw
     .replace(/```json/gi, "```")
     .replace(/```/g, "")
+    .replace(/^\uFEFF/, "")
     .trim();
-  try {
-    return JSON.parse(cleaned) as T;
-  } catch {
-    const start = cleaned.indexOf("{");
-    const end = cleaned.lastIndexOf("}");
-    if (start !== -1 && end !== -1 && end > start) {
+
+  const candidates = [cleaned];
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start !== -1 && end > start) {
+    candidates.push(cleaned.slice(start, end + 1));
+  }
+
+  for (const candidate of candidates) {
+    const variants = [candidate, candidate.replace(/,\s*([}\]])/g, "$1")];
+    for (const variant of variants) {
       try {
-        return JSON.parse(cleaned.slice(start, end + 1)) as T;
+        return JSON.parse(variant) as T;
       } catch {
-        return null;
+        // coba varian berikutnya
       }
     }
-    return null;
   }
+  return null;
 }
 
-/** Chat completion yang wajib menghasilkan JSON valid (dengan retry parsing). */
+/**
+ * Chat completion yang wajib menghasilkan JSON valid.
+ * Jika model mengembalikan teks non-JSON, coba sekali lagi dengan instruksi koreksi.
+ */
 export async function chatJSON<T>(
   messages: ChatMessageForAI[],
   params?: RoleParams
 ): Promise<T> {
-  const raw = await chatComplete(messages, params);
-  const parsed = extractJSON<T>(raw);
-  if (!parsed) {
-    throw new Error("AI tidak mengembalikan JSON valid");
+  let currentMessages = messages;
+  let lastRaw = "";
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const raw = await chatComplete(currentMessages, params, {
+      retries: attempt === 1 ? 2 : 1,
+    });
+    const parsed = extractJSON<T>(raw);
+    if (parsed) return parsed;
+
+    lastRaw = raw;
+    if (attempt === 1) {
+      console.warn("[astoria-ai] JSON tidak valid, mencoba ulang dengan instruksi koreksi.");
+      currentMessages = [
+        ...messages,
+        { role: "assistant", content: raw.slice(0, 1500) },
+        {
+          role: "user",
+          content:
+            "Respons di atas bukan JSON valid. Jawab ULANG hanya dengan satu objek JSON valid sesuai skema, tanpa markdown, tanpa penjelasan.",
+        },
+      ];
+    }
   }
-  return parsed;
+
+  throw new Error(`AI tidak mengembalikan JSON valid: ${lastRaw.slice(0, 200)}`);
 }
