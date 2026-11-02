@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -40,6 +41,7 @@ const XP_LEVELS_CLIENT = XP_LEVELS;
 
 export default function AstoriaPage() {
   const { view, setView, stats } = useAstoria();
+  const reduceMotion = useReducedMotion();
   const router = useRouter();
   const { data: session, status } = useSession();
   const isAdmin = session?.user?.role === "admin";
@@ -96,13 +98,20 @@ export default function AstoriaPage() {
                 <button
                   key={n.key}
                   onClick={() => setView(n.key)}
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors whitespace-nowrap ${
+                  className={`relative isolate flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors whitespace-nowrap ${
                     view === n.key
-                      ? "bg-primary text-primary-foreground"
+                      ? "text-primary-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                   aria-current={view === n.key ? "page" : undefined}
                 >
+                  {view === n.key && (
+                    <motion.span
+                      layoutId="nav-active-pill"
+                      className="absolute inset-0 -z-10 rounded-full bg-primary"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    />
+                  )}
                   <n.icon className="h-3.5 w-3.5" />
                   <span className="hidden xs:inline sm:inline">{n.label}</span>
                 </button>
@@ -152,11 +161,21 @@ export default function AstoriaPage() {
 
       {/* ── Konten ── */}
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-6">
-        {view === "beranda" && <HomeView />}
-        {view === "mentor" && <ChatView />}
-        {view === "unggah" && <UploadView />}
-        {view === "kuis" && <QuizView />}
-        {view === "admin" && isAdmin && <AdminView />}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={view}
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+          >
+            {view === "beranda" && <HomeView />}
+            {view === "mentor" && <ChatView />}
+            {view === "unggah" && <UploadView />}
+            {view === "kuis" && <QuizView />}
+            {view === "admin" && isAdmin && <AdminView />}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* ── Footer (sticky bottom) ── */}

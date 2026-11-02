@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateTeamDialog } from "./create-team-dialog";
 import { CreateProjectDialog } from "./create-project-dialog";
@@ -25,6 +26,7 @@ interface Team {
 
 export function ProjectList() {
   const { data: session } = useSession();
+  const reduceMotion = useReducedMotion();
   const { data, isLoading } = useQuery({
     queryKey: ["collab", "teams"],
     queryFn: async () => {
@@ -58,13 +60,19 @@ export function ProjectList() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {data?.map((team) => {
+        {data?.map((team, index) => {
           const isOwner = team.members.some(
             (m) => m.userId === session?.user?.id && m.role === "owner"
           );
           return (
-            <Card key={team.id}>
-              <CardHeader className="pb-2">
+            <motion.div
+              key={team.id}
+              initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.22, delay: reduceMotion ? 0 : index * 0.05 }}
+            >
+              <Card className="h-full">
+                <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="flex min-w-0 items-center gap-1.5 text-base">
                     <Users2 className="h-4 w-4 shrink-0" />
@@ -103,6 +111,7 @@ export function ProjectList() {
                 <CreateProjectDialog teamId={team.id} />
               </CardContent>
             </Card>
+            </motion.div>
           );
         })}
       </div>
