@@ -12,7 +12,7 @@ export default async function AnalyticsPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 space-y-4">
       <div className="flex items-center justify-between">
-        <BackButton fallback="/collab" />
+        <BackButton href="/collab" label="Tim & Proyek" />
         <NotificationBell />
       </div>
       <AnalyticsDashboard />

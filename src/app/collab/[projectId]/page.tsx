@@ -21,7 +21,7 @@ export default async function ProjectBoardPage({
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 grid gap-6 lg:grid-cols-[1fr_300px]">
       <div className="min-w-0 space-y-3">
-        <BackButton fallback="/collab" />
+        <BackButton href="/collab" label="Tim & Proyek" />
         <KanbanBoard projectId={projectId} />
       </div>
       <div className="space-y-4">

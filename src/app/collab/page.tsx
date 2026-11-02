@@ -11,7 +11,7 @@ export default async function CollabPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="mb-3">
-        <BackButton fallback="/" />
+        <BackButton href="/" label="Beranda" />
       </div>
       <ProjectList />
     </main>
