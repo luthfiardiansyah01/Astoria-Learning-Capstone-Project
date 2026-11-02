@@ -23,6 +23,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useAstoria } from "./store";
 import { Markdown } from "./markdown";
+import { RealtimeClock } from "./realtime-clock";
+import { ElapsedTimer } from "./elapsed-timer";
 
 interface DocItem {
   id: string;
@@ -221,11 +223,14 @@ export function ChatView() {
               </p>
             </div>
           </div>
-          {activeDocumentId && messages.length > 0 && (
-            <Button size="sm" variant="ghost" onClick={clearChat} title="Bersihkan riwayat">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            <RealtimeClock className="hidden sm:inline text-[11px] text-muted-foreground" />
+            {activeDocumentId && messages.length > 0 && (
+              <Button size="sm" variant="ghost" onClick={clearChat} title="Bersihkan riwayat">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 astoria-scroll">
@@ -304,7 +309,10 @@ export function ChatView() {
                 <span className="typing-dot h-2 w-2 rounded-full bg-primary inline-block" />
                 <span className="typing-dot h-2 w-2 rounded-full bg-primary inline-block" />
                 <span className="typing-dot h-2 w-2 rounded-full bg-primary inline-block" />
-                <span className="text-xs text-muted-foreground ml-2">Mentor sedang membaca modul…</span>
+                <ElapsedTimer
+                  prefix="Mentor membaca modul"
+                  className="text-xs text-muted-foreground ml-2"
+                />
               </div>
             </div>
           )}

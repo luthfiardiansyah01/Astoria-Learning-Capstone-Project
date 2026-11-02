@@ -8,6 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sparkles, Send } from "lucide-react";
 import { toast } from "sonner";
 import { TEAM_BADGE_META } from "@/lib/collab-badge-meta";
+import { RealtimeClock } from "../realtime-clock";
+import { ElapsedTimer } from "../elapsed-timer";
 
 interface TaskChatMessage {
   id: string;
@@ -54,8 +56,11 @@ export function TaskMentorChat({ taskId }: { taskId: string }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-1.5 text-sm font-semibold">
-        <Sparkles className="h-4 w-4 text-primary" /> Mentor AI — Task Ini
+      <div className="flex items-center justify-between gap-2 text-sm font-semibold">
+        <span className="flex items-center gap-1.5">
+          <Sparkles className="h-4 w-4 text-primary" /> Mentor AI — Task Ini
+        </span>
+        <RealtimeClock className="text-[10px] font-normal text-muted-foreground" />
       </div>
       <ScrollArea className="h-56 rounded-md border p-3">
         <div className="space-y-3">
@@ -76,6 +81,14 @@ export function TaskMentorChat({ taskId }: { taskId: string }) {
             <p className="text-xs text-muted-foreground text-center py-4">
               Tanyakan sesuatu tentang task ini ke Mentor AI.
             </p>
+          )}
+          {mutation.isPending && (
+            <div className="flex justify-start">
+              <ElapsedTimer
+                prefix="Mentor menulis"
+                className="text-[11px] text-muted-foreground"
+              />
+            </div>
           )}
         </div>
       </ScrollArea>
