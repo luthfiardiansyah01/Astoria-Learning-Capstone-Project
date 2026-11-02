@@ -52,29 +52,46 @@ export async function GET() {
     const progressPct = Math.min(100, Math.round((totalQuiz / 15) * 100));
 
     let greeting: string;
+    const fallbackGreeting = localGreeting(
+      student.name,
+      new Date().getUTCHours() + 7,
+      student.streakDays
+    );
+    const aiGreeting = chatComplete(
+      [
+        { role: "system", content: GREETING_PROMPT },
+        {
+          role: "user",
+          content: buildGreetingUserTurn({
+            nama: student.name,
+            streak: student.streakDays,
+            lastActive: formatLastActive(student.lastActive),
+            modulAktif,
+            progressPct,
+            jamSaatIni: clock,
+          }),
+        },
+      ],
+      PARAMS.gamif_eval,
+      { timeoutMs: 1500, retries: 1 }
+    )
+      .then((value) => value.replace(/^(sapaan|greeting)\s*:\s*/i, "").trim())
+      .catch((e) => {
+        console.error("[/api/greeting] AI gagal, pakai sapaan lokal:", e);
+        return fallbackGreeting;
+      });
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<string>((_, reject) => {
+      timer = setTimeout(() => reject(new Error("greeting timeout")), 1500);
+    });
+
     try {
-      greeting = await chatComplete(
-        [
-          { role: "system", content: GREETING_PROMPT },
-          {
-            role: "user",
-            content: buildGreetingUserTurn({
-              nama: student.name,
-              streak: student.streakDays,
-              lastActive: formatLastActive(student.lastActive),
-              modulAktif,
-              progressPct,
-              jamSaatIni: clock,
-            }),
-          },
-        ],
-        PARAMS.gamif_eval,
-        { timeoutMs: 2500, retries: 1 }
-      );
-      greeting = greeting.replace(/^(sapaan|greeting)\s*:\s*/i, "").trim();
-    } catch (e) {
-      console.error("[/api/greeting] AI gagal, pakai sapaan lokal:", e);
-      greeting = localGreeting(student.name, new Date().getUTCHours() + 7, student.streakDays);
+      greeting = await Promise.race([aiGreeting, deadline]);
+    } catch {
+      greeting = fallbackGreeting;
+    } finally {
+      if (timer) clearTimeout(timer);
     }
 
     return NextResponse.json({

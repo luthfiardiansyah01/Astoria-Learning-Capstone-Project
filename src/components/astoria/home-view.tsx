@@ -93,7 +93,7 @@ export function HomeView() {
     });
   }, [profileQuery.data, setStats]);
 
-  if (greetingQuery.isLoading || profileQuery.isLoading) {
+  if (profileQuery.isLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-40 w-full rounded-2xl" />
@@ -107,7 +107,7 @@ export function HomeView() {
     );
   }
 
-  if (greetingQuery.isError || profileQuery.isError || !greetingQuery.data || !profileQuery.data) {
+  if (profileQuery.isError || !profileQuery.data) {
     return (
       <Card>
         <CardContent className="p-8 text-center text-muted-foreground">
@@ -117,13 +117,13 @@ export function HomeView() {
     );
   }
 
+  const p = profileQuery.data.profile;
   const data: HomeData = {
-    greeting: greetingQuery.data.greeting,
-    waktu: greetingQuery.data.waktu,
-    profile: profileQuery.data.profile,
+    greeting:
+      greetingQuery.data?.greeting ?? `Halo, ${p.nama.split(" ")[0]}! Yuk mulai sesi belajar hari ini.`,
+    waktu: greetingQuery.data?.waktu ?? "hari ini",
+    profile: p,
   };
-
-  const p = data.profile;
 
   const stats = [
     { label: "Total XP", value: p.xp, icon: Zap, color: "text-amber-700 bg-amber-100 dark:bg-amber-950" },
