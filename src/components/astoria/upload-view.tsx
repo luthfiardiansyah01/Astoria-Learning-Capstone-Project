@@ -52,9 +52,9 @@ interface UploadResult {
   };
 }
 
-const MAX_TEXT_BYTES = 2 * 1024 * 1024;
-const MAX_PDF_BYTES = 10 * 1024 * 1024;
-const MAX_CONTENT_CHARS = 50_000;
+const MAX_TEXT_BYTES = 1 * 1024 * 1024;
+const MAX_PDF_BYTES = 5 * 1024 * 1024;
+const MAX_CONTENT_CHARS = 20_000;
 
 export function UploadView() {
   const { toast } = useToast();
@@ -92,7 +92,7 @@ export function UploadView() {
     if (file.size > maxBytes) {
       toast({
         title: "File terlalu besar",
-        description: isPdf ? "Maksimal 10 MB untuk PDF." : "Maksimal 2 MB untuk file teks.",
+        description: isPdf ? "Maksimal 5 MB untuk PDF." : "Maksimal 1 MB untuk file teks.",
         variant: "destructive",
       });
       return;
@@ -272,7 +272,7 @@ export function UploadView() {
                   <UploadCloud className="h-10 w-10 mx-auto text-muted-foreground/60" />
                   <p className="mt-3 font-medium">Tarik & lepas file, atau klik untuk memilih</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    PDF, TXT, atau MD · PDF maks 10 MB, teks maks 2 MB
+                    PDF, TXT, atau MD · PDF maks 5 MB, teks maks 1 MB
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     PDF harus berbasis teks (bukan hasil scan)

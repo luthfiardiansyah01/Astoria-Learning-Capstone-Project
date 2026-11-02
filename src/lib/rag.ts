@@ -6,7 +6,7 @@
 // - MAX_CONTEXT_LENGTH = 6.000 karakter sesuai spesifikasi.
 
 export const MAX_CONTEXT_LENGTH = 6000;
-export const MAX_DOC_LENGTH = 50000;
+export const MAX_DOC_LENGTH = 20000;
 const CHUNK_SIZE = 2000; // ±500 token
 const CHUNK_OVERLAP = 200; // ±50 token
 

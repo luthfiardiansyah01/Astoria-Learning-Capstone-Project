@@ -1,5 +1,5 @@
 // POST /api/documents — unggah dokumen:
-// 1) validasi panjang (maks 50.000 karakter, fallback doc_too_large)
+// 1) validasi panjang (maks 20.000 karakter, fallback doc_too_large)
 // 2) chunking untuk RAG
 // 3) AI Document Processor → metadata struktur (Seksi 4)
 // 4) AI Content Moderator → status kelayakan (Seksi 5.1)

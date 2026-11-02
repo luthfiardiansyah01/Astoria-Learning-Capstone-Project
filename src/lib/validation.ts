@@ -2,6 +2,7 @@
 // Skema zod + pembaca body. Pesan galat berbahasa Indonesia.
 
 import { z } from "zod";
+import { MAX_DOC_LENGTH } from "./rag";
 
 const wajib = (label: string, max: number) =>
   z
@@ -49,7 +50,7 @@ export const documentUploadSchema = z.object({
     .string()
     .trim()
     .min(1, "Konten dokumen kosong. Tempel teks modul kamu dulu ya!")
-    .max(1_000_000, "Dokumen terlalu besar."),
+    .max(MAX_DOC_LENGTH, `Dokumen maksimal ${MAX_DOC_LENGTH.toLocaleString("id-ID")} karakter.`),
 });
 
 export const teamCreateSchema = z.object({

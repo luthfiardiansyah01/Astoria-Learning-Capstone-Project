@@ -25,7 +25,7 @@ export const FALLBACK_RESPONSES = {
   // Ketika dokumen terlalu besar
   doc_too_large:
     "Dokumen ini terlalu besar untuk diproses sekaligus. " +
-    "Coba unggah per bab atau potong menjadi file yang lebih kecil (maks 50.000 karakter).",
+    "Coba unggah per bab atau potong menjadi file yang lebih kecil (maks 20.000 karakter).",
 } as const;
 
 // Deteksi out-of-context dari respons GLM
