@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { MENTOR_SYSTEM_PROMPT, buildRagContext, PARAMS } from "@/lib/prompts";
 import { retrieveForDocument } from "@/lib/rag-semantic";
-import { chatComplete, type ChatMessageForAI } from "@/lib/ai";
+import { chatComplete, isAiQuotaError, aiQuotaMessage, type ChatMessageForAI } from "@/lib/ai";
 import { FALLBACK_RESPONSES, isOutOfContext, preprocessUserInput } from "@/lib/fallback";
 import { requireUser, canUseDocument, forbidden } from "@/lib/current-user";
 import { guardAi } from "@/lib/rate-limit";
@@ -123,6 +123,16 @@ export async function POST(req: NextRequest) {
       reply = await chatComplete(messages, PARAMS.user_mentor, { cache: true });
     } catch (e) {
       console.error("[/api/chat] AI gagal:", e);
+      if (isAiQuotaError(e)) {
+        return NextResponse.json(
+          {
+            error: aiQuotaMessage(),
+            code: "ai_quota",
+            fallback: "ai_quota",
+          },
+          { status: 503 }
+        );
+      }
       await db.chatMessage.createMany({
         data: [
           { userId: user.id, documentId, role: "user", content: question },

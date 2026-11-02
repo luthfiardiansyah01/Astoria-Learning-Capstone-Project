@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/current-user";
 import { assertTeamMember, logActivity, ForbiddenError } from "@/lib/collab";
-import { chatComplete } from "@/lib/ai";
+import { chatComplete, isAiQuotaError, aiQuotaMessage } from "@/lib/ai";
 import { TASK_MENTOR_SYSTEM_PROMPT, buildTaskMentorUserTurn, buildRagContext, PARAMS } from "@/lib/prompts";
 import { retrieveForDocument } from "@/lib/rag-semantic";
 import { checkTeamBadges } from "@/lib/collab-badges";
@@ -124,6 +124,12 @@ export async function POST(
       );
     } catch (e) {
       console.error("[/api/collab/tasks/[taskId]/mentor] AI gagal:", e);
+      if (isAiQuotaError(e)) {
+        return NextResponse.json(
+          { error: aiQuotaMessage(), code: "ai_quota" },
+          { status: 503 }
+        );
+      }
       return NextResponse.json(
         { error: FALLBACK_RESPONSES.api_error, code: "api_error" },
         { status: 500 }
