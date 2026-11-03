@@ -1,6 +1,6 @@
-// GET /api/admin/analytics — statistik platform + AI Analytics Summarizer (Seksi 5.2)
-
-import { NextResponse } from "next/server";
+// GET /api/admin/analytics — statistik platform.
+// Insight AI hanya dibuat saat diminta (?insight=1) agar buka panel admin tetap cepat.
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { ANALYTICS_SUMMARIZER_PROMPT, PARAMS } from "@/lib/prompts";
 import { chatComplete } from "@/lib/ai";
@@ -10,31 +10,42 @@ import { effectivePlan } from "@/lib/plans";
 
 export const maxDuration = 60;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const auth = await requireAdmin();
     if (auth.res) return auth.res;
-    const limited = await guardAi(auth.user.id, effectivePlan(auth.user));
-    if (limited) return limited;
+
+    const withInsight = new URL(req.url).searchParams.get("insight") === "1";
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    const [totalUsers, docsThisWeek, totalChats, docStats, attemptStats] = await Promise.all([
-      db.user.count({ where: { role: "mahasiswa" } }),
-      db.document.count({ where: { createdAt: { gte: oneWeekAgo } } }),
-      db.chatMessage.count({ where: { role: "user" } }),
-      db.document.findMany({
-        include: {
-          _count: { select: { chatMessages: true, quizAttempts: true } },
-          chatMessages: { where: { role: "user" }, select: { content: true } },
-        },
-      }),
-      db.quizAttempt.findMany({
-        include: { question: { select: { soal: true } }, document: { select: { fileName: true } } } ,
-      }),
-    ]);
+    const [totalUsers, docsThisWeek, totalChats, documents, attemptStats, recentQuestions] =
+      await Promise.all([
+        db.user.count({ where: { role: "mahasiswa" } }),
+        db.document.count({ where: { createdAt: { gte: oneWeekAgo } } }),
+        db.chatMessage.count({ where: { role: "user" } }),
+        db.document.findMany({
+          select: {
+            id: true,
+            fileName: true,
+            status: true,
+            _count: { select: { chatMessages: true, quizAttempts: true } },
+          },
+        }),
+        db.quizAttempt.aggregate({
+          _count: { _all: true },
+          _avg: { skor: true },
+        }),
+        // Batasi ke pertanyaan terbaru agar tidak memuat seluruh riwayat chat.
+        db.chatMessage.findMany({
+          where: { role: "user" },
+          select: { content: true },
+          orderBy: { createdAt: "desc" },
+          take: 500,
+        }),
+      ]);
 
     // Dokumen paling populer (interaksi chat terbanyak)
-    const popular = [...docStats]
+    const popular = [...documents]
       .sort((a, b) => b._count.chatMessages - a._count.chatMessages)
       .slice(0, 3)
       .map((d) => ({
@@ -44,14 +55,12 @@ export async function GET() {
         kuis: d._count.quizAttempts,
       }));
 
-    // Topik yang sering ditanyakan (frekuensi kata dari pertanyaan)
+    // Topik yang sering ditanyakan (frekuensi kata dari pertanyaan terbaru)
     const wordFreq = new Map<string, number>();
-    for (const d of docStats) {
-      for (const m of d.chatMessages) {
-        for (const w of m.content.toLowerCase().split(/\s+/)) {
-          const clean = w.replace(/[^\p{L}\p{N}]/gu, "");
-          if (clean.length > 4) wordFreq.set(clean, (wordFreq.get(clean) ?? 0) + 1);
-        }
+    for (const m of recentQuestions) {
+      for (const w of m.content.toLowerCase().split(/\s+/)) {
+        const clean = w.replace(/[^\p{L}\p{N}]/gu, "");
+        if (clean.length > 4) wordFreq.set(clean, (wordFreq.get(clean) ?? 0) + 1);
       }
     }
     const topTopics = [...wordFreq.entries()]
@@ -59,26 +68,28 @@ export async function GET() {
       .slice(0, 5)
       .map(([w, c]) => ({ kata: w, jumlah: c }));
 
-    // Skor rata-rata kuis
-    const avgQuiz = attemptStats.length
-      ? Math.round(attemptStats.reduce((a, b) => a + b.skor, 0) / attemptStats.length)
-      : 0;
+    const totalQuiz = attemptStats._count._all;
+    const avgQuiz = Math.round(attemptStats._avg.skor ?? 0);
 
     const statusBreakdown = {
-      approved: docStats.filter((d) => d.status === "approved").length,
-      pending: docStats.filter((d) => d.status === "pending").length,
-      rejected: docStats.filter((d) => d.status === "rejected").length,
+      approved: documents.filter((d) => d.status === "approved").length,
+      pending: documents.filter((d) => d.status === "pending").length,
+      rejected: documents.filter((d) => d.status === "rejected").length,
     };
 
-    // ── AI Analytics Summarizer (Seksi 5.2) ──
+    // ── AI Analytics Summarizer (Seksi 5.2), hanya saat diminta ──
     let insight: string | null = null;
-    try {
-      insight = await chatComplete(
-        [
-          { role: "system", content: ANALYTICS_SUMMARIZER_PROMPT },
-          {
-            role: "user",
-            content: `DATA INPUT:
+    if (withInsight) {
+      const limited = await guardAi(auth.user.id, effectivePlan(auth.user));
+      if (limited) return limited;
+
+      try {
+        insight = await chatComplete(
+          [
+            { role: "system", content: ANALYTICS_SUMMARIZER_PROMPT },
+            {
+              role: "user",
+              content: `DATA INPUT:
 - Total mahasiswa aktif        : ${totalUsers}
 - Dokumen diunggah minggu ini  : ${docsThisWeek}
 - Total interaksi chat         : ${totalChats}
@@ -87,22 +98,23 @@ export async function GET() {
 - Rata-rata skor kuis           : ${avgQuiz}
 - Dokumen paling populer        : ${popular.map((p) => `${p.fileName} (${p.interaksi} interaksi)`).join("; ") || "belum ada"}
 - Status dokumen: ${statusBreakdown.approved} aktif, ${statusBreakdown.pending} review, ${statusBreakdown.rejected} ditolak`,
-          },
-        ],
-        PARAMS.admin_ops
-      );
-    } catch (e) {
-      console.error("[/api/admin/analytics] summarizer gagal:", e);
-      const topDoc = popular[0]?.fileName ?? "belum ada";
-      const topTopic = topTopics[0]?.kata ?? "belum ada";
-      insight = [
-        `1. Ringkasan performa: ${totalUsers} mahasiswa, ${docStats.length} dokumen, dan ${totalChats} interaksi chat.`,
-        `2. Dokumen paling populer: ${topDoc}. Topik yang paling sering ditanyakan: ${topTopic}.`,
-        `3. Rata-rata skor kuis: ${avgQuiz}. Dokumen menunggu review: ${statusBreakdown.pending}.`,
-        "4. Rekomendasi: tinjau dokumen berstatus review, lengkapi materi pada topik tersibuk, dan dorong mahasiswa menyelesaikan kuis.",
-        "",
-        "_Ringkasan lokal — layanan AI sedang tidak tersedia (kuota/limit)._",
-      ].join("\n");
+            },
+          ],
+          PARAMS.admin_ops
+        );
+      } catch (e) {
+        console.error("[/api/admin/analytics] summarizer gagal:", e);
+        const topDoc = popular[0]?.fileName ?? "belum ada";
+        const topTopic = topTopics[0]?.kata ?? "belum ada";
+        insight = [
+          `1. Ringkasan performa: ${totalUsers} mahasiswa, ${documents.length} dokumen, dan ${totalChats} interaksi chat.`,
+          `2. Dokumen paling populer: ${topDoc}. Topik yang paling sering ditanyakan: ${topTopic}.`,
+          `3. Rata-rata skor kuis: ${avgQuiz}. Dokumen menunggu review: ${statusBreakdown.pending}.`,
+          "4. Rekomendasi: tinjau dokumen berstatus review, lengkapi materi pada topik tersibuk, dan dorong mahasiswa menyelesaikan kuis.",
+          "",
+          "_Ringkasan lokal — layanan AI sedang tidak tersedia (kuota/limit)._",
+        ].join("\n");
+      }
     }
 
     return NextResponse.json({
@@ -110,8 +122,8 @@ export async function GET() {
         totalUsers,
         docsThisWeek,
         totalChats,
-        totalDocuments: docStats.length,
-        totalQuiz: attemptStats.length,
+        totalDocuments: documents.length,
+        totalQuiz,
         avgQuiz,
         statusBreakdown,
         popular,

@@ -13,6 +13,10 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Pangkas import per-ikon/per-fungsi dari paket besar.
+    optimizePackageImports: ["lucide-react", "date-fns", "framer-motion", "recharts"],
+  },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

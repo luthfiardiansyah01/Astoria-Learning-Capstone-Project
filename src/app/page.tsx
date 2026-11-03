@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, type ElementType } from "react";
+import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,15 +21,56 @@ import {
   LogOut,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { XP_LEVELS } from "@/lib/gamif";
 import { useAstoria, type ViewKey } from "@/components/astoria/store";
 import { HomeView } from "@/components/astoria/home-view";
-import { ChatView } from "@/components/astoria/chat-view";
-import { UploadView } from "@/components/astoria/upload-view";
-import { QuizView } from "@/components/astoria/quiz-view";
-import { AdminView } from "@/components/astoria/admin-view";
 import { AiQuotaBadge } from "@/components/astoria/ai-quota-badge";
 import { PlanBadge } from "@/components/astoria/plan-badge";
+
+// View selain Beranda dimuat sesuai kebutuhan agar bundle awal tetap kecil.
+const viewLoaders = {
+  mentor: () => import("@/components/astoria/chat-view").then((m) => m.ChatView),
+  unggah: () => import("@/components/astoria/upload-view").then((m) => m.UploadView),
+  kuis: () => import("@/components/astoria/quiz-view").then((m) => m.QuizView),
+  admin: () => import("@/components/astoria/admin-view").then((m) => m.AdminView),
+};
+
+const ChatView = dynamic(viewLoaders.mentor, {
+  ssr: false,
+  loading: () => <ViewSkeleton />,
+});
+const UploadView = dynamic(viewLoaders.unggah, {
+  ssr: false,
+  loading: () => <ViewSkeleton />,
+});
+const QuizView = dynamic(viewLoaders.kuis, {
+  ssr: false,
+  loading: () => <ViewSkeleton />,
+});
+const AdminView = dynamic(viewLoaders.admin, {
+  ssr: false,
+  loading: () => <ViewSkeleton />,
+});
+
+function ViewSkeleton() {
+  return (
+    <div className="space-y-4" aria-busy="true" aria-label="Memuat tampilan">
+      <Skeleton className="h-28 w-full rounded-2xl" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-24 rounded-2xl" />
+        ))}
+      </div>
+      <Skeleton className="h-64 w-full rounded-2xl" />
+    </div>
+  );
+}
+
+function prefetchView(key: ViewKey) {
+  const loader = viewLoaders[key as keyof typeof viewLoaders];
+  if (loader) void loader();
+}
 
 const NAV: { key: ViewKey; label: string; icon: React.ElementType }[] = [
   { key: "beranda", label: "Beranda", icon: Home },
@@ -44,6 +86,7 @@ function NavPills({
   items,
   view,
   onSelect,
+  onPrefetch,
   reduceMotion,
   layoutId,
   className = "",
@@ -51,6 +94,7 @@ function NavPills({
   items: { key: ViewKey; label: string; icon: ElementType }[];
   view: ViewKey;
   onSelect: (key: ViewKey) => void;
+  onPrefetch?: (key: ViewKey) => void;
   reduceMotion: boolean | null;
   layoutId: string;
   className?: string;
@@ -64,6 +108,9 @@ function NavPills({
         <motion.button
           key={n.key}
           onClick={() => onSelect(n.key)}
+          onMouseEnter={() => onPrefetch?.(n.key)}
+          onFocus={() => onPrefetch?.(n.key)}
+          onPointerDown={() => onPrefetch?.(n.key)}
           whileTap={reduceMotion ? undefined : { scale: 0.96 }}
           className={`relative isolate flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors ${
             view === n.key
@@ -112,8 +159,24 @@ export default function AstoriaPage() {
 
   if (status !== "authenticated") {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
-        Memuat...
+      <div className="min-h-screen bg-background">
+        <header className="border-b">
+          <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
+            <Skeleton className="h-9 w-9 rounded-2xl" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-3.5 w-24" />
+              <Skeleton className="h-2 w-20" />
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <Skeleton className="h-6 w-16 rounded-full" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="hidden h-6 w-16 rounded-full sm:block" />
+            </div>
+          </div>
+        </header>
+        <main className="mx-auto w-full max-w-6xl px-4 py-6">
+          <ViewSkeleton />
+        </main>
       </div>
     );
   }
@@ -147,6 +210,7 @@ export default function AstoriaPage() {
                 items={navItems}
                 view={view}
                 onSelect={setView}
+                onPrefetch={prefetchView}
                 reduceMotion={reduceMotion}
                 layoutId="nav-pill-desktop"
                 className="flex"
@@ -204,6 +268,7 @@ export default function AstoriaPage() {
               items={navItems}
               view={view}
               onSelect={setView}
+              onPrefetch={prefetchView}
               reduceMotion={reduceMotion}
               layoutId="nav-pill-mobile"
               className="flex w-fit max-w-full overflow-x-auto astoria-scroll"

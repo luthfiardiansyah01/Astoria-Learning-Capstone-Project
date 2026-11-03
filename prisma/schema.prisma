@@ -115,6 +115,8 @@ model TeamMember {
   joinedAt DateTime @default(now())
 
   @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
 }
 
 // Proyek kolaboratif milik sebuah tim
@@ -128,6 +130,8 @@ model Project {
   activities  ActivityEvent[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+
+  @@index([teamId])
 }
 
 // Tugas pada papan Kanban sebuah proyek
@@ -150,6 +154,9 @@ model Task {
   activities    ActivityEvent[]
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+
+  @@index([projectId])
+  @@index([assigneeId])
 }
 
 // Riwayat chat Mentor AI kontekstual per task
@@ -162,6 +169,8 @@ model TaskChatMessage {
   role      String // user | assistant
   content   String
   createdAt DateTime @default(now())
+
+  @@index([taskId])
 }
 
 // Log aktivitas tim/proyek untuk activity feed
@@ -178,6 +187,9 @@ model ActivityEvent {
   type      String // task_created | task_moved | task_completed | member_joined | ai_mentor_used | xp_awarded
   payload   String? // JSON detail event
   createdAt DateTime @default(now())
+
+  @@index([teamId, createdAt])
+  @@index([projectId])
 }
 
 // Dokumen modul yang diunggah mahasiswa
@@ -198,6 +210,9 @@ model Document {
   quizAttempts  QuizAttempt[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+
+  @@index([uploaderId])
+  @@index([status])
 }
 
 // Potongan dokumen untuk retrieval RAG
@@ -209,6 +224,8 @@ model Chunk {
   chunkIndex Int
   keywords   String // kata kunci terindeks untuk scoring
   embedding  String? // JSON array vektor embedding (semantic search)
+
+  @@index([documentId])
 }
 
 // Riwayat chat Mentor AI
@@ -221,6 +238,9 @@ model ChatMessage {
   role       String // user | assistant
   content    String
   createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([documentId])
 }
 
 // Soal kuis yang dihasilkan dari dokumen
@@ -233,6 +253,8 @@ model QuizQuestion {
   tingkat    String        @default("Menengah") // Dasar | Menengah | Lanjut
   createdAt  DateTime      @default(now())
   attempts   QuizAttempt[]
+
+  @@index([documentId])
 }
 
 // Riwayat jawaban kuis mahasiswa + hasil evaluasi gamifikasi
@@ -251,6 +273,8 @@ model QuizAttempt {
   feedback    String
   koreksi     String?
   createdAt   DateTime     @default(now())
+
+  @@index([userId, createdAt])
 }
 
 // Lencana yang diperoleh mahasiswa

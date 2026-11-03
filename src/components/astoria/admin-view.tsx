@@ -129,7 +129,7 @@ export function AdminView() {
   const refreshInsight = async () => {
     setInsightLoading(true);
     try {
-      const res = await fetch("/api/admin/analytics");
+      const res = await fetch("/api/admin/analytics?insight=1");
       const a = await res.json();
       setAnalytics(a.analytics ?? null);
     } finally {
@@ -390,8 +390,10 @@ export function AdminView() {
                 >
                   {insightLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
+                  ) : analytics?.insight ? (
                     "Segarkan"
+                  ) : (
+                    "Buat Insight"
                   )}
                 </Button>
               </CardTitle>
