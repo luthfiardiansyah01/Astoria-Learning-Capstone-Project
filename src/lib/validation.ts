@@ -109,6 +109,17 @@ export const mentorQuestionSchema = z.object({
   question: z.string().min(1, "Pertanyaan wajib diisi.").max(4000, "Pertanyaan terlalu panjang (maks 4000 karakter)."),
 });
 
+export const adminPlanUpdateSchema = z.object({
+  plan: z.enum(["free", "premium"], { message: "Paket tidak valid." }),
+  /** Durasi Premium dalam hari. Kosong/0 = tanpa batas waktu. */
+  days: z.coerce.number().int().min(0).max(3650).optional(),
+  resetTrial: z.boolean().optional(),
+});
+
+export const adminPaymentUpdateSchema = z.object({
+  status: z.enum(["paid", "failed", "expired"], { message: "Status pembayaran tidak valid." }),
+});
+
 type ReadResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 /** Baca + validasi body JSON. Mengembalikan pesan Indonesia pada kegagalan pertama. */

@@ -25,6 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Markdown } from "./markdown";
+import { AdminPlanPanel } from "./admin-plan-panel";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminDoc {
@@ -145,6 +146,7 @@ export function AdminView() {
           ))}
         </div>
         <div className="h-64 rounded-2xl bg-muted animate-pulse" />
+        <AdminPlanPanel />
       </div>
     );
   }
@@ -412,6 +414,8 @@ export function AdminView() {
           </Card>
         </div>
       </div>
+
+      <AdminPlanPanel />
     </div>
   );
 }

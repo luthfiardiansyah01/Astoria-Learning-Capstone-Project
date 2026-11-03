@@ -33,6 +33,31 @@ model User {
   taskChatMessages TaskChatMessage[]
   activityEvents   ActivityEvent[]
   notifications    Notification[]
+  payments         Payment[]
+}
+
+// Riwayat pembayaran langganan Premium (Midtrans/Xendit).
+model Payment {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider     String // midtrans | xendit | manual
+  orderId      String    @unique
+  amount       Int
+  currency     String    @default("IDR")
+  status       String    @default("pending") // pending | paid | failed | expired | refunded
+  plan         String    @default("premium")
+  durationDays Int       @default(30)
+  providerRef  String?
+  checkoutUrl  String?
+  rawPayload   Json?
+  paidAt       DateTime?
+  expiresAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
 
 // ===== Astoria Collab =====
