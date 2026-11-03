@@ -22,10 +22,14 @@ function envFlag(value: string | undefined, fallback = false) {
 }
 
 export function appUrl() {
+  // Di Vercel, VERCEL_PROJECT_PRODUCTION_URL selalu berisi domain produksi.
+  // NEXTAUTH_URL bisa saja masih menunjuk ke localhost pada deployment lama.
+  const vercelDomain =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || "";
   const base =
     process.env.NEXT_PUBLIC_APP_URL ||
+    (vercelDomain ? `https://${vercelDomain}` : "") ||
     process.env.NEXTAUTH_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
     "http://localhost:3000";
   return base.replace(/\/$/, "");
 }
