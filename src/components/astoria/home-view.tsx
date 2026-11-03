@@ -56,7 +56,7 @@ interface HomeData {
 }
 
 export function HomeView() {
-  const { setView, setActiveDocument } = useAstoria();
+  const { setView } = useAstoria();
   const setStats = useAstoria((s) => s.setStats);
   const queryClient = useQueryClient();
 

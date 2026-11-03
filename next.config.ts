@@ -13,6 +13,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  reactStrictMode: true,
   experimental: {
     // Pangkas import per-ikon/per-fungsi dari paket besar.
     optimizePackageImports: ["lucide-react", "date-fns", "framer-motion", "recharts"],

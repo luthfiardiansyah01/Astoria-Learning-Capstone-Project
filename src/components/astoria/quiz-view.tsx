@@ -5,7 +5,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Target,
   FileText,
@@ -148,8 +148,6 @@ export function QuizView() {
       setSubmitting(null);
     }
   };
-
-  const hasLevelUp = Object.values(results).some((r) => r.levelNaik);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

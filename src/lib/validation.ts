@@ -79,18 +79,22 @@ export const taskCreateSchema = z.object({
   xpReward: z.coerce.number().int().min(1, "XP minimal 1.").max(100, "XP maksimal 100.").optional(),
 });
 
-export const taskUpdateSchema = z.object({
-  status: z.enum(["todo", "in_progress", "review", "done"], { message: "Status tidak valid." }).optional(),
-  order: z.coerce.number().int().min(0).optional(),
-  assigneeId: opsional("Penerima tugas", 64),
-  title: z.string().trim().min(1, "Judul tugas tidak boleh kosong.").max(200).optional(),
-  description: opsional("Deskripsi", 5000),
-  documentId: opsional("Dokumen", 64),
-  dueDate: z
-    .string()
-    .refine((v) => v === "" || !Number.isNaN(new Date(v).getTime()), "Tanggal tenggat tidak valid.")
-    .nullish(),
-});
+export const taskUpdateSchema = z
+  .object({
+    status: z.enum(["todo", "in_progress", "review", "done"], { message: "Status tidak valid." }).optional(),
+    order: z.coerce.number().int().min(0).optional(),
+    assigneeId: opsional("Penerima tugas", 64),
+    title: z.string().trim().min(1, "Judul tugas tidak boleh kosong.").max(200).optional(),
+    description: opsional("Deskripsi", 5000),
+    documentId: opsional("Dokumen", 64),
+    dueDate: z
+      .string()
+      .refine((v) => v === "" || !Number.isNaN(new Date(v).getTime()), "Tanggal tenggat tidak valid.")
+      .nullish(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "Tidak ada perubahan yang dikirim.",
+  });
 
 export const memberAddSchema = z.object({
   name: wajib("Nama", 120),

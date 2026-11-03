@@ -47,6 +47,9 @@ export function chunkDocument(content: string): { content: string; keywords: str
       if (cut > start + CHUNK_SIZE * 0.6) end = cut + 1;
     }
     chunks.push(clean.slice(start, end).trim());
+    // Chunk terakhir sudah mencakup sisa dokumen; berhenti agar tidak
+    // menghasilkan ratusan potongan kecil dari overlap di ujung teks.
+    if (end >= clean.length) break;
     start = Math.max(end - CHUNK_OVERLAP, start + 1);
   }
 

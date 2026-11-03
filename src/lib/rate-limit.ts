@@ -42,6 +42,7 @@ function redisConfig() {
 }
 
 function memoryHit(key: string, max: number, windowSec: number): RateLimitResult {
+  cleanupMemory();
   const now = Date.now();
   const entry = memory.get(key);
   if (!entry || entry.reset <= now) {

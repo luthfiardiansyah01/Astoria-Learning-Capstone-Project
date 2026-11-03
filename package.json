@@ -11,6 +11,12 @@
     "build:prod": "bun scripts/vercel-build.ts",
     "start": "next start -p 3000",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit",
+    "test:coverage": "vitest run tests/unit --coverage",
+    "verify": "bun run typecheck && bun run lint && bun run test:unit",
     "db:push": "prisma db push --accept-data-loss",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -92,14 +98,20 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/bcryptjs": "^3.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^5.1.0",
     "bun-types": "^1.3.4",
     "eslint": "^9",
     "eslint-config-next": "^16.4.3",
+    "jsdom": "^30.1.3",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.1.0"
   }
 }
