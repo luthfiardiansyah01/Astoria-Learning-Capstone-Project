@@ -40,12 +40,12 @@ export async function POST(req: NextRequest) {
     const { name } = parsed.data;
 
     const plan = effectivePlan(user);
-    const teamCount = await db.teamMember.count({ where: { userId: user.id } });
+    const teamCount = await db.teamMember.count({ where: { userId: user.id, role: "owner" } });
     const maxTeams = PLAN_LIMITS[plan].maxTeams;
     if (teamCount >= maxTeams) {
       return NextResponse.json(
         {
-          error: `Batas paket ${plan === "premium" ? "Premium" : "Free"}: maksimal ${maxTeams} tim. Upgrade untuk membuat lebih banyak tim.`,
+          error: `Batas paket ${plan === "premium" ? "Premium" : "Free"}: maksimal ${maxTeams} tim yang bisa kamu buat. Upgrade untuk membuat lebih banyak tim.`,
         },
         { status: 403 }
       );

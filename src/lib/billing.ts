@@ -7,6 +7,7 @@
 import crypto from "crypto";
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
+import { createNotification } from "./collab-notify";
 
 export type BillingProvider = "midtrans" | "xendit" | "none";
 export type PaymentStatus = "pending" | "paid" | "failed" | "expired" | "refunded";
@@ -81,7 +82,12 @@ export function billingConfig(): BillingConfig {
     price: PREMIUM_PRICE_IDR,
     durationDays: PREMIUM_DURATION_DAYS,
     currency: "IDR",
-    requiredEnv: provider === "xendit" ? xenditEnv : midtransEnv,
+    requiredEnv:
+      provider === "xendit"
+        ? xenditEnv
+        : provider === "midtrans"
+          ? midtransEnv
+          : [...midtransEnv, ...xenditEnv],
     webhookUrls: {
       midtrans: `${appUrl()}/api/billing/webhook/midtrans`,
       xendit: `${appUrl()}/api/billing/webhook/xendit`,
@@ -201,7 +207,6 @@ async function createXenditCheckout(input: CheckoutInput): Promise<CheckoutResul
         given_names: input.userName.slice(0, 50),
         ...(input.userEmail ? { email: input.userEmail } : {}),
       },
-      customer_notification: { invoice_created: [] },
       items: [
         {
           name: `Premium ${PREMIUM_DURATION_DAYS} hari`,
@@ -327,7 +332,7 @@ export async function settlePayment(input: {
   rawPayload?: unknown;
   amount?: number;
 }) {
-  return db.$transaction(async (tx) => {
+  const result = await db.$transaction(async (tx) => {
     const payment = await tx.payment.findUnique({ where: { orderId: input.orderId } });
     if (!payment) return { ok: false as const, reason: "not_found" as const };
 
@@ -366,6 +371,17 @@ export async function settlePayment(input: {
 
     return { ok: true as const, alreadyPaid: false, payment: updated, expiresAt };
   });
+
+  if (result.ok && !result.alreadyPaid && result.expiresAt) {
+    await createNotification(result.payment.userId, {
+      type: "plan_updated",
+      title: "Premium aktif 🎉",
+      body: `Pembayaran diterima. Premium aktif sampai ${result.expiresAt.toLocaleDateString("id-ID")}.`,
+      link: "/",
+    }).catch(() => null);
+  }
+
+  return result;
 }
 
 /** Catat status gagal/expired tanpa mengubah paket pengguna. */

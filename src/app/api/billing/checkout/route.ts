@@ -5,6 +5,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";
 import { effectivePlan } from "@/lib/plans";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import {
   BillingNotConfiguredError,
   PREMIUM_DURATION_DAYS,
@@ -31,13 +32,11 @@ export async function POST() {
 
   const provider = billingProvider();
   if (provider === "none") {
-    const config = billingConfig();
     return NextResponse.json(
       {
         error:
-          "Pembayaran otomatis belum dikonfigurasi. Admin dapat mengaktifkan Premium secara manual dari panel admin.",
+          "Pembayaran otomatis belum tersedia. Admin dapat mengaktifkan Premium secara manual.",
         code: "billing_not_configured",
-        config,
       },
       { status: 503 }
     );
@@ -45,6 +44,44 @@ export async function POST() {
 
   const orderId = newOrderId();
   const amount = PREMIUM_PRICE_IDR;
+
+  // Cegah spam invoice: maksimal 5 percobaan checkout per jam.
+  const limited = await rateLimit("billing-checkout", user.id, 5, 3600);
+  if (!limited.ok) return tooManyRequests(limited);
+
+  // Bersihkan transaksi pending yang sudah lama, lalu pakai ulang invoice yang
+  // masih muda agar klik ganda tidak membuat tagihan baru.
+  const now = new Date();
+  await db.payment.updateMany({
+    where: {
+      userId: user.id,
+      status: "pending",
+      createdAt: { lt: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+    },
+    data: { status: "expired" },
+  });
+
+  const existing = await db.payment.findFirst({
+    where: {
+      userId: user.id,
+      status: "pending",
+      provider,
+      checkoutUrl: { not: null },
+      createdAt: { gte: new Date(now.getTime() - 30 * 60 * 1000) },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (existing?.checkoutUrl) {
+    return NextResponse.json({
+      orderId: existing.orderId,
+      provider,
+      checkoutUrl: existing.checkoutUrl,
+      amount: existing.amount,
+      durationDays: existing.durationDays,
+      reused: true,
+    });
+  }
 
   const payment = await db.payment.create({
     data: {
@@ -85,7 +122,7 @@ export async function POST() {
     if (e instanceof BillingNotConfiguredError) {
       await db.payment.delete({ where: { id: payment.id } }).catch(() => null);
       return NextResponse.json(
-        { error: e.message, code: e.code, config: billingConfig() },
+        { error: e.message, code: e.code },
         { status: 503 }
       );
     }
@@ -107,9 +144,13 @@ export async function POST() {
 export async function GET() {
   const auth = await requireUser();
   if (auth.res) return auth.res;
+  const { provider, configured, price, durationDays } = billingConfig();
 
   return NextResponse.json({
     plan: effectivePlan(auth.user),
-    config: billingConfig(),
+    provider,
+    configured,
+    price,
+    durationDays,
   });
 }

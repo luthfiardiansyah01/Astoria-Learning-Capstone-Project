@@ -31,8 +31,11 @@ export async function PATCH(
   }
 
   const { plan, days, resetTrial } = parsed.data;
+  const now = new Date();
+  const currentExpiry = target.planExpiresAt;
+  const base = currentExpiry && currentExpiry.getTime() > now.getTime() ? currentExpiry : now;
   const planExpiresAt =
-    plan === "premium" ? (days && days > 0 ? new Date(Date.now() + days * DAY_MS) : null) : null;
+    plan === "premium" ? (days && days > 0 ? new Date(base.getTime() + days * DAY_MS) : null) : null;
 
   const updated = await db.user.update({
     where: { id: userId },

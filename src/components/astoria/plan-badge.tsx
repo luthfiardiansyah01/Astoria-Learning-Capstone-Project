@@ -28,8 +28,6 @@ interface BillingConfigData {
   configured: boolean;
   price: number;
   durationDays: number;
-  requiredEnv: { key: string; set: boolean; hint: string }[];
-  webhookUrls: { midtrans: string; xendit: string };
 }
 
 interface PaymentRow {
@@ -88,6 +86,8 @@ export function PlanBadge({ className = "" }: { className?: string }) {
       return res.json();
     },
     staleTime: 60_000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
   });
 
   const { data: billing } = useQuery<BillingConfigData>({
@@ -219,7 +219,7 @@ export function PlanBadge({ className = "" }: { className?: string }) {
                 <li>AI {PLAN_LIMITS.free.aiPerDay}/hari</li>
                 <li>Dokumen {PLAN_LIMITS.free.maxDocChars.toLocaleString("id-ID")} karakter</li>
                 <li>PDF maks 2 MB</li>
-                <li>1 tim, 2 proyek, 10 tugas</li>
+                <li>1 tim dibuat, 2 proyek, 10 tugas</li>
                 <li>Maks 3 anggota tim</li>
               </ul>
             </div>
@@ -235,7 +235,7 @@ export function PlanBadge({ className = "" }: { className?: string }) {
                 <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> AI {PLAN_LIMITS.premium.aiPerDay}/hari</li>
                 <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> Dokumen {PLAN_LIMITS.premium.maxDocChars.toLocaleString("id-ID")} karakter</li>
                 <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> PDF maks 5 MB</li>
-                <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> 10 tim, 10 proyek, 100 tugas</li>
+                <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> 10 tim dibuat, 10 proyek, 100 tugas</li>
                 <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> Maks 30 anggota tim</li>
               </ul>
             </div>
@@ -250,9 +250,9 @@ export function PlanBadge({ className = "" }: { className?: string }) {
               </p>
             ) : (
               <p className="text-muted-foreground">
-                <strong className="text-foreground">Pembayaran otomatis belum dikonfigurasi.</strong>{" "}
-                Admin perlu mengisi kredensial Midtrans/Xendit. Sementara itu, aktivasi Premium
-                dilakukan manual oleh admin.
+                <strong className="text-foreground">Pembayaran otomatis belum tersedia.</strong>{" "}
+                Untuk mengaktifkan Premium, ajukan ke admin. Aktivasi dilakukan manual setelah
+                pembayaran dikonfirmasi.
               </p>
             )}
             {billingError && <p className="mt-1.5 text-destructive">{billingError}</p>}

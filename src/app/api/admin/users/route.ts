@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     where.AND = [{ OR: [{ plan: { not: "premium" } }, { planExpiresAt: { lte: now } }] }];
   }
 
-  const [total, users, planRows] = await Promise.all([
+  const [total, users, totalUsers, premiumUsers, trialUsed] = await Promise.all([
     db.user.count({ where }),
     db.user.findMany({
       where,
@@ -59,15 +59,24 @@ export async function GET(req: NextRequest) {
         _count: { select: { documents: true, teamMemberships: true, payments: true } },
       },
     }),
-    db.user.findMany({ select: { role: true, plan: true, planExpiresAt: true, trialUsedAt: true } }),
+    db.user.count(),
+    db.user.count({
+      where: {
+        OR: [
+          { role: "admin" },
+          { role: { not: "admin" }, plan: "premium", OR: [{ planExpiresAt: null }, { planExpiresAt: { gt: now } }] },
+        ],
+      },
+    }),
+    db.user.count({ where: { trialUsedAt: { not: null } } }),
   ]);
 
-  const stats = { total: planRows.length, free: 0, premium: 0, trialUsed: 0 };
-  for (const row of planRows) {
-    if (effectivePlan(row) === "premium") stats.premium += 1;
-    else stats.free += 1;
-    if (row.trialUsedAt) stats.trialUsed += 1;
-  }
+  const stats = {
+    total: totalUsers,
+    free: totalUsers - premiumUsers,
+    premium: premiumUsers,
+    trialUsed,
+  };
 
   return NextResponse.json({
     users: users.map((u) => ({ ...u, effectivePlan: effectivePlan(u) })),

@@ -1,5 +1,5 @@
 // GET  /api/plan — paket aktif, limit, dan status trial.
-// POST /api/plan/trial — aktifkan trial Premium 7 hari (sekali per akun, tanpa pembayaran).
+// POST /api/plan — aktifkan trial Premium 7 hari (sekali per akun, tanpa pembayaran).
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";

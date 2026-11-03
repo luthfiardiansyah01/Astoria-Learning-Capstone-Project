@@ -6,7 +6,8 @@ import { getCurrentUser } from "@/lib/current-user";
 import { assertTeamMember, ForbiddenError } from "@/lib/collab";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { projectCreateSchema, readBody } from "@/lib/validation";
-import { effectivePlan, PLAN_LIMITS } from "@/lib/plans";
+import { PLAN_LIMITS } from "@/lib/plans";
+import { teamOwnerPlan } from "@/lib/team-plan";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,13 +19,13 @@ export async function POST(req: NextRequest) {
     const { teamId, name, description } = parsed.data;
     await assertTeamMember(user.id, teamId);
 
-    const plan = effectivePlan(user);
+    const plan = await teamOwnerPlan(teamId, user);
     const projectCount = await db.project.count({ where: { teamId } });
     const maxProjects = PLAN_LIMITS[plan].maxProjectsPerTeam;
     if (projectCount >= maxProjects) {
       return NextResponse.json(
         {
-          error: `Batas paket ${plan === "premium" ? "Premium" : "Free"}: maksimal ${maxProjects} proyek per tim. Upgrade untuk menambah proyek.`,
+          error: `Batas paket tim (${plan === "premium" ? "Premium" : "Free"}): maksimal ${maxProjects} proyek per tim. Upgrade paket owner untuk menambah proyek.`,
         },
         { status: 403 }
       );
