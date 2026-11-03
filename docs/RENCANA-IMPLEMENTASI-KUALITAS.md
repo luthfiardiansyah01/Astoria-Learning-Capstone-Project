@@ -9,9 +9,9 @@ Dokumen ini melengkapi `docs/RENCANA-IMPLEMENTASI.md` (kesiapan produksi). Fokus
 | Fase 0 — Fondasi tooling | **Selesai** | `vitest.config.mts`, `tests/setup.ts`, script `typecheck`/`test`/`test:unit`/`test:coverage`/`verify` |
 | Fase 1 — Standar tipe & lint | **Selesai (gelombang 1)** | `noImplicitAny: true`, `reactStrictMode: true`, aturan `prefer-const`, `no-unused-vars`, `no-empty`, `no-unreachable`, `no-redeclare`, `no-case-declarations` aktif; `eslint .` bersih |
 | Fase 2 — Unit test logika murni | **Selesai** | 132 test di `tests/unit`, 8 file; coverage 76% statement / 78% baris / 78% fungsi / 66% cabang |
-| Fase 3 — Integration test API | Belum | Butuh database uji dan ekstraksi service |
+| Fase 3 — Integration test API | **Selesai** | 107 test di `tests/integration` dengan PostgreSQL uji (`db-test`); coverage API 76% baris / 71% statement |
 | Fase 4 — E2E Playwright | Belum | Butuh mock AI |
-| Fase 5 — CI | **Sebagian** | `.github/workflows/ci.yml` menjalankan typecheck, lint, unit test + coverage, dan build; integration/E2E belum |
+| Fase 5 — CI | **Sebagian** | `.github/workflows/ci.yml` menjalankan typecheck, lint, unit test + coverage, integration test + coverage, dan build; E2E belum |
 | Fase 6 — Observability & pembersihan | Belum | Logger, error boundary, dan aturan `no-console` belum |
 
 
