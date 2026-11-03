@@ -1,7 +1,7 @@
 // SOBAT ADI — halaman utama (single-page app dengan 5 view)
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type ElementType } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -40,12 +40,60 @@ const NAV: { key: ViewKey; label: string; icon: React.ElementType }[] = [
 
 const XP_LEVELS_CLIENT = XP_LEVELS;
 
+function NavPills({
+  items,
+  view,
+  onSelect,
+  reduceMotion,
+  layoutId,
+  className = "",
+}: {
+  items: { key: ViewKey; label: string; icon: ElementType }[];
+  view: ViewKey;
+  onSelect: (key: ViewKey) => void;
+  reduceMotion: boolean | null;
+  layoutId: string;
+  className?: string;
+}) {
+  return (
+    <nav
+      className={`items-center gap-1 rounded-full border border-border/70 bg-muted/40 p-1 ${className}`}
+      aria-label="Navigasi utama"
+    >
+      {items.map((n) => (
+        <motion.button
+          key={n.key}
+          onClick={() => onSelect(n.key)}
+          whileTap={reduceMotion ? undefined : { scale: 0.96 }}
+          className={`relative isolate flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors ${
+            view === n.key
+              ? "text-primary-foreground"
+              : "text-muted-foreground hover:bg-background/70 hover:text-foreground"
+          }`}
+          aria-current={view === n.key ? "page" : undefined}
+        >
+          {view === n.key && (
+            <motion.span
+              layoutId={layoutId}
+              className="absolute inset-0 -z-10 rounded-full bg-primary shadow-sm"
+              transition={{ type: "spring", stiffness: 420, damping: 34 }}
+            />
+          )}
+          <n.icon className="h-3.5 w-3.5" />
+          <span>{n.label}</span>
+        </motion.button>
+      ))}
+    </nav>
+  );
+}
+
 export default function AstoriaPage() {
   const { view, setView, stats } = useAstoria();
   const reduceMotion = useReducedMotion();
   const router = useRouter();
   const { data: session, status } = useSession();
   const isAdmin = session?.user?.role === "admin";
+  const navItems = NAV.filter((n) => n.key !== "admin" || isAdmin);
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
@@ -73,73 +121,61 @@ export default function AstoriaPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+      <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
         <div className="mx-auto max-w-6xl px-4">
-          <div className="flex h-16 items-center justify-between gap-3">
+          <div className="flex h-16 items-center gap-3">
             {/* Logo */}
             <button
               onClick={() => setView("beranda")}
-              className="flex items-center gap-2.5 shrink-0"
+              className="flex shrink-0 items-center gap-2.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="SOBAT ADI — kembali ke beranda"
             >
-              <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 p-2">
+              <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 p-2 shadow-sm ring-1 ring-inset ring-white/20">
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
-              <div className="hidden sm:block text-left">
-                <p className="font-bold leading-none tracking-tight">SOBAT ADI</p>
-                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+              <div className="hidden text-left sm:block">
+                <p className="text-sm font-bold leading-none tracking-tight">SOBAT ADI</p>
+                <p className="mt-1 text-[9px] font-semibold uppercase leading-none tracking-[0.18em] text-primary/75">
                   Belajar Tanpa Jarak
                 </p>
               </div>
             </button>
 
-            {/* Navigasi */}
-            <nav className="flex items-center gap-1 overflow-x-auto astoria-scroll" aria-label="Navigasi utama">
-              {NAV.filter((n) => n.key !== "admin" || isAdmin).map((n) => (
-                <motion.button
-                  key={n.key}
-                  onClick={() => setView(n.key)}
-                  whileTap={reduceMotion ? undefined : { scale: 0.96 }}
-                  className={`relative isolate flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors whitespace-nowrap ${
-                    view === n.key
-                      ? "text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                  aria-current={view === n.key ? "page" : undefined}
-                >
-                  {view === n.key && (
-                    <motion.span
-                      layoutId="nav-active-pill"
-                      className="absolute inset-0 -z-10 rounded-full bg-primary"
-                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                    />
-                  )}
-                  <n.icon className="h-3.5 w-3.5" />
-                  <span className="hidden xs:inline sm:inline">{n.label}</span>
-                </motion.button>
-              ))}
-            </nav>
+            {/* Navigasi desktop */}
+            <div className="mx-auto hidden lg:block">
+              <NavPills
+                items={navItems}
+                view={view}
+                onSelect={setView}
+                reduceMotion={reduceMotion}
+                layoutId="nav-pill-desktop"
+                className="flex"
+              />
+            </div>
 
-            {/* Statistik ringkas: streak + XP */}
-            <div className="hidden md:flex items-center gap-3 shrink-0">
+            {/* Aksi kanan */}
+            <div className="ml-auto flex shrink-0 items-center gap-1.5 lg:ml-0">
               <PlanBadge />
               <AiQuotaBadge />
+
               <Link
                 href="/collab"
-                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors whitespace-nowrap"
+                className="hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex"
               >
                 <Users className="h-3.5 w-3.5" />
-                Collab
+                <span className="hidden md:inline">Collab</span>
               </Link>
+
               <div
-                className="flex items-center gap-1.5 text-sm font-medium text-orange-600 dark:text-orange-400"
+                className="hidden items-center gap-1 rounded-full px-2 py-1.5 text-[13px] font-medium text-orange-600 md:flex dark:text-orange-400"
                 title={`Streak belajar ${stats?.streak ?? 0} hari`}
               >
                 <Flame className="h-4 w-4" />
                 {stats?.streak ?? 0}
               </div>
-              <div className="w-36" title={`${xp} XP — Level ${level}`}>
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+
+              <div className="hidden w-28 xl:block" title={`${xp} XP — Level ${level}`}>
+                <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Zap className="h-3 w-3 text-amber-600 dark:text-amber-400" /> {xp} XP
                   </span>
@@ -147,17 +183,31 @@ export default function AstoriaPage() {
                 </div>
                 <Progress value={pct} className="h-1.5" />
               </div>
-            </div>
 
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors whitespace-nowrap shrink-0"
-              aria-label="Keluar"
-              title={`Keluar (${session?.user?.name ?? ""})`}
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Keluar</span>
-            </button>
+              <span className="mx-0.5 hidden h-5 w-px bg-border md:block" aria-hidden />
+
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="Keluar"
+                title={`Keluar (${session?.user?.name ?? ""})`}
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Keluar</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Navigasi mobile/tablet */}
+          <div className="pb-2 lg:hidden">
+            <NavPills
+              items={navItems}
+              view={view}
+              onSelect={setView}
+              reduceMotion={reduceMotion}
+              layoutId="nav-pill-mobile"
+              className="flex w-fit max-w-full overflow-x-auto astoria-scroll"
+            />
           </div>
         </div>
       </header>
