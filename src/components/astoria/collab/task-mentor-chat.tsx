@@ -11,6 +11,7 @@ import { TEAM_BADGE_META } from "@/lib/collab-badge-meta";
 import { RealtimeClock } from "../realtime-clock";
 import { ElapsedTimer } from "../elapsed-timer";
 import { AiQuotaBadge } from "../ai-quota-badge";
+import { PlanBadge } from "../plan-badge";
 
 interface TaskChatMessage {
   id: string;
@@ -81,6 +82,7 @@ export function TaskMentorChat({ taskId }: { taskId: string }) {
           <Sparkles className="h-4 w-4 text-primary" /> Mentor AI — Task Ini
         </span>
         <span className="flex items-center gap-1.5">
+          <PlanBadge />
           <AiQuotaBadge />
           <RealtimeClock className="text-[10px] font-normal text-muted-foreground" />
         </span>

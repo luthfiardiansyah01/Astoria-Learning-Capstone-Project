@@ -12,6 +12,7 @@ import { checkTeamBadges } from "@/lib/collab-badges";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { preprocessUserInput } from "@/lib/fallback";
 import { guardAi } from "@/lib/rate-limit";
+import { effectivePlan } from "@/lib/plans";
 import { mentorQuestionSchema, readBody } from "@/lib/validation";
 
 export const maxDuration = 60;
@@ -53,7 +54,7 @@ export async function POST(
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Belum masuk." }, { status: 401 });
 
-    const limited = await guardAi(user.id);
+    const limited = await guardAi(user.id, effectivePlan(user));
     if (limited) return limited;
 
     const { taskId } = await params;

@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/current-user";
 import { assertTeamMember, logActivity, ForbiddenError } from "@/lib/collab";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { readBody, taskCreateSchema } from "@/lib/validation";
+import { effectivePlan, PLAN_LIMITS } from "@/lib/plans";
 
 export async function POST(
   req: NextRequest,
@@ -19,6 +20,18 @@ export async function POST(
     const project = await db.project.findUnique({ where: { id: projectId } });
     if (!project) return NextResponse.json({ error: "Proyek tidak ditemukan." }, { status: 404 });
     await assertTeamMember(user.id, project.teamId);
+
+    const plan = effectivePlan(user);
+    const taskCount = await db.task.count({ where: { projectId } });
+    const maxTasks = PLAN_LIMITS[plan].maxTasksPerProject;
+    if (taskCount >= maxTasks) {
+      return NextResponse.json(
+        {
+          error: `Batas paket ${plan === "premium" ? "Premium" : "Free"}: maksimal ${maxTasks} tugas per proyek. Upgrade untuk menambah tugas.`,
+        },
+        { status: 403 }
+      );
+    }
 
     const parsed = await readBody(req, taskCreateSchema);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });

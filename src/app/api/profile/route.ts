@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";
 import { BADGE_META, xpForNextLevel } from "@/lib/gamif";
+import { effectivePlan } from "@/lib/plans";
 
 export async function GET() {
   try {
@@ -34,6 +35,9 @@ export async function GET() {
       profile: {
         nama: student.name,
         role: student.role,
+        plan: effectivePlan(student),
+        planExpiresAt: student.planExpiresAt,
+        trialUsedAt: student.trialUsedAt,
         xp: student.xp,
         level: student.level,
         streak: student.streakDays,

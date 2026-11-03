@@ -20,6 +20,7 @@ import {
 import { updateStreak } from "@/lib/user";
 import { requireUser, canUseDocument, forbidden } from "@/lib/current-user";
 import { guardAi } from "@/lib/rate-limit";
+import { effectivePlan } from "@/lib/plans";
 import { quizSubmitSchema, readBody } from "@/lib/validation";
 
 export const maxDuration = 60;
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const student = auth.user;
-    const limited = await guardAi(student.id);
+    const limited = await guardAi(student.id, effectivePlan(student));
     if (limited) return limited;
     const parsed = await readBody(req, quizSubmitSchema);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });

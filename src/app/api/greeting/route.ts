@@ -8,6 +8,7 @@ import { chatComplete } from "@/lib/ai";
 import { formatLastActive, wibNow } from "@/lib/user";
 import { requireUser } from "@/lib/current-user";
 import { guardAi } from "@/lib/rate-limit";
+import { effectivePlan } from "@/lib/plans";
 
 export const maxDuration = 60;
 
@@ -33,7 +34,7 @@ export async function GET() {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const student = auth.user;
-    const limited = await guardAi(student.id);
+    const limited = await guardAi(student.id, effectivePlan(student));
     if (limited) return limited;
     const { clock, label } = wibNow();
 

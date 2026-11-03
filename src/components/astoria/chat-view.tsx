@@ -27,6 +27,7 @@ import { Markdown } from "./markdown";
 import { RealtimeClock } from "./realtime-clock";
 import { ElapsedTimer } from "./elapsed-timer";
 import { AiQuotaBadge } from "./ai-quota-badge";
+import { PlanBadge } from "./plan-badge";
 
 interface DocItem {
   id: string;
@@ -262,6 +263,7 @@ export function ChatView() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <PlanBadge className="hidden sm:inline-flex" />
             <AiQuotaBadge className="hidden sm:inline-flex" />
             <RealtimeClock className="hidden md:inline text-[11px] text-muted-foreground" />
             {activeDocumentId && messages.length > 0 && (

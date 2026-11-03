@@ -3,6 +3,7 @@
 // Catatan: memori tidak dibagi antar-instance serverless, jadi hanya untuk pengembangan.
 
 import { NextResponse } from "next/server";
+import { PLAN_LIMITS, type Plan } from "./plans";
 
 export const LIMITS = {
   register: { max: 5, windowSec: 3600 },
@@ -191,11 +192,12 @@ export async function getRateLimitStatus(
 }
 
 /** Batas gabungan untuk rute AI: per menit dan per hari. Null berarti boleh lanjut. */
-export async function guardAi(userId: string): Promise<NextResponse | null> {
-  const minute = await rateLimit("ai-minute", userId, LIMITS.aiPerMinute.max, LIMITS.aiPerMinute.windowSec);
+export async function guardAi(userId: string, plan: Plan = "free"): Promise<NextResponse | null> {
+  const limits = PLAN_LIMITS[plan];
+  const minute = await rateLimit("ai-minute", userId, limits.aiPerMinute, 60);
   if (!minute.ok) return tooManyRequests(minute);
 
-  const day = await rateLimit("ai-day", userId, LIMITS.aiPerDay.max, LIMITS.aiPerDay.windowSec);
+  const day = await rateLimit("ai-day", userId, limits.aiPerDay, 86400);
   if (!day.ok) return tooManyRequests(day);
 
   return null;

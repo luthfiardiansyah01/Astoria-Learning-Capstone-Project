@@ -14,6 +14,7 @@ import { chatComplete, isAiQuotaError, aiQuotaMessage, type ChatMessageForAI } f
 import { FALLBACK_RESPONSES, isOutOfContext, preprocessUserInput } from "@/lib/fallback";
 import { requireUser, canUseDocument, forbidden } from "@/lib/current-user";
 import { guardAi } from "@/lib/rate-limit";
+import { effectivePlan } from "@/lib/plans";
 import { chatSchema, readBody } from "@/lib/validation";
 
 // Model gratis bisa lambat; 60 dtk adalah batas aman paket Hobby Vercel.
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const user = auth.user;
-    const limited = await guardAi(user.id);
+    const limited = await guardAi(user.id, effectivePlan(user));
     if (limited) return limited;
     const parsed = await readBody(req, chatSchema);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });

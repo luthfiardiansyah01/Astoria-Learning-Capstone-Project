@@ -2,7 +2,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   UploadCloud,
@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAstoria } from "./store";
+import { PLAN_LIMITS } from "@/lib/plans";
 
 interface UploadResult {
   document: {
@@ -55,14 +56,20 @@ interface UploadResult {
   };
 }
 
-const MAX_TEXT_BYTES = 1 * 1024 * 1024;
-const MAX_PDF_BYTES = 5 * 1024 * 1024;
-const MAX_CONTENT_CHARS = 20_000;
-
 export function UploadView() {
   const { toast } = useToast();
   const { setActiveDocument, setView } = useAstoria();
   const queryClient = useQueryClient();
+  const { data: planData } = useQuery<{ plan: "free" | "premium"; limits: typeof PLAN_LIMITS.free }>({
+    queryKey: ["plan"],
+    queryFn: async () => {
+      const res = await fetch("/api/plan");
+      if (!res.ok) throw new Error("Gagal memuat paket.");
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
+  const limits = planData?.limits ?? PLAN_LIMITS.free;
   const [fileName, setFileName] = useState("");
   const [content, setContent] = useState("");
   const [processing, setProcessing] = useState(false);
@@ -74,7 +81,7 @@ export function UploadView() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const charCount = content.length;
-  const tooLong = charCount > MAX_CONTENT_CHARS;
+  const tooLong = charCount > limits.maxDocChars;
 
   const readFile = async (file: File) => {
     const lower = file.name.toLowerCase();
@@ -93,11 +100,13 @@ export function UploadView() {
       return;
     }
 
-    const maxBytes = isPdf ? MAX_PDF_BYTES : MAX_TEXT_BYTES;
+    const maxBytes = isPdf ? limits.maxPdfBytes : limits.maxTextBytes;
     if (file.size > maxBytes) {
       toast({
         title: "File terlalu besar",
-        description: isPdf ? "Maksimal 5 MB untuk PDF." : "Maksimal 1 MB untuk file teks.",
+        description: isPdf
+          ? `Maksimal ${Math.round(limits.maxPdfBytes / (1024 * 1024))} MB untuk PDF.`
+          : `Maksimal ${Math.round(limits.maxTextBytes / (1024 * 1024))} MB untuk file teks.`,
         variant: "destructive",
       });
       return;
@@ -188,7 +197,7 @@ export function UploadView() {
     if (tooLong) {
       toast({
         title: "Dokumen terlalu panjang",
-        description: `Maksimal ${MAX_CONTENT_CHARS.toLocaleString("id-ID")} karakter. Potong per bab atau unggah sebagian.`,
+        description: `Maksimal ${limits.maxDocChars.toLocaleString("id-ID")} karakter. Potong per bab atau unggah sebagian.`,
         variant: "destructive",
       });
       return;
@@ -314,7 +323,7 @@ export function UploadView() {
                   <UploadCloud className="h-10 w-10 mx-auto text-muted-foreground/60" />
                   <p className="mt-3 font-medium">Tarik & lepas file, atau klik untuk memilih</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    PDF, TXT, atau MD · PDF maks 5 MB, teks maks 1 MB
+                    PDF, TXT, atau MD · PDF maks {Math.round(limits.maxPdfBytes / (1024 * 1024))} MB, isi maks {limits.maxDocChars.toLocaleString("id-ID")} karakter
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     PDF harus berbasis teks (bukan hasil scan)
@@ -372,7 +381,7 @@ export function UploadView() {
                     tooLong ? "text-destructive font-semibold" : "text-muted-foreground"
                   }`}
                 >
-                  {charCount.toLocaleString("id-ID")} / {MAX_CONTENT_CHARS.toLocaleString("id-ID")} karakter
+                  {charCount.toLocaleString("id-ID")} / {limits.maxDocChars.toLocaleString("id-ID")} karakter
                 </span>
               </div>
               {tooLong && (

@@ -13,6 +13,9 @@ model User {
   id               String            @id @default(cuid())
   name             String
   role             String            @default("mahasiswa") // mahasiswa | admin
+  plan             String            @default("free") // free | premium
+  planExpiresAt    DateTime?
+  trialUsedAt      DateTime?
   email            String?           @unique
   passwordHash     String?
   xp               Int               @default(0)

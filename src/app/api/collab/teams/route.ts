@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/current-user";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { readBody, teamCreateSchema } from "@/lib/validation";
+import { effectivePlan, PLAN_LIMITS } from "@/lib/plans";
 
 export async function GET() {
   try {
@@ -37,6 +38,18 @@ export async function POST(req: NextRequest) {
     const parsed = await readBody(req, teamCreateSchema);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const { name } = parsed.data;
+
+    const plan = effectivePlan(user);
+    const teamCount = await db.teamMember.count({ where: { userId: user.id } });
+    const maxTeams = PLAN_LIMITS[plan].maxTeams;
+    if (teamCount >= maxTeams) {
+      return NextResponse.json(
+        {
+          error: `Batas paket ${plan === "premium" ? "Premium" : "Free"}: maksimal ${maxTeams} tim. Upgrade untuk membuat lebih banyak tim.`,
+        },
+        { status: 403 }
+      );
+    }
 
     const team = await db.team.create({
       data: {

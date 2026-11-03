@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { chunkDocument, countWords, MAX_DOC_LENGTH } from "@/lib/rag";
+import { chunkDocument, countWords } from "@/lib/rag";
 import { ensureChunkEmbeddings } from "@/lib/rag-semantic";
 import {
   DOC_PROCESSOR_PROMPT,
@@ -20,6 +20,7 @@ import { fallbackDocMetadata, fallbackModeration } from "@/lib/doc-fallback";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { requireUser } from "@/lib/current-user";
 import { guardAi, LIMITS, rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { effectivePlan, PLAN_LIMITS } from "@/lib/plans";
 import { documentUploadSchema, readBody } from "@/lib/validation";
 
 export const maxDuration = 60;
@@ -76,7 +77,8 @@ export async function POST(req: NextRequest) {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const student = auth.user;
-    const limited = await guardAi(student.id);
+    const plan = effectivePlan(student);
+    const limited = await guardAi(student.id, plan);
     if (limited) return limited;
     const uploadLimit = await rateLimit("upload", student.id, LIMITS.upload.max, LIMITS.upload.windowSec);
     if (!uploadLimit.ok) return tooManyRequests(uploadLimit);
@@ -85,9 +87,12 @@ export async function POST(req: NextRequest) {
     const fileName = parsed.data.fileName || "dokumen-tanpa-nama.txt";
     const content = parsed.data.content;
 
-    if (content.length > MAX_DOC_LENGTH) {
+    if (content.length > PLAN_LIMITS[plan].maxDocChars) {
       return NextResponse.json(
-        { error: FALLBACK_RESPONSES.doc_too_large, code: "doc_too_large" },
+        {
+          error: `Dokumen paket ${plan === "premium" ? "Premium" : "Free"} maksimal ${PLAN_LIMITS[plan].maxDocChars.toLocaleString("id-ID")} karakter.`,
+          code: "doc_too_large",
+        },
         { status: 413 }
       );
     }

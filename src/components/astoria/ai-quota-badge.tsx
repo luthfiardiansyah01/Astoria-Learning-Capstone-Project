@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
 interface Usage {
+  plan?: string;
   daily: { used: number; remaining: number; limit: number; resetAt: number };
 }
 
@@ -41,7 +42,7 @@ export function AiQuotaBadge({ className = "" }: { className?: string }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 320, damping: 24 }}
-      title={`Sisa kuota aplikasi: ${remaining}/${limit}. Kuota penyedia AI terpisah. Reset ${formatReset(resetAt)} WIB.`}
+      title={`Sisa kuota aplikasi (${data.plan === "premium" ? "Premium" : "Free"}): ${remaining}/${limit}. Kuota penyedia AI terpisah. Reset ${formatReset(resetAt)} WIB.`}
       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium tabular-nums ${
         empty
           ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300"

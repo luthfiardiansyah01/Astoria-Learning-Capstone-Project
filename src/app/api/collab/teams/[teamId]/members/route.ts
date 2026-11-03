@@ -8,6 +8,7 @@ import { assertTeamMember, logActivity, ForbiddenError } from "@/lib/collab";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { memberAddSchema, readBody } from "@/lib/validation";
 import { createNotification } from "@/lib/collab-notify";
+import { effectivePlan, PLAN_LIMITS } from "@/lib/plans";
 
 export async function POST(
   req: NextRequest,
@@ -51,6 +52,20 @@ export async function POST(
     const alreadyMember = await db.teamMember.findUnique({
       where: { teamId_userId: { teamId, userId: target.id } },
     });
+
+    if (!alreadyMember) {
+      const plan = effectivePlan(user);
+      const memberCount = await db.teamMember.count({ where: { teamId } });
+      const maxMembers = PLAN_LIMITS[plan].maxTeamMembers;
+      if (memberCount >= maxMembers) {
+        return NextResponse.json(
+          {
+            error: `Batas paket ${plan === "premium" ? "Premium" : "Free"}: maksimal ${maxMembers} anggota per tim. Upgrade untuk menambah anggota.`,
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     const member = await db.teamMember.upsert({
       where: { teamId_userId: { teamId, userId: target.id } },

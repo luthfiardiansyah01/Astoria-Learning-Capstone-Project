@@ -28,6 +28,7 @@ import { UploadView } from "@/components/astoria/upload-view";
 import { QuizView } from "@/components/astoria/quiz-view";
 import { AdminView } from "@/components/astoria/admin-view";
 import { AiQuotaBadge } from "@/components/astoria/ai-quota-badge";
+import { PlanBadge } from "@/components/astoria/plan-badge";
 
 const NAV: { key: ViewKey; label: string; icon: React.ElementType }[] = [
   { key: "beranda", label: "Beranda", icon: Home },
@@ -121,6 +122,7 @@ export default function AstoriaPage() {
 
             {/* Statistik ringkas: streak + XP */}
             <div className="hidden md:flex items-center gap-3 shrink-0">
+              <PlanBadge />
               <AiQuotaBadge />
               <Link
                 href="/collab"

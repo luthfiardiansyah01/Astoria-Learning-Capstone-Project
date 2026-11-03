@@ -8,6 +8,7 @@ import { retrieveRelevantChunks } from "@/lib/rag";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { requireUser, canUseDocument, forbidden } from "@/lib/current-user";
 import { guardAi } from "@/lib/rate-limit";
+import { effectivePlan } from "@/lib/plans";
 import { quizGenerateSchema, readBody } from "@/lib/validation";
 
 export const maxDuration = 60;
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   try {
     const auth = await requireUser();
     if (auth.res) return auth.res;
-    const limited = await guardAi(auth.user.id);
+    const limited = await guardAi(auth.user.id, effectivePlan(auth.user));
     if (limited) return limited;
     const parsed = await readBody(req, quizGenerateSchema);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
