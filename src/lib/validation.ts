@@ -121,7 +121,9 @@ export const adminPlanUpdateSchema = z.object({
 });
 
 export const adminPaymentUpdateSchema = z.object({
-  status: z.enum(["paid", "failed", "expired"], { message: "Status pembayaran tidak valid." }),
+  status: z.enum(["paid", "failed", "expired", "cancelled"], {
+    message: "Status pembayaran tidak valid.",
+  }),
 });
 
 type ReadResult<T> = { ok: true; data: T } | { ok: false; error: string };

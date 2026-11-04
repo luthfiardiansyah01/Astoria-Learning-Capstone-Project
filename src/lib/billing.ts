@@ -10,7 +10,7 @@ import { db } from "./db";
 import { createNotification } from "./collab-notify";
 
 export type BillingProvider = "midtrans" | "xendit" | "none";
-export type PaymentStatus = "pending" | "paid" | "failed" | "expired" | "refunded";
+export type PaymentStatus = "pending" | "paid" | "failed" | "expired" | "refunded" | "cancelled";
 
 export const PREMIUM_PRICE_IDR = Number(process.env.PAYMENT_PREMIUM_PRICE_IDR ?? 19_000);
 export const PREMIUM_DURATION_DAYS = Number(process.env.PAYMENT_PREMIUM_DAYS ?? 30);
@@ -401,6 +401,75 @@ export async function updatePaymentStatus(input: {
       rawPayload: jsonOrUndefined(input.rawPayload),
     },
   });
+}
+
+export interface CancelProviderResult {
+  cancelled: boolean;
+  warning?: string;
+}
+
+/**
+ * Batalkan transaksi di provider (best effort). Pembatalan lokal tetap
+ * dilakukan walaupun gateway menolak/tidak mendukung.
+ */
+export async function cancelProviderPayment(payment: {
+  provider: string;
+  orderId: string;
+  providerRef?: string | null;
+}): Promise<CancelProviderResult> {
+  try {
+    if (payment.provider === "midtrans" && process.env.MIDTRANS_SERVER_KEY) {
+      const base = midtransIsProduction()
+        ? "https://api.midtrans.com"
+        : "https://api.sandbox.midtrans.com";
+      const res = await fetch(
+        `${base}/v2/${encodeURIComponent(payment.orderId)}/cancel`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Basic ${Buffer.from(`${process.env.MIDTRANS_SERVER_KEY}:`).toString("base64")}`,
+          },
+          body: "{}",
+        }
+      );
+      if (!res.ok) {
+        const detail = (await res.text().catch(() => "")).slice(0, 300);
+        return { cancelled: false, warning: `Midtrans ${res.status}: ${detail || "gagal membatalkan"}` };
+      }
+      return { cancelled: true };
+    }
+
+    if (
+      payment.provider === "xendit" &&
+      process.env.XENDIT_SECRET_KEY &&
+      payment.providerRef
+    ) {
+      const base = process.env.XENDIT_INVOICE_URL?.replace(/\/$/, "") || "https://api.xendit.co";
+      const res = await fetch(`${base}/v2/invoices/${payment.providerRef}/expire`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Basic ${Buffer.from(`${process.env.XENDIT_SECRET_KEY}:`).toString("base64")}`,
+        },
+        body: "{}",
+      });
+      if (!res.ok) {
+        const detail = (await res.text().catch(() => "")).slice(0, 300);
+        return { cancelled: false, warning: `Xendit ${res.status}: ${detail || "gagal membatalkan"}` };
+      }
+      return { cancelled: true };
+    }
+
+    return { cancelled: false, warning: "Provider tidak mendukung pembatalan otomatis." };
+  } catch (e) {
+    return {
+      cancelled: false,
+      warning: e instanceof Error ? e.message : "Gagal menghubungi gateway.",
+    };
+  }
 }
 
 function jsonOrUndefined(value: unknown): Prisma.InputJsonValue | undefined {

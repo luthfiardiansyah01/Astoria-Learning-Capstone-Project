@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/current-user";
-import { settlePayment, updatePaymentStatus } from "@/lib/billing";
+import { cancelProviderPayment, settlePayment, updatePaymentStatus } from "@/lib/billing";
 import { adminPaymentUpdateSchema, readBody } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -32,10 +32,24 @@ export async function PATCH(
       return NextResponse.json({ error: result.reason }, { status: 400 });
     }
   } else {
+    const gateway =
+      parsed.data.status === "cancelled"
+        ? await cancelProviderPayment({
+            provider: payment.provider,
+            orderId: payment.orderId,
+            providerRef: payment.providerRef,
+          })
+        : null;
+
     await updatePaymentStatus({
       orderId: payment.orderId,
       status: parsed.data.status,
-      rawPayload: { manualUpdate: true, updatedBy: auth.user.id },
+      rawPayload: {
+        manualUpdate: true,
+        updatedBy: auth.user.id,
+        gatewayCancelled: gateway?.cancelled ?? null,
+        warning: gateway?.warning ?? null,
+      },
     });
   }
 

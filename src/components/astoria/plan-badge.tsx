@@ -36,7 +36,7 @@ interface PaymentRow {
   orderId: string;
   provider: string;
   amount: number;
-  status: "pending" | "paid" | "failed" | "expired" | "refunded";
+  status: "pending" | "paid" | "failed" | "expired" | "refunded" | "cancelled";
   durationDays: number;
   checkoutUrl?: string | null;
   paidAt?: string | null;
@@ -64,6 +64,7 @@ const STATUS_LABEL: Record<PaymentRow["status"], string> = {
   failed: "Gagal",
   expired: "Kedaluwarsa",
   refunded: "Dikembalikan",
+  cancelled: "Dibatalkan",
 };
 
 const STATUS_CLASS: Record<PaymentRow["status"], string> = {
@@ -72,6 +73,7 @@ const STATUS_CLASS: Record<PaymentRow["status"], string> = {
   failed: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
   expired: "bg-muted text-muted-foreground",
   refunded: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
+  cancelled: "bg-muted text-muted-foreground",
 };
 
 export function PlanBadge({ className = "" }: { className?: string }) {
@@ -170,6 +172,29 @@ export function PlanBadge({ className = "" }: { className?: string }) {
       toast.error(e.message);
     },
   });
+
+  const cancelMutation = useMutation({
+    mutationFn: async (paymentId: string) => {
+      const res = await fetch(`/api/billing/payments/${paymentId}`, { method: "DELETE" });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || "Gagal membatalkan pesanan.");
+      return body as { warning?: string };
+    },
+    onSuccess: (body) => {
+      refreshPlan();
+      toast.success(
+        body.warning
+          ? "Pesanan dibatalkan. Gateway tidak dapat dibatalkan otomatis."
+          : "Pesanan berhasil dibatalkan."
+      );
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const cancelPayment = (paymentId: string) => {
+    if (!window.confirm("Batalkan pesanan ini? Tautan pembayaran tidak akan digunakan lagi.")) return;
+    cancelMutation.mutate(paymentId);
+  };
 
   const plan = data?.plan ?? "free";
   const premium = plan === "premium";
@@ -316,6 +341,16 @@ export function PlanBadge({ className = "" }: { className?: string }) {
                           Lanjut <ExternalLink className="h-3 w-3" />
                         </a>
                       )}
+                      {p.status === "pending" && (
+                        <button
+                          type="button"
+                          onClick={() => cancelPayment(p.id)}
+                          disabled={cancelMutation.isPending}
+                          className="font-medium text-destructive hover:underline disabled:opacity-50"
+                        >
+                          Batalkan
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -361,6 +396,17 @@ export function PlanBadge({ className = "" }: { className?: string }) {
                 <a href={pendingPayment.checkoutUrl ?? "#"}>
                   <ExternalLink className="mr-1.5 h-4 w-4" /> Lanjutkan pembayaran
                 </a>
+              </Button>
+            )}
+
+            {configured && pendingPayment && (
+              <Button
+                variant="ghost"
+                className="text-destructive hover:text-destructive"
+                onClick={() => cancelPayment(pendingPayment.id)}
+                disabled={cancelMutation.isPending}
+              >
+                {cancelMutation.isPending ? "Membatalkan…" : "Batalkan pesanan"}
               </Button>
             )}
           </DialogFooter>

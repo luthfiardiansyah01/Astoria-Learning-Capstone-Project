@@ -39,7 +39,7 @@ export async function GET() {
     stats: {
       pending: counts.pending ?? 0,
       paid: counts.paid ?? 0,
-      failed: (counts.failed ?? 0) + (counts.expired ?? 0),
+      failed: (counts.failed ?? 0) + (counts.expired ?? 0) + (counts.cancelled ?? 0),
       revenue: paidSum._sum.amount ?? 0,
     },
     config: billingConfig(),

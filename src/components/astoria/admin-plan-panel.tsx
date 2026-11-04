@@ -65,7 +65,7 @@ interface AdminPayment {
   orderId: string;
   provider: string;
   amount: number;
-  status: "pending" | "paid" | "failed" | "expired" | "refunded";
+  status: "pending" | "paid" | "failed" | "expired" | "refunded" | "cancelled";
   durationDays: number;
   createdAt: string;
   paidAt: string | null;
@@ -85,6 +85,7 @@ const STATUS_LABEL: Record<AdminPayment["status"], string> = {
   failed: "Gagal",
   expired: "Kedaluwarsa",
   refunded: "Refund",
+  cancelled: "Dibatalkan",
 };
 
 function formatDate(value?: string | null) {
@@ -172,7 +173,7 @@ export function AdminPlanPanel() {
   });
 
   const paymentMutation = useMutation({
-    mutationFn: async (input: { paymentId: string; status: "paid" | "failed" }) => {
+    mutationFn: async (input: { paymentId: string; status: "paid" | "failed" | "cancelled" }) => {
       const res = await fetch(`/api/admin/payments/${input.paymentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -505,9 +506,9 @@ export function AdminPlanPanel() {
                           variant="ghost"
                           className="h-7 w-7 text-destructive"
                           disabled={busy}
-                          title="Batalkan"
-                          aria-label="Batalkan pembayaran"
-                          onClick={() => paymentMutation.mutate({ paymentId: p.id, status: "failed" })}
+                          title="Batalkan pesanan"
+                          aria-label="Batalkan pesanan"
+                          onClick={() => paymentMutation.mutate({ paymentId: p.id, status: "cancelled" })}
                         >
                           <XCircle className="h-4 w-4" />
                         </Button>
