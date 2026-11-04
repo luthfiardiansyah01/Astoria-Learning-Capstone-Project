@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 
 const testDb =
   process.env.TEST_DATABASE_URL ??
-  "postgresql://astoria:astoria@localhost:5433/astoria_test";
+  "postgresql://astoria:astoria@localhost:5434/astoria_test";
 
 export default defineConfig({
   resolve: {

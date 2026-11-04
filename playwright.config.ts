@@ -2,7 +2,7 @@ import { defineConfig } from "@playwright/test";
 
 const testDb =
   process.env.TEST_DATABASE_URL ??
-  "postgresql://astoria:astoria@localhost:5433/astoria_test";
+  "postgresql://astoria:astoria@localhost:5434/astoria_test";
 
 // Pastikan seluruh proses Playwright memakai database uji, bukan produksi.
 process.env.DATABASE_URL = testDb;

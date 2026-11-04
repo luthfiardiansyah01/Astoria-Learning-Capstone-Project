@@ -17,7 +17,7 @@ Dokumen ini melengkapi `docs/RENCANA-IMPLEMENTASI.md` (kesiapan produksi). Fokus
 ### Menjalankan E2E
 
 ```bash
-bun run db:test:up      # PostgreSQL uji di port 5433
+bun run db:test:up      # PostgreSQL uji di port 5434
 bun run build           # E2E memakai `next start`
 bun run test:e2e        # Playwright + mock AI (port 4010) + app (port 3100)
 ```

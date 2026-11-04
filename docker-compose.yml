@@ -28,7 +28,7 @@ services:
       POSTGRES_PASSWORD: astoria
       POSTGRES_DB: astoria_test
     ports:
-      - "5433:5432"
+      - "5434:5432"
     tmpfs:
       - /var/lib/postgresql/data
     healthcheck:
