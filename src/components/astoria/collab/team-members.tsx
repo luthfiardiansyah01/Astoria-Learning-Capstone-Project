@@ -143,7 +143,7 @@ export function TeamMembers({ teamId, members }: { teamId: string; members: Memb
             </ul>
           )}
         </div>
-        <Button type="submit" size="sm" variant="outline" disabled={mutation.isPending} className="gap-1">
+        <Button type="submit" size="sm" variant="outline" data-testid="add-member-submit" disabled={mutation.isPending} className="gap-1">
           <UserPlus className="h-3.5 w-3.5" />
         </Button>
       </form>

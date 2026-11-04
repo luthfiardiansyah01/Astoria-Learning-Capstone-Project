@@ -39,6 +39,7 @@ export function TaskCard({ task, onOpen }: { task: CollabTask; onOpen: (id: stri
       <Card
         ref={setNodeRef}
         style={style}
+        data-testid="task-card"
         {...attributes}
         {...listeners}
         onClick={() => onOpen(task.id)}

@@ -107,6 +107,7 @@ function NavPills({
       {items.map((n) => (
         <motion.button
           key={n.key}
+          data-testid={`nav-${n.key}`}
           onClick={() => onSelect(n.key)}
           onMouseEnter={() => onPrefetch?.(n.key)}
           onFocus={() => onPrefetch?.(n.key)}
@@ -224,6 +225,7 @@ export default function AstoriaPage() {
 
               <Link
                 href="/collab"
+                data-testid="nav-collab"
                 className="hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex"
               >
                 <Users className="h-3.5 w-3.5" />
@@ -252,6 +254,7 @@ export default function AstoriaPage() {
 
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
+                data-testid="logout"
                 className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 aria-label="Keluar"
                 title={`Keluar (${session?.user?.name ?? ""})`}

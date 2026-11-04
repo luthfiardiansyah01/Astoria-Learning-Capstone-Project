@@ -10,9 +10,19 @@ Dokumen ini melengkapi `docs/RENCANA-IMPLEMENTASI.md` (kesiapan produksi). Fokus
 | Fase 1 — Standar tipe & lint | **Selesai (gelombang 1)** | `noImplicitAny: true`, `reactStrictMode: true`, aturan `prefer-const`, `no-unused-vars`, `no-empty`, `no-unreachable`, `no-redeclare`, `no-case-declarations` aktif; `eslint .` bersih |
 | Fase 2 — Unit test logika murni | **Selesai** | 132 test di `tests/unit`, 8 file; coverage 76% statement / 78% baris / 78% fungsi / 66% cabang |
 | Fase 3 — Integration test API | **Selesai** | 107 test di `tests/integration` dengan PostgreSQL uji (`db-test`); coverage API 76% baris / 71% statement |
-| Fase 4 — E2E Playwright | Belum | Butuh mock AI |
-| Fase 5 — CI | **Sebagian** | `.github/workflows/ci.yml` menjalankan typecheck, lint, unit test + coverage, integration test + coverage, dan build; E2E belum |
+| Fase 4 — E2E Playwright | **Selesai** | 10 skenario di `tests/e2e` dengan mock AI, database uji, trace/screenshot; lulus 3× berturut-turut |
+| Fase 5 — CI | **Selesai** | `.github/workflows/ci.yml`: typecheck, lint, unit + coverage, integration + coverage, build, E2E Playwright |
 | Fase 6 — Observability & pembersihan | Belum | Logger, error boundary, dan aturan `no-console` belum |
+
+### Menjalankan E2E
+
+```bash
+bun run db:test:up      # PostgreSQL uji di port 5433
+bun run build           # E2E memakai `next start`
+bun run test:e2e        # Playwright + mock AI (port 4010) + app (port 3100)
+```
+
+Laporan HTML: `bun run test:e2e:report`. Trace dan screenshot kegagalan tersimpan di `test-results/`.
 
 
 - Basis kode: Next.js 16, React 19, Prisma 6 + PostgreSQL, NextAuth, 25 route API, 18 modul `src/lib`.

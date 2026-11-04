@@ -181,9 +181,9 @@ export function ChatView() {
   };
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[280px_1fr] min-h-[calc(100vh-13rem)]">
+    <div className="grid gap-4 lg:grid-cols-[280px_1fr] min-h-[calc(100vh-13rem)] min-w-0">
       {/* ── Panel dokumen ── */}
-      <Card className="h-fit lg:sticky lg:top-24">
+      <Card className="h-fit min-w-0 lg:sticky lg:top-24">
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
             <p className="font-semibold text-sm flex items-center gap-2">
@@ -248,7 +248,7 @@ export function ChatView() {
       </Card>
 
       {/* ── Area chat ── */}
-      <Card className="flex flex-col min-h-[32rem]">
+      <Card className="flex flex-col min-h-[32rem] min-w-0">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="rounded-full bg-primary/10 p-2">
@@ -387,6 +387,7 @@ export function ChatView() {
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              data-testid="chat-input"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -402,7 +403,7 @@ export function ChatView() {
               disabled={sending || !activeDoc}
               className="resize-none"
             />
-            <Button onClick={send} disabled={sending || !activeDoc} className="px-4" aria-label="Kirim pertanyaan">
+            <Button onClick={send} data-testid="chat-send" disabled={sending || !activeDoc} className="px-4" aria-label="Kirim pertanyaan">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>

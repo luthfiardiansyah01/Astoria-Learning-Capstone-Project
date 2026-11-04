@@ -179,10 +179,11 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
       >
         <Input
           placeholder="Tambah tugas baru..."
+          data-testid="task-new-title"
           value={newTaskTitle}
           onChange={(e) => setNewTaskTitle(e.target.value)}
         />
-        <Button type="submit" size="sm" disabled={createTaskMutation.isPending} className="gap-1">
+        <Button type="submit" size="sm" data-testid="task-new-submit" disabled={createTaskMutation.isPending} className="gap-1">
           <Plus className="h-4 w-4" /> Tambah
         </Button>
       </form>

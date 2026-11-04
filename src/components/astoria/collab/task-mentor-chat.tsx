@@ -147,11 +147,12 @@ export function TaskMentorChat({ taskId }: { taskId: string }) {
       >
         <Input
           placeholder="Tanya mentor tentang task ini..."
+          data-testid="task-mentor-input"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           disabled={mutation.isPending}
         />
-        <Button type="submit" size="sm" disabled={mutation.isPending}>
+        <Button type="submit" size="sm" data-testid="task-mentor-send" disabled={mutation.isPending}>
           <Send className="h-4 w-4" />
         </Button>
       </form>

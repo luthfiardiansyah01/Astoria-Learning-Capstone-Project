@@ -25,6 +25,7 @@ export function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
+      data-testid={`kanban-${status}`}
       className={`flex flex-col gap-2 rounded-lg border bg-muted/30 p-3 min-h-[240px] transition-colors ${
         isOver ? "border-primary bg-primary/5" : ""
       }`}

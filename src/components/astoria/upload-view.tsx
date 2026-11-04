@@ -361,12 +361,14 @@ export function UploadView() {
             <div className="grid gap-2">
               <Input
                 placeholder="Nama dokumen (mis. modul-sim-bab4.pdf)"
+                data-testid="upload-filename"
                 value={fileName}
                 onChange={(e) => setFileName(e.target.value)}
               />
               <div className="relative">
                 <Textarea
                   placeholder="…atau tempel isi modul di sini, lalu klik Proses Dokumen"
+                  data-testid="upload-content"
                   value={content}
                   onChange={(e) => {
                     setContent(e.target.value);
@@ -393,6 +395,7 @@ export function UploadView() {
 
             <div className="flex flex-wrap gap-2">
               <Button
+                data-testid="upload-submit"
                 onClick={submit}
                 disabled={processing || readingFile || !content.trim() || tooLong}
               >

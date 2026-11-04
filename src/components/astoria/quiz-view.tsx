@@ -194,7 +194,7 @@ export function QuizView() {
           )}
 
           <div className="flex flex-wrap gap-2">
-            <Button onClick={generate} disabled={generating || !activeDocumentId}>
+            <Button data-testid="quiz-generate" onClick={generate} disabled={generating || !activeDocumentId}>
               {generating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Menyusun soal…
@@ -267,6 +267,7 @@ export function QuizView() {
                   <>
                     <Textarea
                       placeholder="Tulis jawabanmu dengan bahasamu sendiri…"
+                      data-testid={`quiz-answer-${idx}`}
                       value={answers[q.id] ?? ""}
                       onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
                       rows={3}
@@ -274,6 +275,7 @@ export function QuizView() {
                     />
                     <Button
                       size="sm"
+                      data-testid={`quiz-submit-${idx}`}
                       onClick={() => submitAnswer(q)}
                       disabled={submitting === q.id}
                     >
