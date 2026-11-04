@@ -261,6 +261,12 @@ export function PlanBadge({ className = "" }: { className?: string }) {
             )}
           </div>
 
+          <p className="text-[11px] text-muted-foreground">
+            Semua akun baru otomatis mendapat <strong>trial Premium 7 hari</strong>. Setelah
+            berakhir, akun kembali ke Free. Selama trial, fitur Premium terbuka tetapi kuota AI
+            tetap dibatasi dan direset setiap <strong>00.00 WIB</strong>.
+          </p>
+
           {payments.length > 0 && (
             <div className="space-y-2">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

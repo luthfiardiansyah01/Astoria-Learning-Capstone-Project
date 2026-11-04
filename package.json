@@ -35,7 +35,8 @@
     "db:test:down": "docker compose stop db-test",
     "db:reset": "prisma migrate reset",
     "seed": "bun scripts/seed.ts",
-    "seed:prod": "bun scripts/db-prod.ts seed"
+    "seed:prod": "bun scripts/db-prod.ts seed",
+    "trial:backfill": "bun scripts/backfill-welcome-trial.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

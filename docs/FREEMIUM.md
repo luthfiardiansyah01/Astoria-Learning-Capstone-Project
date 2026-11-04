@@ -28,8 +28,11 @@ analitik admin.
   meskipun anggotanya Free.
 - **Batas tim dihitung dari tim yang dibuat/dimiliki**, bukan jumlah tim yang
   diikuti. Pengguna Free tetap bisa diundang ke tim orang lain.
-- **Trial Premium 7 hari** sekali per akun (`trialUsedAt`). Admin dapat mereset
-  trial dari panel admin.
+- **Trial Premium 7 hari otomatis** untuk akun baru dan pengguna Free yang belum
+  pernah trial (`trialUsedAt`). Selama trial, fitur Premium terbuka tetapi kuota
+  AI tetap dibatasi sesuai paket Premium. Admin dapat mereset trial dari panel admin.
+- **Kuota AI harian direset setiap 00.00 WIB**, bukan 24 jam sejak request pertama.
+  Kuota per menit tetap berlaku.
 - **Admin selalu Premium** tanpa perlu langganan.
 - **Pembayaran** memakai Midtrans/Xendit. Webhook diverifikasi signature/token,
   nominal dicocokkan, dan aktivasi bersifat idempoten.
@@ -74,6 +77,8 @@ Uji manual minimum sebelum promosi:
 - Akun Free: tim kedua, proyek ketiga, tugas ke-11, anggota ke-4 → `403`.
 - Akun Free: dokumen 9.000 karakter → `413`.
 - Akun Premium: proyek ke-3, tugas ke-11, anggota ke-4 → berhasil.
-- Trial: aktif 7 hari; percobaan kedua → `403`.
+- Registrasi baru: otomatis Premium (trial 7 hari, `trialUsedAt` terisi).
+- Trial manual untuk akun lama: aktif 7 hari; percobaan kedua → `403`.
+- Kuota AI harian: reset tepat 00.00 WIB.
 - Webhook tanpa signature/token → `401`.
 - Admin: aktifkan/perpanjang paket, konfirmasi pembayaran pending.

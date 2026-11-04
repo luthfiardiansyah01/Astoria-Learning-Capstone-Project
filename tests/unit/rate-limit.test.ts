@@ -1,14 +1,33 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  aiDayCounterName,
   clientIp,
   getRateLimitStatus,
   guardAi,
   rateLimit,
+  secondsUntilWibMidnight,
   tooManyRequests,
+  wibDayKey,
 } from "@/lib/rate-limit";
 
 let counter = 0;
 const uniqueId = (label: string) => `${label}-${Date.now()}-${counter++}`;
+
+describe("batas harian WIB", () => {
+  it("mengganti tanggal pada tengah malam WIB", () => {
+    expect(wibDayKey(new Date("2026-06-01T16:59:59Z"))).toBe("2026-06-01");
+    expect(wibDayKey(new Date("2026-06-01T17:00:00Z"))).toBe("2026-06-02");
+  });
+
+  it("menghitung detik menuju tengah malam WIB", () => {
+    expect(secondsUntilWibMidnight(new Date("2026-06-01T16:59:00Z"))).toBe(60);
+    expect(secondsUntilWibMidnight(new Date("2026-06-01T17:00:00Z"))).toBe(86_400);
+  });
+
+  it("memakai tanggal WIB pada nama counter harian", () => {
+    expect(aiDayCounterName(new Date("2026-06-01T17:00:00Z"))).toBe("ai-day:2026-06-02");
+  });
+});
 
 describe("rateLimit (fallback memori)", () => {
   beforeEach(() => {
@@ -150,5 +169,9 @@ describe("guardAi", () => {
     expect(blocked?.status).toBe(429);
     const body = (await blocked?.json()) as { code: string };
     expect(body.code).toBe("rate_limited");
+
+    // Lewat tengah malam WIB: counter harian baru, request kembali diizinkan.
+    vi.advanceTimersByTime(24 * 60 * 60 * 1000);
+    expect(await guardAi(id, "free")).toBeNull();
   });
 });

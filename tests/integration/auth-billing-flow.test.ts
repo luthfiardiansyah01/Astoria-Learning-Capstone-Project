@@ -85,7 +85,12 @@ describe("POST /api/auth/register", () => {
     const user = await db.user.findUniqueOrThrow({ where: { id: body.user.id } });
     expect(user.passwordHash).toBeTruthy();
     expect(user.passwordHash).not.toBe("rahasia123");
-    expect(user.plan).toBe("free");
+    expect(user.plan).toBe("premium");
+    expect(user.trialUsedAt).toBeTruthy();
+    const trialDays = Math.round(
+      ((user.planExpiresAt?.getTime() ?? 0) - Date.now()) / (24 * 60 * 60 * 1000)
+    );
+    expect(trialDays).toBe(7);
   });
 
   it("menolak email yang sudah terdaftar", async () => {

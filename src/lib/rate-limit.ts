@@ -26,6 +26,29 @@ export type RateLimitStatus = {
   resetAt: number;
 };
 
+const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+/** Tanggal kalender WIB (YYYY-MM-DD), dipakai sebagai bagian kunci kuota harian. */
+export function wibDayKey(date = new Date()): string {
+  return new Date(date.getTime() + WIB_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+/** Detik menuju tengah malam WIB berikutnya. */
+export function secondsUntilWibMidnight(date = new Date()): number {
+  const wib = new Date(date.getTime() + WIB_OFFSET_MS);
+  const nextMidnight = Date.UTC(
+    wib.getUTCFullYear(),
+    wib.getUTCMonth(),
+    wib.getUTCDate() + 1
+  );
+  return Math.max(1, Math.ceil((nextMidnight - wib.getTime()) / 1000));
+}
+
+/** Nama counter kuota AI harian; berubah otomatis saat tanggal WIB berganti. */
+export function aiDayCounterName(date = new Date()): string {
+  return `ai-day:${wibDayKey(date)}`;
+}
+
 type MemoryEntry = { count: number; reset: number };
 
 const globalForRateLimit = globalThis as unknown as {
@@ -198,7 +221,14 @@ export async function guardAi(userId: string, plan: Plan = "free"): Promise<Next
   const minute = await rateLimit("ai-minute", userId, limits.aiPerMinute, 60);
   if (!minute.ok) return tooManyRequests(minute);
 
-  const day = await rateLimit("ai-day", userId, limits.aiPerDay, 86400);
+  // Kuota harian memakai tanggal WIB dan TTL sampai tengah malam WIB.
+  const now = new Date();
+  const day = await rateLimit(
+    aiDayCounterName(now),
+    userId,
+    limits.aiPerDay,
+    secondsUntilWibMidnight(now)
+  );
   if (!day.ok) return tooManyRequests(day);
 
   return null;

@@ -1,6 +1,10 @@
 // Definisi paket freemium. File ini aman diimpor server maupun client.
 export type Plan = "free" | "premium";
 
+/** Trial Premium otomatis untuk akun baru / akun Free yang belum pernah trial. */
+export const TRIAL_DAYS = 7;
+export const TRIAL_MS = TRIAL_DAYS * 24 * 60 * 60 * 1000;
+
 export interface PlanLimits {
   aiPerMinute: number;
   aiPerDay: number;

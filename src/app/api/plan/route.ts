@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";
-import { effectivePlan, PLAN_LIMITS, PLAN_META } from "@/lib/plans";
+import { effectivePlan, PLAN_LIMITS, PLAN_META, TRIAL_MS } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +42,7 @@ export async function POST() {
       );
     }
 
-    const planExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const planExpiresAt = new Date(Date.now() + TRIAL_MS);
     await db.user.update({
       where: { id: user.id },
       data: {

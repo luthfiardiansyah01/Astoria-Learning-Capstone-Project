@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { clientIp, LIMITS, rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { TRIAL_MS } from "@/lib/plans";
 import { readBody, registerSchema } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
@@ -30,12 +31,17 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const now = new Date();
     const user = await db.user.create({
       data: {
         name,
         email,
         passwordHash,
         role: "mahasiswa",
+        // Semua akun baru langsung mendapat trial Premium 7 hari.
+        plan: "premium",
+        planExpiresAt: new Date(now.getTime() + TRIAL_MS),
+        trialUsedAt: now,
       },
     });
 
