@@ -4,6 +4,7 @@ import {
   appUrl,
   billingConfig,
   billingProvider,
+  cancelProviderPayment,
   midtransStatus,
   newOrderId,
   premiumExpiryFrom,
@@ -38,6 +39,7 @@ afterEach(() => {
     if (original[key] === undefined) delete process.env[key];
     else process.env[key] = original[key];
   }
+  vi.unstubAllGlobals();
   vi.useRealTimers();
 });
 
@@ -220,6 +222,97 @@ describe("verifikasi webhook", () => {
     expect(verifyXenditCallback("token-rahasia")).toBe(true);
     expect(verifyXenditCallback("token-salah")).toBe(false);
     expect(verifyXenditCallback(null)).toBe(false);
+  });
+});
+
+describe("cancelProviderPayment", () => {
+  it("membatalkan transaksi Midtrans", async () => {
+    process.env.MIDTRANS_SERVER_KEY = "Mid-server-test";
+    process.env.MIDTRANS_IS_PRODUCTION = "true";
+    const fetchMock = vi.fn(async () => ({ ok: true, status: 200, text: async () => "" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await cancelProviderPayment({
+      provider: "midtrans",
+      orderId: "SOBAT-CANCEL-1",
+    });
+
+    expect(result).toEqual({ cancelled: true });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.midtrans.com/v2/SOBAT-CANCEL-1/cancel",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("melaporkan kegagalan pembatalan Midtrans", async () => {
+    process.env.MIDTRANS_SERVER_KEY = "SB-Mid-server-test";
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      status: 412,
+      text: async () => "Transaction cannot be canceled",
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await cancelProviderPayment({
+      provider: "midtrans",
+      orderId: "SOBAT-CANCEL-2",
+    });
+
+    expect(result.cancelled).toBe(false);
+    expect(result.warning).toContain("412");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.sandbox.midtrans.com/v2/SOBAT-CANCEL-2/cancel",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("membatalkan invoice Xendit", async () => {
+    process.env.XENDIT_SECRET_KEY = "xnd_development_test";
+    const fetchMock = vi.fn(async () => ({ ok: true, status: 200, text: async () => "" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await cancelProviderPayment({
+      provider: "xendit",
+      orderId: "SOBAT-CANCEL-3",
+      providerRef: "inv-123",
+    });
+
+    expect(result).toEqual({ cancelled: true });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.xendit.co/v2/invoices/inv-123/expire",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("tidak memanggil gateway untuk provider manual", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await cancelProviderPayment({
+      provider: "manual",
+      orderId: "SOBAT-CANCEL-4",
+    });
+
+    expect(result.cancelled).toBe(false);
+    expect(result.warning).toContain("tidak mendukung");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("menangani error jaringan dengan aman", async () => {
+    process.env.MIDTRANS_SERVER_KEY = "Mid-server-test";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("network down");
+      })
+    );
+
+    const result = await cancelProviderPayment({
+      provider: "midtrans",
+      orderId: "SOBAT-CANCEL-5",
+    });
+    expect(result.cancelled).toBe(false);
+    expect(result.warning).toContain("network down");
   });
 });
 
