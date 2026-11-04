@@ -16,6 +16,8 @@ Dokumen ini menjelaskan kapan pembayaran Paket Premium SOBAT ADI dapat dikembali
 
 ## 2. Kondisi yang dapat diajukan pengembalian
 
+Pengajuan sebaiknya dilakukan maksimal **7 hari kalender** setelah pembayaran. Untuk pembayaran ganda atau transaksi tidak sah, pengajuan masih dapat dilakukan setelah jendela tersebut selama bukti tersedia.
+
 Pengajuan dapat dipertimbangkan jika:
 
 1. **Pembayaran ganda** — pengguna tertagih lebih dari sekali untuk pesanan yang sama.

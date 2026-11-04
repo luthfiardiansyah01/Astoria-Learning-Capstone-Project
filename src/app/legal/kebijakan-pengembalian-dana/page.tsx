@@ -24,6 +24,11 @@ export default function RefundPage() {
       </LegalSection>
 
       <LegalSection title="2. Kondisi yang dapat diajukan">
+        <p>
+          Pengajuan sebaiknya dilakukan maksimal <strong>7 hari kalender</strong> setelah
+          pembayaran. Untuk pembayaran ganda atau transaksi tidak sah, pengajuan masih dapat
+          dilakukan setelah jendela tersebut selama bukti tersedia.
+        </p>
         <LegalList>
           <li>Pembayaran ganda untuk pesanan yang sama.</li>
           <li>Pembayaran berhasil, tetapi Premium tidak aktif lebih dari 1×24 jam setelah bukti pembayaran diberikan.</li>
