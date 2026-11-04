@@ -31,6 +31,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (!verifyMidtransSignature(payload)) {
+    console.warn("[midtrans] signature tidak valid", {
+      order_id: payload.order_id,
+      status_code: payload.status_code,
+    });
     return NextResponse.json({ error: "Signature tidak valid." }, { status: 401 });
   }
   if (!payload.order_id) {
@@ -47,8 +51,12 @@ export async function POST(req: NextRequest) {
   });
 
   if ("ok" in result && !result.ok) {
-    const code = result.reason === "not_found" ? 404 : 400;
-    return NextResponse.json({ error: result.reason }, { status: code });
+    // Notifikasi uji/stale dengan order_id yang tidak ada tetap dijawab 200
+    // agar Midtrans tidak melakukan retry, tetapi tidak ada perubahan data.
+    if (result.reason === "not_found") {
+      return NextResponse.json({ received: true, ignored: "unknown_order" });
+    }
+    return NextResponse.json({ error: result.reason }, { status: 400 });
   }
 
   return NextResponse.json({ received: true, status });

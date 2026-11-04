@@ -225,6 +225,21 @@ describe("webhook Midtrans", () => {
     expect(res.status).toBe(400);
     expect((await db.payment.findUniqueOrThrow({ where: { id: payment.id } })).status).toBe("pending");
   });
+
+  it("menjawab 200 untuk order yang tidak dikenal agar tidak di-retry", async () => {
+    process.env.MIDTRANS_SERVER_KEY = "SB-Mid-server-test";
+    const res = await midtransWebhook.POST(
+      jsonRequest(
+        "/api/billing/webhook/midtrans",
+        "POST",
+        signedPayload("SOBAT-TIDAK-DIKENAL")
+      )
+    );
+    const body = (await res.json()) as { received: boolean; ignored: string };
+    expect(res.status).toBe(200);
+    expect(body.received).toBe(true);
+    expect(body.ignored).toBe("unknown_order");
+  });
 });
 
 describe("webhook Xendit", () => {

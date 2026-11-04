@@ -42,8 +42,10 @@ export async function POST(req: NextRequest) {
   });
 
   if ("ok" in result && !result.ok) {
-    const code = result.reason === "not_found" ? 404 : 400;
-    return NextResponse.json({ error: result.reason }, { status: code });
+    if (result.reason === "not_found") {
+      return NextResponse.json({ received: true, ignored: "unknown_order" });
+    }
+    return NextResponse.json({ error: result.reason }, { status: 400 });
   }
 
   return NextResponse.json({ received: true, status });
