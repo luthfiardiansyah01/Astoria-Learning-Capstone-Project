@@ -3,7 +3,7 @@
 **Versi:** 1.0  
 **Tanggal berlaku:** 4 November 2026  
 **Penyelenggara:** SOBAT ADI  
-**Kontak:** admin@sobat-adi.id
+**Kontak:** admin1@moedatrace.com
 
 > Dokumen ini disusun dengan mengacu pada struktur umum syarat dan ketentuan layanan digital, termasuk template resmi Midtrans. Dokumen ini bukan nasihat hukum. Sebelum digunakan untuk transaksi komersial skala luas, mintalah peninjauan penasihat hukum dan lengkapi identitas badan usaha penyelenggara.
 
@@ -107,7 +107,7 @@ Kami memproses data yang diperlukan untuk menyediakan Layanan, termasuk:
 
 Data dapat diproses oleh penyedia infrastruktur, basis data, AI, dan pembayaran yang bekerja untuk Kami. Kami tidak menjual data pribadi.
 
-Anda berhak meminta akses, koreksi, atau penghapusan data sesuai hukum yang berlaku dengan menghubungi admin@sobat-adi.id.
+Anda berhak meminta akses, koreksi, atau penghapusan data sesuai hukum yang berlaku dengan menghubungi admin1@moedatrace.com.
 
 ## 12. Ketersediaan dan perubahan Layanan
 
@@ -125,7 +125,7 @@ Kami dapat menangguhkan atau menghentikan Akun jika:
 - membahayakan keamanan Layanan;
 - melanggar hukum atau hak pihak lain.
 
-Pengguna dapat berhenti menggunakan Layanan kapan saja. Penghapusan Akun dapat diminta melalui admin@sobat-adi.id.
+Pengguna dapat berhenti menggunakan Layanan kapan saja. Penghapusan Akun dapat diminta melalui admin1@moedatrace.com.
 
 ## 14. Penafian dan batas tanggung jawab
 
@@ -143,7 +143,7 @@ Anda setuju mengganti kerugian Kami atas klaim pihak ketiga yang timbul dari pel
 
 Dokumen ini diatur oleh hukum Republik Indonesia.
 
-Sengketa akan diupayakan diselesaikan secara musyawarah terlebih dahulu melalui admin@sobat-adi.id. Jika tidak selesai, para pihak dapat menempuh mekanisme penyelesaian sengketa yang tersedia menurut hukum Indonesia.
+Sengketa akan diupayakan diselesaikan secara musyawarah terlebih dahulu melalui admin1@moedatrace.com. Jika tidak selesai, para pihak dapat menempuh mekanisme penyelesaian sengketa yang tersedia menurut hukum Indonesia.
 
 ## 17. Perubahan syarat
 
@@ -152,7 +152,7 @@ Kami dapat memperbarui Syarat dan Ketentuan ini. Perubahan material akan diberit
 ## 18. Kontak
 
 **SOBAT ADI**  
-Email: admin@sobat-adi.id  
+Email: admin1@moedatrace.com  
 Situs: https://astoria-learning-capstone-project.vercel.app
 
 Untuk pertanyaan hukum, pembayaran, atau data pribadi, sertakan email akun dan nomor pesanan agar dapat kami tindak lanjuti.

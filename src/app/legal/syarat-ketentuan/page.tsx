@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalList, LegalPage, LegalSection } from "@/components/legal/legal-page";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Syarat & Ketentuan — SOBAT ADI",
@@ -108,8 +109,8 @@ export default function TermsPage() {
         </p>
         <p>
           Anda dapat meminta akses, koreksi, atau penghapusan data melalui{" "}
-          <a href="mailto:admin@sobat-adi.id" className="underline hover:text-foreground">
-            admin@sobat-adi.id
+          <a href={`mailto:${CONTACT_EMAIL}`} className="underline hover:text-foreground">
+            {CONTACT_EMAIL}
           </a>
           .
         </p>
@@ -155,7 +156,7 @@ export default function TermsPage() {
       <LegalSection title="14. Hukum yang berlaku dan sengketa">
         <p>
           Dokumen ini diatur oleh hukum Republik Indonesia. Sengketa diupayakan diselesaikan
-          secara musyawarah melalui admin@sobat-adi.id. Jika tidak selesai, para pihak dapat
+          secara musyawarah melalui {CONTACT_EMAIL}. Jika tidak selesai, para pihak dapat
           menempuh mekanisme penyelesaian sengketa menurut hukum Indonesia.
         </p>
       </LegalSection>
@@ -168,8 +169,8 @@ export default function TermsPage() {
         </p>
         <p>
           SOBAT ADI ·{" "}
-          <a href="mailto:admin@sobat-adi.id" className="underline hover:text-foreground">
-            admin@sobat-adi.id
+          <a href={`mailto:${CONTACT_EMAIL}`} className="underline hover:text-foreground">
+            {CONTACT_EMAIL}
           </a>
         </p>
       </LegalSection>

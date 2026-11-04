@@ -2,7 +2,7 @@
 
 **Versi:** 1.0  
 **Tanggal berlaku:** 4 November 2026  
-**Kontak:** admin@sobat-adi.id
+**Kontak:** admin1@moedatrace.com
 
 Dokumen ini menjelaskan produk, paket, batas penggunaan, dan aturan operasional SOBAT ADI.
 
@@ -75,7 +75,7 @@ Catatan:
 1. Satu akun untuk satu orang.
 2. Pengguna bertanggung jawab atas keamanan kata sandi.
 3. Jangan membagikan akun atau kredensial.
-4. Laporkan akses tidak sah ke admin@sobat-adi.id.
+4. Laporkan akses tidak sah ke admin1@moedatrace.com.
 
 ## 8. Ketersediaan layanan
 
@@ -86,7 +86,7 @@ Catatan:
 
 ## 9. Dukungan
 
-Dukungan diberikan melalui **admin@sobat-adi.id** pada hari kerja. Sertakan:
+Dukungan diberikan melalui **admin1@moedatrace.com** pada hari kerja. Sertakan:
 
 - email akun;
 - deskripsi masalah;
@@ -106,5 +106,5 @@ Kami dapat menangguhkan atau menghentikan akun yang melanggar Syarat dan Ketentu
 ## 12. Kontak
 
 **SOBAT ADI**  
-Email: admin@sobat-adi.id  
+Email: admin1@moedatrace.com  
 Situs: https://astoria-learning-capstone-project.vercel.app

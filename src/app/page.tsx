@@ -27,6 +27,7 @@ import { useAstoria, type ViewKey } from "@/components/astoria/store";
 import { HomeView } from "@/components/astoria/home-view";
 import { AiQuotaBadge } from "@/components/astoria/ai-quota-badge";
 import { PlanBadge } from "@/components/astoria/plan-badge";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 // View selain Beranda dimuat sesuai kebutuhan agar bundle awal tetap kecil.
 const viewLoaders = {
@@ -319,6 +320,9 @@ export default function AstoriaPage() {
             <Link href="/legal/kebijakan-produk" className="hover:text-foreground hover:underline">
               Kebijakan Produk
             </Link>
+            <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-foreground hover:underline">
+              Kontak
+            </a>
           </nav>
         </div>
       </footer>

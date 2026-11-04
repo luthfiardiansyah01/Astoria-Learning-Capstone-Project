@@ -4,7 +4,7 @@ Integrasi pembayaran sudah tersedia, tetapi **nonaktif sampai kredensial diisi**
 Selama belum dikonfigurasi:
 
 - Tombol upgrade menampilkan "Pembayaran otomatis belum dikonfigurasi".
-- Pengguna diarahkan menghubungi admin (`admin@sobat-adi.id`).
+- Pengguna diarahkan menghubungi admin (`admin1@moedatrace.com`).
 - Admin tetap bisa mengaktifkan Premium manual di **Admin → Paket & Pembayaran**.
 
 ## Variabel environment

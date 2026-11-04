@@ -2,7 +2,7 @@
 
 **Versi:** 1.0  
 **Tanggal berlaku:** 4 November 2026  
-**Kontak:** admin@sobat-adi.id
+**Kontak:** admin1@moedatrace.com
 
 Dokumen ini menjelaskan kapan pembayaran Paket Premium SOBAT ADI dapat dikembalikan. Kebijakan ini tidak mengurangi hak konsumen yang dijamin oleh hukum Republik Indonesia.
 
@@ -38,7 +38,7 @@ Pengajuan dapat dipertimbangkan jika:
 
 ## 4. Cara mengajukan
 
-Kirim email ke **admin@sobat-adi.id** dengan subjek:
+Kirim email ke **admin1@moedatrace.com** dengan subjek:
 
 ```text
 Refund — [Order ID]
@@ -84,5 +84,5 @@ Kami dapat memperbarui kebijakan ini. Perubahan berlaku untuk transaksi setelah 
 ## 9. Kontak
 
 **SOBAT ADI**  
-Email: admin@sobat-adi.id  
+Email: admin1@moedatrace.com  
 Situs: https://astoria-learning-capstone-project.vercel.app

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalList, LegalPage, LegalSection } from "@/components/legal/legal-page";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Kebijakan Produk dan Langganan — SOBAT ADI",
@@ -110,7 +111,7 @@ export default function ProductPolicyPage() {
           <li>Satu akun untuk satu orang.</li>
           <li>Pengguna bertanggung jawab menjaga kata sandi.</li>
           <li>Akun dan kredensial tidak boleh dibagikan.</li>
-          <li>Laporkan akses tidak sah ke admin@sobat-adi.id.</li>
+          <li>Laporkan akses tidak sah ke {CONTACT_EMAIL}.</li>
         </LegalList>
       </LegalSection>
 
@@ -119,7 +120,7 @@ export default function ProductPolicyPage() {
           <li>Layanan disediakan dengan upaya terbaik, tanpa jaminan 100% uptime.</li>
           <li>Pemeliharaan dapat dilakukan untuk perbaikan mendesak.</li>
           <li>Fitur beta dapat berubah atau dihentikan.</li>
-          <li>Dukungan diberikan melalui admin@sobat-adi.id pada hari kerja.</li>
+          <li>Dukungan diberikan melalui {CONTACT_EMAIL} pada hari kerja.</li>
         </LegalList>
       </LegalSection>
 

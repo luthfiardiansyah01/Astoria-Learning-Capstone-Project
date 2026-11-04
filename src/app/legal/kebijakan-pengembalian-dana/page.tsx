@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalList, LegalPage, LegalSection } from "@/components/legal/legal-page";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Kebijakan Pengembalian Dana — SOBAT ADI",
@@ -53,8 +54,8 @@ export default function RefundPage() {
       <LegalSection title="4. Cara mengajukan">
         <p>
           Kirim email ke{" "}
-          <a href="mailto:admin@sobat-adi.id" className="underline hover:text-foreground">
-            admin@sobat-adi.id
+          <a href={`mailto:${CONTACT_EMAIL}`} className="underline hover:text-foreground">
+            {CONTACT_EMAIL}
           </a>{" "}
           dengan subjek <strong>Refund — [Order ID]</strong> dan sertakan:
         </p>

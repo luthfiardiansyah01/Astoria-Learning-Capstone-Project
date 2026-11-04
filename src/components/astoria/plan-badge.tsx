@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { PLAN_LIMITS, type Plan } from "@/lib/plans";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 interface PlanData {
   plan: Plan;
@@ -349,7 +350,7 @@ export function PlanBadge({ className = "" }: { className?: string }) {
               </Button>
             ) : (
               <Button asChild>
-                <a href="mailto:admin@sobat-adi.id?subject=Upgrade%20Premium%20SOBAT%20ADI">
+                <a href={`mailto:${CONTACT_EMAIL}?subject=Upgrade%20Premium%20SOBAT%20ADI`}>
                   Ajukan Premium ke Admin
                 </a>
               </Button>

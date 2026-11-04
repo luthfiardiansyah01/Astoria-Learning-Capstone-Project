@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, GraduationCap } from "lucide-react";
 import type { ReactNode } from "react";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 const LEGAL_LINKS = [
   { href: "/legal/syarat-ketentuan", label: "Syarat & Ketentuan" },
@@ -86,8 +87,8 @@ export function LegalPage({
           </nav>
           <p className="mt-3">
             Pertanyaan:{" "}
-            <a href="mailto:admin@sobat-adi.id" className="underline hover:text-foreground">
-              admin@sobat-adi.id
+            <a href={`mailto:${CONTACT_EMAIL}`} className="underline hover:text-foreground">
+              {CONTACT_EMAIL}
             </a>
           </p>
         </footer>
