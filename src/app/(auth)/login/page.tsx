@@ -17,6 +17,17 @@ export default function LoginPage() {
               Daftar
             </Link>
           </p>
+          <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+            Dengan masuk, Anda menyetujui{" "}
+            <Link href="/legal/syarat-ketentuan" className="underline hover:text-foreground">
+              Syarat & Ketentuan
+            </Link>{" "}
+            dan{" "}
+            <Link href="/legal/kebijakan-produk" className="underline hover:text-foreground">
+              Kebijakan Produk
+            </Link>
+            .
+          </p>
         </CardContent>
       </Card>
     </main>

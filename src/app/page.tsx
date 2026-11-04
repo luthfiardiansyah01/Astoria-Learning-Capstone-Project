@@ -306,7 +306,20 @@ export default function AstoriaPage() {
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             SOBAT ADI — platform belajar bertenaga AI untuk mahasiswa PJJ Universitas Terbuka
           </p>
-          <p>Mentor AI • Dokumen RAG • Gamifikasi XP • Moderasi Konten</p>
+          <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1" aria-label="Dokumen legal">
+            <Link href="/legal/syarat-ketentuan" className="hover:text-foreground hover:underline">
+              Syarat & Ketentuan
+            </Link>
+            <Link
+              href="/legal/kebijakan-pengembalian-dana"
+              className="hover:text-foreground hover:underline"
+            >
+              Pengembalian Dana
+            </Link>
+            <Link href="/legal/kebijakan-produk" className="hover:text-foreground hover:underline">
+              Kebijakan Produk
+            </Link>
+          </nav>
         </div>
       </footer>
     </div>

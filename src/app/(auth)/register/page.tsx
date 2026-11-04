@@ -17,6 +17,24 @@ export default function RegisterPage() {
               Masuk
             </Link>
           </p>
+          <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+            Dengan mendaftar, Anda menyetujui{" "}
+            <Link href="/legal/syarat-ketentuan" className="underline hover:text-foreground">
+              Syarat & Ketentuan
+            </Link>
+            ,{" "}
+            <Link
+              href="/legal/kebijakan-pengembalian-dana"
+              className="underline hover:text-foreground"
+            >
+              Kebijakan Pengembalian Dana
+            </Link>
+            , dan{" "}
+            <Link href="/legal/kebijakan-produk" className="underline hover:text-foreground">
+              Kebijakan Produk
+            </Link>
+            .
+          </p>
         </CardContent>
       </Card>
     </main>

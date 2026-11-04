@@ -267,6 +267,25 @@ export function PlanBadge({ className = "" }: { className?: string }) {
             tetap dibatasi dan direset setiap <strong>00.00 WIB</strong>.
           </p>
 
+          <p className="text-[10px] leading-relaxed text-muted-foreground">
+            Dengan melanjutkan pembayaran, Anda menyetujui{" "}
+            <a href="/legal/syarat-ketentuan" className="underline hover:text-foreground">
+              Syarat & Ketentuan
+            </a>
+            ,{" "}
+            <a
+              href="/legal/kebijakan-pengembalian-dana"
+              className="underline hover:text-foreground"
+            >
+              Kebijakan Pengembalian Dana
+            </a>
+            , dan{" "}
+            <a href="/legal/kebijakan-produk" className="underline hover:text-foreground">
+              Kebijakan Produk
+            </a>
+            .
+          </p>
+
           {payments.length > 0 && (
             <div className="space-y-2">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
