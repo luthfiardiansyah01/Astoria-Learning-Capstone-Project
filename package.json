@@ -36,6 +36,7 @@
     "db:reset": "prisma migrate reset",
     "seed": "bun scripts/seed.ts",
     "seed:prod": "bun scripts/db-prod.ts seed",
+    "seed:free": "bun scripts/seed-free-user.ts",
     "trial:backfill": "bun scripts/backfill-welcome-trial.ts"
   },
   "dependencies": {
