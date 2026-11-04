@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET /api/profile — statistik mahasiswa, lencana, aktivitas kuis terakhir
 
 import { NextResponse } from "next/server";
@@ -68,7 +69,7 @@ export async function GET() {
       },
     });
   } catch (e) {
-    console.error("[/api/profile]", e);
+    logger.error("[/api/profile]", { error: e });
     return NextResponse.json({ error: "Gagal memuat profil" }, { status: 500 });
   }
 }

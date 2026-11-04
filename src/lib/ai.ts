@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // src/lib/ai.ts
 // Klien AI OpenAI-compatible (OpenRouter, dll) — HANYA untuk backend (server-side).
 // Parameter per peran + retry + rotasi model cadangan + cache.
@@ -178,7 +179,9 @@ export async function chatComplete(
       return content;
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
-      console.error(`[astoria-ai] Percobaan ${attempt} (${model ?? "default"}) gagal:`, lastError.message);
+      logger.error(`[astoria-ai] Percobaan ${attempt} (${model ?? "default"}) gagal`, {
+        error: lastError,
+      });
       if (isQuotaError(lastError.message)) {
         const resetAt = quotaResetAt(lastError.message);
         quotaBlockedUntil = resetAt > Date.now() ? resetAt : Date.now() + 5 * 60_000;
@@ -209,7 +212,7 @@ export async function embedTexts(texts: string[]): Promise<number[][] | null> {
     if (!vectors || vectors.length !== texts.length) throw new Error("jumlah embedding tidak sesuai");
     return vectors;
   } catch (err) {
-    console.error("[astoria-ai] Embedding gagal:", err instanceof Error ? err.message : err);
+    logger.error("[astoria-ai] Embedding gagal:", { error: err instanceof Error ? err.message : err });
     return null;
   }
 }
@@ -262,7 +265,7 @@ export async function chatJSON<T>(
 
     lastRaw = raw;
     if (attempt === 1) {
-      console.warn("[astoria-ai] JSON tidak valid, mencoba ulang dengan instruksi koreksi.");
+      logger.warn("[astoria-ai] JSON tidak valid, mencoba ulang dengan instruksi koreksi.");
       currentMessages = [
         ...messages,
         { role: "assistant", content: raw.slice(0, 1500) },

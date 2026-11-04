@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // POST /api/quiz/generate — buat 5 soal dari dokumen (basis kuis gamifikasi)
 
 import { NextRequest, NextResponse } from "next/server";
@@ -85,7 +86,7 @@ export async function POST(req: NextRequest) {
       })),
     });
   } catch (e) {
-    console.error("[/api/quiz/generate]", e);
+    logger.error("[/api/quiz/generate]", { error: e });
     if (isAiQuotaError(e)) {
       return NextResponse.json({ error: aiQuotaMessage(), code: "ai_quota" }, { status: 503 });
     }

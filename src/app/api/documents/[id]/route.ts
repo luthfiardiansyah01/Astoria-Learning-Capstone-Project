@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET /api/documents/[id] — detail dokumen + metadata AI + preview chunks
 // DELETE /api/documents/[id] — hapus dokumen (admin / pemilik)
 
@@ -43,7 +44,7 @@ export async function GET(
       },
     });
   } catch (e) {
-    console.error("[/api/documents/[id] GET]", e);
+    logger.error("[/api/documents/[id] GET]", { error: e });
     return NextResponse.json({ error: "Gagal memuat dokumen" }, { status: 500 });
   }
 }
@@ -62,7 +63,7 @@ export async function DELETE(
     await db.document.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (e) {
-    console.error("[/api/documents/[id] DELETE]", e);
+    logger.error("[/api/documents/[id] DELETE]", { error: e });
     return NextResponse.json({ error: "Gagal menghapus dokumen" }, { status: 500 });
   }
 }

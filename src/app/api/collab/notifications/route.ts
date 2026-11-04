@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET  /api/collab/notifications — daftar notifikasi + jumlah belum dibaca (juga memindai tenggat tugas)
 // POST /api/collab/notifications — tandai dibaca: { ids?: string[] } (tanpa ids = semua)
 
@@ -27,7 +28,7 @@ export async function GET() {
 
     return NextResponse.json({ notifications, unreadCount });
   } catch (e) {
-    console.error("[/api/collab/notifications GET]", e);
+    logger.error("[/api/collab/notifications GET]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error("[/api/collab/notifications POST]", e);
+    logger.error("[/api/collab/notifications POST]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

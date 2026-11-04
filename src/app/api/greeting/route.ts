@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET /api/greeting — sapaan mentor proaktif (Seksi 6.3 spesifikasi)
 // Data: nama, streak, last active, modul aktif, progress, waktu WIB
 
@@ -78,7 +79,7 @@ export async function GET() {
     )
       .then((value) => value.replace(/^(sapaan|greeting)\s*:\s*/i, "").trim())
       .catch((e) => {
-        console.error("[/api/greeting] AI gagal, pakai sapaan lokal:", e);
+        logger.error("[/api/greeting] AI gagal, pakai sapaan lokal:", { error: e });
         return fallbackGreeting;
       });
 
@@ -110,7 +111,7 @@ export async function GET() {
       },
     });
   } catch (e) {
-    console.error("[/api/greeting]", e);
+    logger.error("[/api/greeting]", { error: e });
     return NextResponse.json({ error: "Gagal memuat sapaan" }, { status: 500 });
   }
 }

@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // src/lib/rate-limit.ts
 // Pembatas laju request. Produksi: Upstash Redis (REST). Lokal/tanpa env: memori proses.
 // Catatan: memori tidak dibagi antar-instance serverless, jadi hanya untuk pengembangan.
@@ -101,7 +102,7 @@ export async function rateLimit(
   if (!cfg) {
     if (process.env.NODE_ENV === "production" && !globalForRateLimit.__sobadiRateLimitWarned) {
       globalForRateLimit.__sobadiRateLimitWarned = true;
-      console.warn("[rate-limit] UPSTASH_REDIS_REST_URL/TOKEN kosong; memakai memori proses (tidak efektif di serverless).");
+      logger.warn("[rate-limit] UPSTASH_REDIS_REST_URL/TOKEN kosong; memakai memori proses (tidak efektif di serverless).");
     }
     return memoryHit(key, max, windowSec);
   }
@@ -133,7 +134,7 @@ export async function rateLimit(
       retryAfter: ttl > 0 ? ttl : windowSec,
     };
   } catch (e) {
-    console.error("[rate-limit] Upstash gagal, jatuh ke memori:", e instanceof Error ? e.message : e);
+    logger.error("[rate-limit] Upstash gagal, jatuh ke memori:", { error: e instanceof Error ? e.message : e });
     return memoryHit(key, max, windowSec);
   }
 }
@@ -210,7 +211,7 @@ export async function getRateLimitStatus(
       resetAt: Date.now() + (ttl > 0 ? ttl : windowSec) * 1000,
     };
   } catch (e) {
-    console.error("[rate-limit] status Upstash gagal, pakai memori:", e instanceof Error ? e.message : e);
+    logger.error("[rate-limit] status Upstash gagal, pakai memori:", { error: e instanceof Error ? e.message : e });
     return memoryStatus(key, max, windowSec);
   }
 }

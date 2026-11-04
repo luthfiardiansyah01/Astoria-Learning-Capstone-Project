@@ -32,7 +32,7 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     // General JavaScript rules
     "prefer-const": "error",
     "no-unused-vars": "off",
-    "no-console": "off",
+    "no-console": "error",
     "no-debugger": "off",
     "no-empty": ["error", { allowEmptyCatch: true }],
     "no-irregular-whitespace": "off",
@@ -43,6 +43,12 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-undef": "off",
     "no-unreachable": "error",
     "no-useless-escape": "off",
+  },
+}, {
+  // Skrip operasional, seed, dan test boleh menulis ke konsol.
+  files: ["scripts/**/*.{js,ts}", "tests/**/*.{js,ts,tsx}"],
+  rules: {
+    "no-console": "off",
   },
 }, {
   ignores: [

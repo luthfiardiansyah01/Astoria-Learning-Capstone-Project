@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // POST /api/billing/checkout — buat transaksi Premium di Midtrans/Xendit.
 // Bila kredensial belum diisi, mengembalikan 503 + code "billing_not_configured".
 import { NextResponse } from "next/server";
@@ -135,7 +136,7 @@ export async function POST() {
       })
       .catch(() => null);
 
-    console.error("[/api/billing/checkout]", e);
+    logger.error("[/api/billing/checkout]", { error: e });
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

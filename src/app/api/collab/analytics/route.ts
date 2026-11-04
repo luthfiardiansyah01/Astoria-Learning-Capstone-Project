@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET /api/collab/analytics — dashboard analitik tim.
 // Admin/dosen: semua tim. Mahasiswa: hanya tim yang diikuti.
 
@@ -121,7 +122,7 @@ export async function GET() {
 
     return NextResponse.json({ scope: isAdmin ? "admin" : "member", teams: result });
   } catch (e) {
-    console.error("[/api/collab/analytics GET]", e);
+    logger.error("[/api/collab/analytics GET]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

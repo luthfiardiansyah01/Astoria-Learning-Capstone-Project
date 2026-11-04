@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // PATCH  /api/collab/teams/[teamId] — ubah nama tim (owner)
 // DELETE /api/collab/teams/[teamId] — hapus tim (owner)
 
@@ -40,7 +41,7 @@ export async function PATCH(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/teams/[teamId] PATCH]", e);
+    logger.error("[/api/collab/teams/[teamId] PATCH]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }
@@ -62,7 +63,7 @@ export async function DELETE(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/teams/[teamId] DELETE]", e);
+    logger.error("[/api/collab/teams/[teamId] DELETE]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

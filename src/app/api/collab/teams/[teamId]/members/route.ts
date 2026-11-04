@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // POST /api/collab/teams/[teamId]/members — tambah anggota lewat nama
 // CATATAN: sementara pakai nama (bukan unik); pencarian lewat email menyusul.
 
@@ -95,7 +96,7 @@ export async function POST(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/teams/[teamId]/members POST]", e);
+    logger.error("[/api/collab/teams/[teamId]/members POST]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

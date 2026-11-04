@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // POST /api/billing/webhook/midtrans — notifikasi transaksi Midtrans.
 // Verifikasi signature SHA512 lalu aktifkan Premium (idempoten).
 import { NextRequest, NextResponse } from "next/server";
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!verifyMidtransSignature(payload)) {
-    console.warn("[midtrans] signature tidak valid", {
+    logger.warn("[midtrans] signature tidak valid", {
       order_id: payload.order_id,
       status_code: payload.status_code,
     });

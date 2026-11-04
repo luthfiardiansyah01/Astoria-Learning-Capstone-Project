@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // POST /api/admin/decision — keputusan admin: aktifkan / review / tolak dokumen
 
 import { NextRequest, NextResponse } from "next/server";
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
       document: { id: doc.id, fileName: doc.fileName, status: doc.status },
     });
   } catch (e) {
-    console.error("[/api/admin/decision]", e);
+    logger.error("[/api/admin/decision]", { error: e });
     return NextResponse.json({ error: "Gagal memproses keputusan admin" }, { status: 500 });
   }
 }

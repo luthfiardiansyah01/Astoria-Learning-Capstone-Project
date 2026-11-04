@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET   /api/collab/projects/[projectId] — proyek + tugas + tim + anggota
 // PATCH /api/collab/projects/[projectId] — ubah nama/deskripsi
 
@@ -27,7 +28,7 @@ export async function GET(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/projects/[projectId] GET]", e);
+    logger.error("[/api/collab/projects/[projectId] GET]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }
@@ -61,7 +62,7 @@ export async function PATCH(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/projects/[projectId] PATCH]", e);
+    logger.error("[/api/collab/projects/[projectId] PATCH]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }
@@ -85,7 +86,7 @@ export async function DELETE(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/projects/[projectId] DELETE]", e);
+    logger.error("[/api/collab/projects/[projectId] DELETE]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET /api/collab/teams/leaderboard — peringkat tim berdasarkan XP kolektif
 
 import { NextResponse } from "next/server";
@@ -28,7 +29,7 @@ export async function GET() {
 
     return NextResponse.json({ leaderboard });
   } catch (e) {
-    console.error("[/api/collab/teams/leaderboard GET]", e);
+    logger.error("[/api/collab/teams/leaderboard GET]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // PATCH  /api/collab/tasks/[taskId] — endpoint drag-and-drop Kanban: ubah status/urutan/assignee
 // DELETE /api/collab/tasks/[taskId] — hapus tugas
 
@@ -95,7 +96,7 @@ export async function PATCH(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/tasks/[taskId] PATCH]", e);
+    logger.error("[/api/collab/tasks/[taskId] PATCH]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }
@@ -119,7 +120,7 @@ export async function DELETE(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/tasks/[taskId] DELETE]", e);
+    logger.error("[/api/collab/tasks/[taskId] DELETE]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // POST /api/collab/projects/[projectId]/tasks — buat tugas baru di kolom "todo"
 
 import { NextRequest, NextResponse } from "next/server";
@@ -70,7 +71,7 @@ export async function POST(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/projects/[projectId]/tasks POST]", e);
+    logger.error("[/api/collab/projects/[projectId]/tasks POST]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

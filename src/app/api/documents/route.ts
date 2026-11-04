@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // POST /api/documents — unggah dokumen:
 // 1) validasi panjang (maks 20.000 karakter, fallback doc_too_large)
 // 2) chunking untuk RAG
@@ -67,7 +68,7 @@ export async function GET() {
       })),
     });
   } catch (e) {
-    console.error("[/api/documents GET]", e);
+    logger.error("[/api/documents GET]", { error: e });
     return NextResponse.json({ error: "Gagal memuat dokumen" }, { status: 500 });
   }
 }
@@ -128,7 +129,7 @@ export async function POST(req: NextRequest) {
       });
       await ensureChunkEmbeddings(saved);
     } catch (e) {
-      console.error("[/api/documents] embedding chunk dilewati:", e);
+      logger.error("[/api/documents] embedding chunk dilewati:", { error: e });
     }
 
     // ── AI Document Processor + Content Moderator (paralel agar tidak lambat) ──
@@ -158,11 +159,11 @@ export async function POST(req: NextRequest) {
     const aiWarnings: string[] = [];
 
     if (metadataResult.status === "rejected") {
-      console.error("[doc-processor] ekstraksi gagal:", metadataResult.reason);
+      logger.error("[doc-processor] ekstraksi gagal:", { error: metadataResult.reason });
       aiWarnings.push("AI struktur tidak tersedia; struktur diekstrak dengan metode lokal.");
     }
     if (moderationResult.status === "rejected") {
-      console.error("[content-moderator] moderasi gagal:", moderationResult.reason);
+      logger.error("[content-moderator] moderasi gagal:", { error: moderationResult.reason });
       aiWarnings.push("AI moderasi tidak tersedia; dokumen menunggu review admin.");
     }
 
@@ -199,7 +200,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (e) {
-    console.error("[/api/documents POST]", e);
+    logger.error("[/api/documents POST]", { error: e });
     return NextResponse.json(
       { error: FALLBACK_RESPONSES.api_error, code: "api_error" },
       { status: 500 }

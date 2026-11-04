@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET  /api/collab/tasks/[taskId]/mentor — riwayat chat mentor untuk task ini
 // POST /api/collab/tasks/[taskId]/mentor — kirim pertanyaan ke Mentor AI kontekstual
 
@@ -41,7 +42,7 @@ export async function GET(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/tasks/[taskId]/mentor GET]", e);
+    logger.error("[/api/collab/tasks/[taskId]/mentor GET]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }
@@ -124,7 +125,7 @@ export async function POST(
         { cache: true }
       );
     } catch (e) {
-      console.error("[/api/collab/tasks/[taskId]/mentor] AI gagal:", e);
+      logger.error("[/api/collab/tasks/[taskId]/mentor] AI gagal:", { error: e });
       if (isAiQuotaError(e)) {
         return NextResponse.json(
           { error: aiQuotaMessage(), code: "ai_quota" },
@@ -157,7 +158,7 @@ export async function POST(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/tasks/[taskId]/mentor POST]", e);
+    logger.error("[/api/collab/tasks/[taskId]/mentor POST]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

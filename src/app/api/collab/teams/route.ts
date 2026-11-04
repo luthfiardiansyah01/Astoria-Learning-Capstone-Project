@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET  /api/collab/teams — daftar tim milik user saat ini
 // POST /api/collab/teams — buat tim baru (pembuat jadi owner)
 
@@ -25,7 +26,7 @@ export async function GET() {
 
     return NextResponse.json({ teams });
   } catch (e) {
-    console.error("[/api/collab/teams GET]", e);
+    logger.error("[/api/collab/teams GET]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ team });
   } catch (e) {
-    console.error("[/api/collab/teams POST]", e);
+    logger.error("[/api/collab/teams POST]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

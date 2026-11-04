@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET /api/collab/users/search?q=&teamId= — saran nama pengguna untuk menambah anggota tim.
 // Hanya owner tim; hanya mengembalikan id + nama (tanpa email), tanpa anggota yang sudah ada.
 
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/users/search GET]", e);
+    logger.error("[/api/collab/users/search GET]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

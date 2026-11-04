@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET  /api/plan — paket aktif, limit, dan status trial.
 // POST /api/plan — aktifkan trial Premium 7 hari (sekali per akun, tanpa pembayaran).
 import { NextResponse } from "next/server";
@@ -21,7 +22,7 @@ export async function GET() {
       trialUsedAt: auth.user.trialUsedAt,
     });
   } catch (e) {
-    console.error("[/api/plan GET]", e);
+    logger.error("[/api/plan GET]", { error: e });
     return NextResponse.json({ error: "Gagal memuat paket." }, { status: 500 });
   }
 }
@@ -58,7 +59,7 @@ export async function POST() {
       message: "Trial Premium 7 hari aktif.",
     });
   } catch (e) {
-    console.error("[/api/plan POST]", e);
+    logger.error("[/api/plan POST]", { error: e });
     return NextResponse.json({ error: "Gagal mengaktifkan trial." }, { status: 500 });
   }
 }

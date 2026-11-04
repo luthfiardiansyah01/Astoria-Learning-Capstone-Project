@@ -10,6 +10,12 @@ export const BADGE_META: Record<string, { emoji: string; desc: string }> = {
 
 export const XP_LEVELS = [0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200, 4000];
 
+export const BADGE_THRESHOLDS = {
+  answeredInDoc: 5,
+  streakDays: 3,
+  avgScore: 85,
+} as const;
+
 export function levelFromXp(xp: number): number {
   let level = 1;
   for (let i = 0; i < XP_LEVELS.length; i++) {
@@ -42,9 +48,11 @@ export function checkBadgeTriggers(stats: {
   const { answeredInThisDoc, streakDays, avgLast5, isFirstLanjut, alreadyEarned } = stats;
 
   if (isFirstLanjut && !alreadyEarned.includes("Pemberani")) return "Pemberani";
-  if (answeredInThisDoc >= 5 && !alreadyEarned.includes("Pembaca Setia")) return "Pembaca Setia";
-  if (streakDays >= 3 && !alreadyEarned.includes("Pejuang Streak")) return "Pejuang Streak";
-  if (avgLast5 !== null && avgLast5 > 85 && !alreadyEarned.includes("Bintang Kelas"))
+  if (answeredInThisDoc >= BADGE_THRESHOLDS.answeredInDoc && !alreadyEarned.includes("Pembaca Setia"))
+    return "Pembaca Setia";
+  if (streakDays >= BADGE_THRESHOLDS.streakDays && !alreadyEarned.includes("Pejuang Streak"))
+    return "Pejuang Streak";
+  if (avgLast5 !== null && avgLast5 > BADGE_THRESHOLDS.avgScore && !alreadyEarned.includes("Bintang Kelas"))
     return "Bintang Kelas";
   return null;
 }

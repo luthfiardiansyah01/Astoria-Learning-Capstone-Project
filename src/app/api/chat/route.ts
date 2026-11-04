@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // POST /api/chat — Mentor AI RAG Chat (Seksi 3 spesifikasi):
 //   1. Mahasiswa pilih dokumen → retrieval chunk paling relevan
 //   2. System prompt = PLATFORM_IDENTITY + MENTOR_PROMPT + RAG_CONTEXT_INJECTION
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json({ messages });
   } catch (e) {
-    console.error("[/api/chat GET]", e);
+    logger.error("[/api/chat GET]", { error: e });
     return NextResponse.json({ error: "Gagal memuat riwayat chat" }, { status: 500 });
   }
 }
@@ -45,7 +46,7 @@ export async function DELETE(req: NextRequest) {
     await db.chatMessage.deleteMany({ where: { documentId: documentId ?? null, userId: auth.user.id } });
     return NextResponse.json({ success: true });
   } catch (e) {
-    console.error("[/api/chat DELETE]", e);
+    logger.error("[/api/chat DELETE]", { error: e });
     return NextResponse.json({ error: "Gagal menghapus riwayat" }, { status: 500 });
   }
 }
@@ -123,7 +124,7 @@ export async function POST(req: NextRequest) {
     try {
       reply = await chatComplete(messages, PARAMS.user_mentor, { cache: true });
     } catch (e) {
-      console.error("[/api/chat] AI gagal:", e);
+      logger.error("[/api/chat] AI gagal:", { error: e });
       if (isAiQuotaError(e)) {
         return NextResponse.json(
           {
@@ -163,7 +164,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ reply });
   } catch (e) {
-    console.error("[/api/chat POST]", e);
+    logger.error("[/api/chat POST]", { error: e });
     return NextResponse.json(
       { reply: FALLBACK_RESPONSES.api_error, fallback: "api_error" },
       { status: 500 }

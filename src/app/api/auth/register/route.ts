@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // POST /api/auth/register — buat akun mahasiswa baru untuk Astoria Collab
 
 import { NextRequest, NextResponse } from "next/server";
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
       user: { id: user.id, name: user.name, email: user.email },
     });
   } catch (e) {
-    console.error("[/api/auth/register]", e);
+    logger.error("[/api/auth/register]", { error: e });
     return NextResponse.json(
       { error: FALLBACK_RESPONSES.api_error, code: "api_error" },
       { status: 500 }

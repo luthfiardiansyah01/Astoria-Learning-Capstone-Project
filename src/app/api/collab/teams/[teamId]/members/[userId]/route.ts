@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // DELETE /api/collab/teams/[teamId]/members/[userId] — keluarkan anggota
 
 import { NextResponse } from "next/server";
@@ -35,7 +36,7 @@ export async function DELETE(
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
     }
-    console.error("[/api/collab/teams/[teamId]/members/[userId] DELETE]", e);
+    logger.error("[/api/collab/teams/[teamId]/members/[userId] DELETE]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

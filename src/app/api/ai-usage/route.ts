@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET /api/ai-usage — sisa kuota AI pengguna (per menit & per hari), tanpa menambah counter.
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/current-user";
@@ -30,7 +31,7 @@ export async function GET() {
 
     return NextResponse.json({ plan, daily, minute });
   } catch (e) {
-    console.error("[/api/ai-usage]", e);
+    logger.error("[/api/ai-usage]", { error: e });
     return NextResponse.json({ error: "Gagal memuat kuota AI" }, { status: 500 });
   }
 }

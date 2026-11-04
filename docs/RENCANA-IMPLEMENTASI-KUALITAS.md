@@ -12,7 +12,7 @@ Dokumen ini melengkapi `docs/RENCANA-IMPLEMENTASI.md` (kesiapan produksi). Fokus
 | Fase 3 — Integration test API | **Selesai** | 107 test di `tests/integration` dengan PostgreSQL uji (`db-test`); coverage API 76% baris / 71% statement |
 | Fase 4 — E2E Playwright | **Selesai** | 10 skenario di `tests/e2e` dengan mock AI, database uji, trace/screenshot; lulus 3× berturut-turut |
 | Fase 5 — CI | **Selesai** | `.github/workflows/ci.yml`: typecheck, lint, unit + coverage, integration + coverage, build, E2E Playwright |
-| Fase 6 — Observability & pembersihan | Belum | Logger, error boundary, dan aturan `no-console` belum |
+| Fase 6 — Observability & pembersihan | **Selesai** | Logger JSON + redaksi, `error.tsx`/`global-error.tsx`/`not-found.tsx`/`loading.tsx`, artefak scaffold dipindahkan/dihapus, `no-console` aktif, audit `knip` dijalankan |
 
 ### Menjalankan E2E
 

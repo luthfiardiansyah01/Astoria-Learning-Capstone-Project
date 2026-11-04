@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 // GET /api/admin/analytics — statistik platform.
 // Insight AI hanya dibuat saat diminta (?insight=1) agar buka panel admin tetap cepat.
 import { NextRequest, NextResponse } from "next/server";
@@ -103,7 +104,7 @@ export async function GET(req: NextRequest) {
           PARAMS.admin_ops
         );
       } catch (e) {
-        console.error("[/api/admin/analytics] summarizer gagal:", e);
+        logger.error("[/api/admin/analytics] summarizer gagal:", { error: e });
         const topDoc = popular[0]?.fileName ?? "belum ada";
         const topTopic = topTopics[0]?.kata ?? "belum ada";
         insight = [
@@ -132,7 +133,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (e) {
-    console.error("[/api/admin/analytics]", e);
+    logger.error("[/api/admin/analytics]", { error: e });
     return NextResponse.json({ error: "Gagal memuat analitik" }, { status: 500 });
   }
 }
