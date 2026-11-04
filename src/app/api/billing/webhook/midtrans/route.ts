@@ -9,6 +9,11 @@ import {
 
 export const dynamic = "force-dynamic";
 
+// Health check untuk dashboard/uptime monitor. Tidak mengubah data.
+export async function GET() {
+  return NextResponse.json({ ok: true, service: "midtrans-webhook" });
+}
+
 interface MidtransPayload {
   order_id?: string;
   status_code?: string;
