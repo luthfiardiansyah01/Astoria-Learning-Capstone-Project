@@ -77,6 +77,7 @@ Jika gateway belum aktif atau pengguna membayar lewat transfer:
 | `GET` | `/api/billing/config` | pengguna login |
 | `POST` | `/api/billing/checkout` | pengguna login |
 | `GET` | `/api/billing/payments` | pengguna login |
+| `DELETE` | `/api/billing/payments/:id` | pemilik pesanan (batalkan pending) |
 | `POST` | `/api/billing/webhook/midtrans` | publik + signature |
 | `POST` | `/api/billing/webhook/xendit` | publik + callback token |
 | `GET` | `/api/admin/users` | admin |
