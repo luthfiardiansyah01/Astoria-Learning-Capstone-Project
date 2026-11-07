@@ -114,9 +114,55 @@ describe("clientIp", () => {
     expect(clientIp({ "x-real-ip": "192.168.1.5" })).toBe("192.168.1.5");
   });
 
+  it("memprioritaskan x-real-ip dan mengabaikan nilai tidak valid", () => {
+    expect(
+      clientIp(new Headers({ "x-real-ip": "203.0.113.9", "x-forwarded-for": "1.1.1.1" }))
+    ).toBe("203.0.113.9");
+    expect(
+      clientIp({ "x-real-ip": "bukan-ip", "x-forwarded-for": "198.51.100.7" })
+    ).toBe("198.51.100.7");
+    expect(clientIp({ "x-forwarded-for": "evil, 198.51.100.8" })).toBe("198.51.100.8");
+    expect(clientIp({ "x-real-ip": "999.1.1.1" })).toBe("unknown");
+  });
+
   it("mengembalikan unknown bila header tidak ada", () => {
     expect(clientIp(undefined)).toBe("unknown");
     expect(clientIp(new Headers())).toBe("unknown");
+  });
+});
+
+describe("rateLimit fail-closed", () => {
+  const saved = {
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    flag: process.env.RATE_LIMIT_FAIL_CLOSED,
+  };
+
+  afterEach(() => {
+    if (saved.url === undefined) delete process.env.UPSTASH_REDIS_REST_URL;
+    else process.env.UPSTASH_REDIS_REST_URL = saved.url;
+    if (saved.token === undefined) delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    else process.env.UPSTASH_REDIS_REST_TOKEN = saved.token;
+    if (saved.flag === undefined) delete process.env.RATE_LIMIT_FAIL_CLOSED;
+    else process.env.RATE_LIMIT_FAIL_CLOSED = saved.flag;
+  });
+
+  it("menolak request bila Redis tidak tersedia dan flag aktif", async () => {
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    process.env.RATE_LIMIT_FAIL_CLOSED = "true";
+
+    const result = await rateLimit("unit", uniqueId("fail-closed"), 5, 60, { failClosed: true });
+    expect(result).toEqual({ ok: false, remaining: 0, retryAfter: 60 });
+  });
+
+  it("tetap memakai memori bila flag tidak aktif", async () => {
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.RATE_LIMIT_FAIL_CLOSED;
+
+    const result = await rateLimit("unit", uniqueId("fail-open"), 5, 60, { failClosed: true });
+    expect(result.ok).toBe(true);
   });
 });
 

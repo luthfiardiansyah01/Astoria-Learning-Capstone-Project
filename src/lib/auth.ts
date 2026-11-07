@@ -22,7 +22,24 @@ export const authOptions: NextAuthOptions = {
 
         const email = credentials.email.trim().toLowerCase();
         const ip = clientIp(req?.headers as Record<string, string | undefined> | undefined);
-        const limit = await rateLimit("login", `${ip}:${email}`, LIMITS.login.max, LIMITS.login.windowSec);
+
+        // Batas per IP mencegah credential stuffing lintas banyak akun.
+        const ipLimit = await rateLimit(
+          "login-ip",
+          ip,
+          LIMITS.loginIp.max,
+          LIMITS.loginIp.windowSec,
+          { failClosed: true }
+        );
+        if (!ipLimit.ok) return null;
+
+        const limit = await rateLimit(
+          "login",
+          `${ip}:${email}`,
+          LIMITS.login.max,
+          LIMITS.login.windowSec,
+          { failClosed: true }
+        );
         if (!limit.ok) return null;
 
         const user = await db.user.findUnique({

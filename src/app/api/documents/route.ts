@@ -81,7 +81,9 @@ export async function POST(req: NextRequest) {
     const plan = effectivePlan(student);
     const limited = await guardAi(student.id, plan);
     if (limited) return limited;
-    const uploadLimit = await rateLimit("upload", student.id, LIMITS.upload.max, LIMITS.upload.windowSec);
+    const uploadLimit = await rateLimit("upload", student.id, LIMITS.upload.max, LIMITS.upload.windowSec, {
+      failClosed: true,
+    });
     if (!uploadLimit.ok) return tooManyRequests(uploadLimit);
     const parsed = await readBody(req, documentUploadSchema);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });

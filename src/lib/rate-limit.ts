@@ -9,10 +9,20 @@ import { PLAN_LIMITS, type Plan } from "./plans";
 export const LIMITS = {
   register: { max: 5, windowSec: 3600 },
   login: { max: 10, windowSec: 900 },
+  /** Batas lintas akun per IP untuk mencegah credential stuffing. */
+  loginIp: { max: 60, windowSec: 900 },
   aiPerMinute: { max: 20, windowSec: 60 },
   aiPerDay: { max: 300, windowSec: 86400 },
   upload: { max: 10, windowSec: 3600 },
 } as const;
+
+export type RateLimitOptions = {
+  /**
+   * Bila true dan RATE_LIMIT_FAIL_CLOSED=true, request ditolak saat Redis
+   * tidak tersedia. Dipakai untuk login/register/AI/checkout di produksi.
+   */
+  failClosed?: boolean;
+};
 
 export type RateLimitResult = {
   ok: boolean;
@@ -95,11 +105,18 @@ export async function rateLimit(
   name: string,
   id: string,
   max: number,
-  windowSec: number
+  windowSec: number,
+  options: RateLimitOptions = {}
 ): Promise<RateLimitResult> {
   const key = `sobadi:rl:${name}:${id}`;
   const cfg = redisConfig();
+  const failClosed = options.failClosed === true && process.env.RATE_LIMIT_FAIL_CLOSED === "true";
+
   if (!cfg) {
+    if (failClosed) {
+      logger.error("[rate-limit] Upstash tidak dikonfigurasi; request ditolak (fail-closed).");
+      return { ok: false, remaining: 0, retryAfter: windowSec };
+    }
     if (process.env.NODE_ENV === "production" && !globalForRateLimit.__sobadiRateLimitWarned) {
       globalForRateLimit.__sobadiRateLimitWarned = true;
       logger.warn("[rate-limit] UPSTASH_REDIS_REST_URL/TOKEN kosong; memakai memori proses (tidak efektif di serverless).");
@@ -134,19 +151,48 @@ export async function rateLimit(
       retryAfter: ttl > 0 ? ttl : windowSec,
     };
   } catch (e) {
+    if (failClosed) {
+      logger.error("[rate-limit] Upstash gagal; request ditolak (fail-closed):", {
+        error: e instanceof Error ? e.message : e,
+      });
+      return { ok: false, remaining: 0, retryAfter: windowSec };
+    }
     logger.error("[rate-limit] Upstash gagal, jatuh ke memori:", { error: e instanceof Error ? e.message : e });
     return memoryHit(key, max, windowSec);
   }
 }
 
-/** IP klien dari header proxy Vercel. */
+/** Validasi IP dari header proxy; tolak nilai aneh/spoof agar kunci rate limit tidak bisa dipalsukan. */
+function validIp(value: string | null | undefined): string | null {
+  if (!value) return null;
+  let ip = value.trim();
+  if (ip.startsWith("[")) {
+    const end = ip.indexOf("]");
+    if (end > 0) ip = ip.slice(1, end);
+  }
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) {
+    return ip.split(".").every((part) => Number(part) <= 255) ? ip : null;
+  }
+  if (ip.includes(":") && /^[0-9a-fA-F:.]+$/.test(ip)) return ip.toLowerCase();
+  return null;
+}
+
+/** IP klien dari header proxy tepercaya (Vercel/Caddy). */
 export function clientIp(headers: Headers | Record<string, string | undefined> | undefined): string {
   if (!headers) return "unknown";
   const get = (name: string) =>
     headers instanceof Headers ? headers.get(name) : headers[name] ?? headers[name.toLowerCase()];
-  const forwarded = get("x-forwarded-for");
-  const first = forwarded?.split(",")[0]?.trim();
-  return first || get("x-real-ip") || "unknown";
+
+  // x-real-ip ditetapkan platform/proxy kita; prioritaskan agar tidak bisa
+  // ditimpa lewat x-forwarded-for yang dikirim klien.
+  const realIp = validIp(get("x-real-ip"));
+  if (realIp) return realIp;
+
+  for (const part of get("x-forwarded-for")?.split(",") ?? []) {
+    const ip = validIp(part);
+    if (ip) return ip;
+  }
+  return "unknown";
 }
 
 export function tooManyRequests(result: RateLimitResult) {
@@ -219,7 +265,7 @@ export async function getRateLimitStatus(
 /** Batas gabungan untuk rute AI: per menit dan per hari. Null berarti boleh lanjut. */
 export async function guardAi(userId: string, plan: Plan = "free"): Promise<NextResponse | null> {
   const limits = PLAN_LIMITS[plan];
-  const minute = await rateLimit("ai-minute", userId, limits.aiPerMinute, 60);
+  const minute = await rateLimit("ai-minute", userId, limits.aiPerMinute, 60, { failClosed: true });
   if (!minute.ok) return tooManyRequests(minute);
 
   // Kuota harian memakai tanggal WIB dan TTL sampai tengah malam WIB.
@@ -228,7 +274,8 @@ export async function guardAi(userId: string, plan: Plan = "free"): Promise<Next
     aiDayCounterName(now),
     userId,
     limits.aiPerDay,
-    secondsUntilWibMidnight(now)
+    secondsUntilWibMidnight(now),
+    { failClosed: true }
   );
   if (!day.ok) return tooManyRequests(day);
 

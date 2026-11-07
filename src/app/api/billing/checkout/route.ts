@@ -47,7 +47,7 @@ export async function POST() {
   const amount = PREMIUM_PRICE_IDR;
 
   // Cegah spam invoice: maksimal 5 percobaan checkout per jam.
-  const limited = await rateLimit("billing-checkout", user.id, 5, 3600);
+  const limited = await rateLimit("billing-checkout", user.id, 5, 3600, { failClosed: true });
   if (!limited.ok) return tooManyRequests(limited);
 
   // Bersihkan transaksi pending yang sudah melewati masa berlaku gateway, lalu

@@ -13,7 +13,9 @@ import { readBody, registerSchema } from "@/lib/validation";
 export async function POST(req: NextRequest) {
   try {
     const ip = clientIp(req.headers);
-    const limit = await rateLimit("register", ip, LIMITS.register.max, LIMITS.register.windowSec);
+    const limit = await rateLimit("register", ip, LIMITS.register.max, LIMITS.register.windowSec, {
+      failClosed: true,
+    });
     if (!limit.ok) return tooManyRequests(limit);
 
     const parsed = await readBody(req, registerSchema);
