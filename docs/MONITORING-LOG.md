@@ -14,7 +14,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Fase | Status | Commit terakhir | Catatan |
 |---|---|---|---|
 | P0 | Selesai | `322c481` | Rotasi DB, rate limit, admin, Midtrans internal |
-| P1 | Selesai sebagian | — | Body limit, webhook, moderasi, undangan, RLS; verifikasi email/CAPTCHA menunggu kredensial |
+| P1 | Selesai sebagian | `733a6a7` | Body limit, webhook, moderasi, undangan, RLS; verifikasi email/CAPTCHA menunggu kredensial |
 
 ## Checklist monitoring
 
@@ -65,7 +65,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P1 | Body limit & webhook | Selesai | Middleware 1 MB (webhook 256 KB); rate limit webhook 120/menit per IP |
 | 2026-11-07 | P1 | Moderasi dokumen | Selesai | Moderasi seluruh teks; tidak ada auto-approve; dokumen baru `pending` |
 | 2026-11-07 | P1 | Undangan tim | Selesai | Tabel `TeamInvite`; anggota baru harus menerima; email tidak diekspos |
-| 2026-11-07 | P1 | Audit RLS | Selesai (test DB) | 18 tabel RLS aktif, 0 policy publik; ulangi di produksi setelah deploy |
+| 2026-11-07 | P1 | Audit RLS | Selesai | Produksi: 18 tabel RLS aktif, 0 policy publik; `TeamInvite` RLS aktif |
 | 2026-11-07 | P1 | Verifikasi email/CAPTCHA | Terblokir | Belum ada kredensial SMTP/Resend/Turnstile; honeypot + rate limit sebagai interim |
 | 2026-11-07 | P1 | Regresi | Selesai | Unit 146, integration 129, E2E 12; build lulus |
 
@@ -111,17 +111,22 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Unit 146 / integration 129 / E2E 12 lulus.
 - Build produksi + middleware lulus.
 - RLS test DB: 18 tabel aktif, 0 policy publik, `TeamInvite` RLS aktif.
-- Migrasi `20261107010000_team_invite` diterapkan ke test DB.
+- Migrasi `20261107010000_team_invite` diterapkan ke test DB dan produksi.
+- Produksi: login Free `200`, `/collab` `200`, `GET /api/collab/invites` `200`,
+  body 1,1 MB ditolak `413`, login admin `200`.
+- Log produksi 20 menit: 0 error, 0 respons 5xx.
+- CI `733a6a7` sukses; deployment Production Ready.
 
 **Sisa risiko**
 - Verifikasi email dan CAPTCHA belum aktif karena belum ada kredensial
   SMTP/Resend/Turnstile. Honeypot + rate limit hanya mitigasi sementara.
 - Batas anggota tim masih memakai pola hitung-lalu-buat (race condition).
-- Perlu audit RLS produksi setelah migrasi `TeamInvite` diterapkan.
+- Admin legacy `admin@sobat-adi.id` masih aktif.
+- Channel pembayaran Midtrans tetap menunggu business review.
 
 **Tindak lanjut**
 - Sediakan `RESEND_API_KEY`/SMTP dan kunci Turnstile untuk P1 lanjutan.
-- Audit RLS produksi dan catat hasilnya di entri berikutnya.
+- Atomickan batas anggota tim dan pertimbangkan undangan via email.
 
 ## Template entri tahap berikutnya
 
