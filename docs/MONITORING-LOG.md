@@ -15,7 +15,7 @@ verifikasi, dan sisa risiko tidak hilang.
 |---|---|---|---|
 | P0 | Selesai | `322c481` | Rotasi DB, rate limit, admin, Midtrans internal |
 | P1 | Selesai | `179b2d6` | Semua item P1 aktif dan terverifikasi di produksi |
-| P2 | Selesai | — | Limit atomik, URL/quiz state, toast, XP, a11y, performa |
+| P2 | Selesai | `17fe563` | Limit atomik, URL/quiz state, toast, XP, a11y, performa |
 
 ## Checklist monitoring
 
