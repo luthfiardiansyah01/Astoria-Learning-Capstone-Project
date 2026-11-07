@@ -39,6 +39,19 @@ export async function POST(
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const { title, description, assigneeId, xpReward } = parsed.data;
 
+    if (assigneeId) {
+      const assignee = await db.teamMember.findUnique({
+        where: { teamId_userId: { teamId: project.teamId, userId: assigneeId } },
+        select: { userId: true },
+      });
+      if (!assignee) {
+        return NextResponse.json(
+          { error: "Penerima tugas harus anggota tim ini." },
+          { status: 400 }
+        );
+      }
+    }
+
     const lastInColumn = await db.task.findFirst({
       where: { projectId, status: "todo" },
       orderBy: { order: "desc" },
@@ -54,7 +67,7 @@ export async function POST(
         xpReward: xpReward ?? 10,
         order: (lastInColumn?.order ?? -1) + 1,
       },
-      include: { assignee: true },
+      include: { assignee: { select: { id: true, name: true } } },
     });
 
     await logActivity({

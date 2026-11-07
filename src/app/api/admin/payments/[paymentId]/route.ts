@@ -22,6 +22,19 @@ export async function PATCH(
   const payment = await db.payment.findUnique({ where: { id: paymentId } });
   if (!payment) return NextResponse.json({ error: "Pembayaran tidak ditemukan." }, { status: 404 });
 
+  if (parsed.data.status === "cancelled" && payment.status === "paid") {
+    return NextResponse.json(
+      { error: "Pesanan sudah lunas. Gunakan status refund bila dana dikembalikan." },
+      { status: 400 }
+    );
+  }
+  if (parsed.data.status === "refunded" && payment.status !== "paid") {
+    return NextResponse.json(
+      { error: "Refund hanya bisa dicatat untuk pesanan yang sudah lunas." },
+      { status: 400 }
+    );
+  }
+
   if (parsed.data.status === "paid") {
     const result = await settlePayment({
       orderId: payment.orderId,

@@ -6,12 +6,13 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/current-user";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
+import { wibDayKey } from "@/lib/rate-limit";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TREND_DAYS = 14;
 
 function dayKey(d: Date) {
-  return d.toISOString().slice(0, 10);
+  return wibDayKey(d);
 }
 
 export async function GET() {
@@ -34,8 +35,9 @@ export async function GET() {
     });
 
     const now = new Date();
-    const since = new Date(now.getTime() - (TREND_DAYS - 1) * DAY_MS);
-    since.setHours(0, 0, 0, 0);
+    // Mulai dari tengah malam WIB, bukan tengah malam zona server (Vercel = UTC).
+    const todayStartMs = Date.parse(`${wibDayKey(now)}T00:00:00+07:00`);
+    const sinceMs = todayStartMs - (TREND_DAYS - 1) * DAY_MS;
 
     const result = teams.map((team) => {
       const tasks = team.projects.flatMap((p) => p.tasks.map((t) => ({ ...t, projectName: p.name })));
@@ -85,7 +87,7 @@ export async function GET() {
 
       const totalContribution = members.reduce((s, m) => s + m.completed, 0);
       const trend: Record<string, number> = {};
-      for (let i = 0; i < TREND_DAYS; i++) trend[dayKey(new Date(since.getTime() + i * DAY_MS))] = 0;
+      for (let i = 0; i < TREND_DAYS; i++) trend[dayKey(new Date(sinceMs + i * DAY_MS))] = 0;
       for (const a of team.activities) {
         const k = dayKey(a.createdAt);
         if (k in trend) trend[k]++;

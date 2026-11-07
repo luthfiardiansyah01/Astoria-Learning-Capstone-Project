@@ -3,6 +3,7 @@ import { logger } from "@/lib/logger";
 
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { clientIp, LIMITS, rateLimit, tooManyRequests } from "@/lib/rate-limit";
@@ -50,6 +51,9 @@ export async function POST(req: NextRequest) {
       user: { id: user.id, name: user.name, email: user.email },
     });
   } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      return NextResponse.json({ error: "Email ini sudah terdaftar." }, { status: 409 });
+    }
     logger.error("[/api/auth/register]", { error: e });
     return NextResponse.json(
       { error: FALLBACK_RESPONSES.api_error, code: "api_error" },

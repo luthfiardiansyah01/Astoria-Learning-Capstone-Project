@@ -199,6 +199,8 @@ export function PlanBadge({ className = "" }: { className?: string }) {
   const plan = data?.plan ?? "free";
   const premium = plan === "premium";
   const configured = billing?.configured ?? false;
+  const price = billing?.price ?? 19_000;
+  const durationDays = billing?.durationDays ?? 30;
   const providerLabel =
     billing?.provider === "midtrans" ? "Midtrans" : billing?.provider === "xendit" ? "Xendit" : null;
   const payments = paymentData?.payments ?? [];
@@ -255,8 +257,8 @@ export function PlanBadge({ className = "" }: { className?: string }) {
                 <p className="font-semibold text-sm">Premium</p>
                 <Crown className="h-4 w-4 text-amber-600" />
               </div>
-              <p className="text-2xl font-bold mt-1">Rp19.000</p>
-              <p className="text-[10px] text-muted-foreground">per bulan</p>
+              <p className="text-2xl font-bold mt-1">{rupiah(price)}</p>
+              <p className="text-[10px] text-muted-foreground">per {durationDays} hari</p>
               <ul className="mt-3 space-y-1.5 text-xs">
                 <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> AI {PLAN_LIMITS.premium.aiPerDay}/hari</li>
                 <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> Dokumen {PLAN_LIMITS.premium.maxDocChars.toLocaleString("id-ID")} karakter</li>

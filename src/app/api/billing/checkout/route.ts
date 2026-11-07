@@ -50,14 +50,16 @@ export async function POST() {
   const limited = await rateLimit("billing-checkout", user.id, 5, 3600);
   if (!limited.ok) return tooManyRequests(limited);
 
-  // Bersihkan transaksi pending yang sudah lama, lalu pakai ulang invoice yang
-  // masih muda agar klik ganda tidak membuat tagihan baru.
+  // Bersihkan transaksi pending yang sudah melewati masa berlaku gateway, lalu
+  // pakai ulang invoice yang masih aktif agar klik ganda tidak membuat tagihan baru
+  // (invoice Midtrans/Xendit berlaku 24 jam).
   const now = new Date();
+  const invoiceTtlMs = 24 * 60 * 60 * 1000;
   await db.payment.updateMany({
     where: {
       userId: user.id,
       status: "pending",
-      createdAt: { lt: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+      createdAt: { lt: new Date(now.getTime() - invoiceTtlMs) },
     },
     data: { status: "expired" },
   });
@@ -68,7 +70,7 @@ export async function POST() {
       status: "pending",
       provider,
       checkoutUrl: { not: null },
-      createdAt: { gte: new Date(now.getTime() - 30 * 60 * 1000) },
+      createdAt: { gte: new Date(now.getTime() - invoiceTtlMs) },
     },
     orderBy: { createdAt: "desc" },
   });

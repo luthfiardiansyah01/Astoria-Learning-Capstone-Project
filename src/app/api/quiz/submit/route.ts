@@ -118,9 +118,6 @@ export async function POST(req: NextRequest) {
     // ── Normalisasi + penguji server-side ──
     const skor = clampSkor(result.skor);
     const xpDiperoleh = clampXp(result.xp_diperoleh);
-    const newXp = student.xp + xpDiperoleh;
-    const newLevel = levelFromXp(newXp);
-    const levelNaik = newLevel > student.level;
 
     // Badge: prioritaskan hasil AI jika valid, jika tidak cek trigger deterministik
     const serverBadge = checkBadgeTriggers({
@@ -159,15 +156,27 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    await db.user.update({
-      where: { id: student.id },
-      data: {
-        xp: newXp,
-        level: newLevel,
-        streakDays,
-        lastActive: new Date(),
-      },
+    // XP ditambahkan secara atomik agar submit paralel tidak saling menimpa.
+    const updatedUser = await db.$transaction(async (tx) => {
+      const current = await tx.user.update({
+        where: { id: student.id },
+        data: {
+          xp: { increment: xpDiperoleh },
+          streakDays,
+          lastActive: new Date(),
+        },
+      });
+      const nextLevel = levelFromXp(current.xp);
+      if (nextLevel === current.level) return current;
+      return tx.user.update({
+        where: { id: current.id },
+        data: { level: nextLevel },
+      });
     });
+
+    const newXp = updatedUser.xp;
+    const newLevel = updatedUser.level;
+    const levelNaik = newLevel > student.level;
 
     return NextResponse.json({
       result: {

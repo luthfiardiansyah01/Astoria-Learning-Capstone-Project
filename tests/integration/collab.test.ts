@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { chatComplete } from "@/lib/ai";
 import {
   addMember,
+  createDocument,
   createProject,
   createTask,
   createTeam,
@@ -201,6 +202,30 @@ describe("proyek", () => {
     expect(res.status).toBe(403);
   });
 
+  it("hanya owner yang bisa menghapus proyek", async () => {
+    const owner = await createUser();
+    const member = await createUser();
+    const team = await createTeam(owner.id);
+    await addMember(team.id, member.id);
+    const project = await createProject(team.id);
+
+    setAuthUser(member);
+    const denied = await projectDetailRoute.DELETE(
+      jsonRequest(`/api/collab/projects/${project.id}`, "DELETE"),
+      params({ projectId: project.id })
+    );
+    expect(denied.status).toBe(403);
+    expect(await db.project.count({ where: { id: project.id } })).toBe(1);
+
+    setAuthUser(owner);
+    const ok = await projectDetailRoute.DELETE(
+      jsonRequest(`/api/collab/projects/${project.id}`, "DELETE"),
+      params({ projectId: project.id })
+    );
+    expect(ok.status).toBe(200);
+    expect(await db.project.count({ where: { id: project.id } })).toBe(0);
+  });
+
   it("anggota bisa melihat dan memperbarui proyek", async () => {
     const owner = await createUser();
     const member = await createUser();
@@ -266,6 +291,72 @@ describe("tugas", () => {
     expect(res.status).toBe(200);
   });
 
+  it("menolak assignee yang bukan anggota tim dan tidak membocorkan passwordHash", async () => {
+    const owner = await createUser({ passwordHash: "hash-rahasia" });
+    const outsider = await createUser();
+    const team = await createTeam(owner.id);
+    const project = await createProject(team.id);
+    setAuthUser(owner);
+
+    const denied = await tasksRoute.POST(
+      jsonRequest(`/api/collab/projects/${project.id}/tasks`, "POST", {
+        title: "Tugas",
+        assigneeId: outsider.id,
+      }),
+      params({ projectId: project.id })
+    );
+    expect(denied.status).toBe(400);
+
+    const ok = await tasksRoute.POST(
+      jsonRequest(`/api/collab/projects/${project.id}/tasks`, "POST", {
+        title: "Tugas",
+        assigneeId: owner.id,
+      }),
+      params({ projectId: project.id })
+    );
+    expect(ok.status).toBe(200);
+    const body = (await ok.json()) as { task: { assignee: Record<string, unknown> } };
+    expect(body.task.assignee.id).toBe(owner.id);
+    expect(body.task.assignee.passwordHash).toBeUndefined();
+    expect(body.task.assignee.email).toBeUndefined();
+  });
+
+  it("menolak menautkan dokumen privat milik pengguna lain", async () => {
+    const owner = await createUser();
+    const other = await createUser();
+    const team = await createTeam(owner.id);
+    const project = await createProject(team.id);
+    const task = await createTask(project.id);
+    const doc = await createDocument(other.id, { status: "pending" });
+    setAuthUser(owner);
+
+    const res = await taskDetailRoute.PATCH(
+      jsonRequest(`/api/collab/tasks/${task.id}`, "PATCH", { documentId: doc.id }),
+      params({ taskId: task.id })
+    );
+    expect(res.status).toBe(403);
+    expect((await db.task.findUniqueOrThrow({ where: { id: task.id } })).documentId).toBeNull();
+  });
+
+  it("mentor tidak memakai dokumen privat yang sudah tertaut", async () => {
+    const owner = await createUser();
+    const other = await createUser();
+    const team = await createTeam(owner.id);
+    const project = await createProject(team.id);
+    const doc = await createDocument(other.id, { status: "pending" });
+    const task = await createTask(project.id, "Tugas", { documentId: doc.id });
+    setAuthUser(owner);
+
+    const res = await mentorRoute.POST(
+      jsonRequest(`/api/collab/tasks/${task.id}/mentor`, "POST", {
+        question: "Jelaskan dokumen ini",
+      }),
+      params({ taskId: task.id })
+    );
+    expect(res.status).toBe(403);
+    expect(chatComplete).not.toHaveBeenCalled();
+  });
+
   it("menolak update kosong", async () => {
     const owner = await createUser();
     const team = await createTeam(owner.id);
@@ -297,6 +388,27 @@ describe("tugas", () => {
     expect(updatedTask.status).toBe("done");
     // XP tugas dibatasi server maksimal 20 per penyelesaian.
     expect(updatedTeam.xp).toBe(20);
+    expect(
+      await db.activityEvent.count({ where: { taskId: task.id, type: "task_completed" } })
+    ).toBe(1);
+  });
+
+  it("hanya memberi XP sekali saat tugas dibuka dan diselesaikan ulang", async () => {
+    const owner = await createUser();
+    const team = await createTeam(owner.id);
+    const project = await createProject(team.id);
+    const task = await createTask(project.id, "Tugas", { xpReward: 25 });
+    setAuthUser(owner);
+
+    for (const status of ["done", "todo", "done"]) {
+      const res = await taskDetailRoute.PATCH(
+        jsonRequest(`/api/collab/tasks/${task.id}`, "PATCH", { status }),
+        params({ taskId: task.id })
+      );
+      expect(res.status).toBe(200);
+    }
+
+    expect((await db.team.findUniqueOrThrow({ where: { id: team.id } })).xp).toBe(20);
     expect(
       await db.activityEvent.count({ where: { taskId: task.id, type: "task_completed" } })
     ).toBe(1);

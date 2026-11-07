@@ -2,6 +2,7 @@
 // Notifikasi in-app Astoria Collab. dedupeKey mencegah notifikasi ganda untuk kejadian yang sama.
 
 import { db } from "./db";
+import { wibDayKey } from "./rate-limit";
 
 export interface NotificationInput {
   type: string;
@@ -62,7 +63,7 @@ export async function scanDeadlines(userId: string) {
 
   for (const t of tasks) {
     const due = t.dueDate!;
-    const day = due.toISOString().slice(0, 10);
+    const day = wibDayKey(due);
     const overdue = due < now;
     await createNotification(userId, {
       type: overdue ? "task_overdue" : "task_due_soon",

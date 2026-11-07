@@ -12,8 +12,16 @@ import { createNotification } from "./collab-notify";
 export type BillingProvider = "midtrans" | "xendit" | "none";
 export type PaymentStatus = "pending" | "paid" | "failed" | "expired" | "refunded" | "cancelled";
 
-export const PREMIUM_PRICE_IDR = Number(process.env.PAYMENT_PREMIUM_PRICE_IDR ?? 19_000);
-export const PREMIUM_DURATION_DAYS = Number(process.env.PAYMENT_PREMIUM_DAYS ?? 30);
+/** Baca env angka positif; nilai kosong/NaN/<=0 memakai fallback agar tidak ada invoice gratis. */
+function positiveIntEnv(name: string, fallback: number) {
+  const raw = process.env[name];
+  if (raw === undefined || raw.trim() === "") return fallback;
+  const value = Number(raw);
+  return Number.isFinite(value) && value > 0 ? Math.trunc(value) : fallback;
+}
+
+export const PREMIUM_PRICE_IDR = positiveIntEnv("PAYMENT_PREMIUM_PRICE_IDR", 19_000);
+export const PREMIUM_DURATION_DAYS = positiveIntEnv("PAYMENT_PREMIUM_DAYS", 30);
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -286,10 +294,13 @@ export function midtransStatus(payload: {
 }): PaymentStatus {
   const status = (payload.transaction_status ?? "").toLowerCase();
   if (status === "capture") {
-    return (payload.fraud_status ?? "accept").toLowerCase() === "challenge" ? "pending" : "paid";
+    const fraud = (payload.fraud_status ?? "accept").toLowerCase();
+    if (fraud === "deny") return "failed";
+    if (fraud === "challenge") return "pending";
+    return "paid";
   }
   if (status === "settlement") return "paid";
-  if (status === "pending") return "pending";
+  if (status === "authorize" || status === "pending") return "pending";
   if (status === "expire") return "expired";
   if (status === "refund" || status === "partial_refund") return "refunded";
   if (status === "deny" || status === "cancel" || status === "failure") return "failed";
@@ -341,8 +352,9 @@ export async function settlePayment(input: {
     }
 
     // Kunci idempotensi: hanya transisi pertama menuju "paid" yang mengaktifkan paket.
+    // "refunded" tidak boleh kembali lunas lewat webhook duplikat.
     const locked = await tx.payment.updateMany({
-      where: { id: payment.id, status: { not: "paid" } },
+      where: { id: payment.id, status: { notIn: ["paid", "refunded"] } },
       data: {
         status: "paid",
         paidAt: new Date(),
@@ -355,15 +367,21 @@ export async function settlePayment(input: {
       return { ok: true as const, alreadyPaid: true, payment };
     }
 
-    const user = await tx.user.findUnique({ where: { id: payment.userId } });
+    // Update atomik: dua settlement paralel untuk user yang sama akan dihitung
+    // berurutan oleh PostgreSQL, sehingga perpanjangan tidak saling menimpa.
+    const rows = await tx.$queryRaw<{ id: string; planExpiresAt: Date }[]>`
+      UPDATE "User"
+      SET plan = 'premium',
+          "planExpiresAt" =
+            GREATEST(COALESCE("planExpiresAt", NOW()), NOW())
+            + (${payment.durationDays}::int * INTERVAL '1 day')
+      WHERE id = ${payment.userId}
+      RETURNING id, "planExpiresAt"
+    `;
+    const user = rows[0];
     if (!user) return { ok: false as const, reason: "user_not_found" as const };
 
-    const expiresAt = premiumExpiryFrom(user.planExpiresAt, payment.durationDays);
-    await tx.user.update({
-      where: { id: user.id },
-      data: { plan: "premium", planExpiresAt: expiresAt },
-    });
-
+    const expiresAt = user.planExpiresAt;
     const updated = await tx.payment.update({
       where: { id: payment.id },
       data: { expiresAt },
@@ -393,8 +411,31 @@ export async function updatePaymentStatus(input: {
   amount?: number;
 }) {
   if (input.status === "paid") return settlePayment(input);
+
+  // Refund hanya boleh dicatat untuk transaksi yang benar-benar sudah lunas.
+  // Premium yang sudah aktif tidak dicabut otomatis (kebijakan: refund manual
+  // dicatat untuk audit; admin dapat menurunkan paket bila perlu).
+  if (input.status === "refunded") {
+    return db.payment.updateMany({
+      where: { orderId: input.orderId, status: "paid" },
+      data: {
+        status: "refunded",
+        providerRef: input.providerRef ?? undefined,
+        rawPayload: jsonOrUndefined(input.rawPayload),
+      },
+    });
+  }
+
+  // Status terminal tidak boleh dibuka kembali oleh notifikasi terlambat.
+  const allowedFrom: Record<Exclude<PaymentStatus, "paid" | "refunded">, PaymentStatus[]> = {
+    pending: ["pending"],
+    failed: ["pending", "failed"],
+    expired: ["pending", "expired"],
+    cancelled: ["pending", "failed", "expired"],
+  };
+
   return db.payment.updateMany({
-    where: { orderId: input.orderId, status: { not: "paid" } },
+    where: { orderId: input.orderId, status: { in: allowedFrom[input.status] } },
     data: {
       status: input.status,
       providerRef: input.providerRef ?? undefined,

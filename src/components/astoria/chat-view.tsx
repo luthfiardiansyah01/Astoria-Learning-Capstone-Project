@@ -68,6 +68,7 @@ export function ChatView() {
   const [sending, setSending] = useState(false);
   const [loadingDocs, setLoadingDocs] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sendAbortRef = useRef<AbortController | null>(null);
 
   const activeDoc = docs.find((d) => d.id === activeDocumentId) ?? null;
 
@@ -99,15 +100,23 @@ export function ChatView() {
       setMessages([]);
       return;
     }
+    const controller = new AbortController();
+    setMessages([]);
     (async () => {
       try {
-        const res = await fetch(`/api/chat?documentId=${activeDocumentId}`);
+        const res = await fetch(`/api/chat?documentId=${activeDocumentId}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error("Gagal memuat riwayat.");
         const data = await res.json();
+        if (controller.signal.aborted) return;
         setMessages(data.messages ?? []);
-      } catch {
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") return;
         setMessages([]);
       }
     })();
+    return () => controller.abort();
   }, [activeDocumentId]);
 
   useEffect(() => {
@@ -132,6 +141,9 @@ export function ChatView() {
     setInput("");
     const askedAt = new Date();
     const startedAt = Date.now();
+    const docId = activeDocumentId;
+    const controller = new AbortController();
+    sendAbortRef.current = controller;
     setMessages((m) => [
       ...m,
       { role: "user", content: question, createdAt: askedAt.toISOString() },
@@ -142,9 +154,11 @@ export function ChatView() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ documentId: activeDocumentId, question }),
+        body: JSON.stringify({ documentId: docId, question }),
+        signal: controller.signal,
       });
       const data = await res.json();
+      if (controller.signal.aborted || useAstoria.getState().activeDocumentId !== docId) return;
       const finishedAt = Date.now();
       setMessages((m) => [
         ...m,
@@ -155,7 +169,9 @@ export function ChatView() {
           durationMs: finishedAt - startedAt,
         },
       ]);
-    } catch {
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      if (useAstoria.getState().activeDocumentId !== docId) return;
       const finishedAt = Date.now();
       setMessages((m) => [
         ...m,
@@ -168,14 +184,22 @@ export function ChatView() {
         },
       ]);
     } finally {
-      setSending(false);
+      if (sendAbortRef.current === controller) {
+        sendAbortRef.current = null;
+        setSending(false);
+      }
       queryClient.invalidateQueries({ queryKey: ["ai-usage"] });
     }
   }, [input, activeDocumentId, toast, queryClient]);
 
   const clearChat = async () => {
     if (!activeDocumentId) return;
-    await fetch(`/api/chat?documentId=${activeDocumentId}`, { method: "DELETE" });
+    sendAbortRef.current?.abort();
+    const res = await fetch(`/api/chat?documentId=${activeDocumentId}`, { method: "DELETE" });
+    if (!res.ok) {
+      toast({ title: "Gagal membersihkan riwayat chat", variant: "destructive" });
+      return;
+    }
     setMessages([]);
     toast({ title: "Riwayat chat dibersihkan 🧹" });
   };

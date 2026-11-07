@@ -227,7 +227,8 @@ export default function AstoriaPage() {
               <Link
                 href="/collab"
                 data-testid="nav-collab"
-                className="hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex"
+                aria-label="Buka Astoria Collab"
+                className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <Users className="h-3.5 w-3.5" />
                 <span className="hidden md:inline">Collab</span>

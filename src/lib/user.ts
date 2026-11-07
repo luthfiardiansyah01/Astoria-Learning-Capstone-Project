@@ -2,6 +2,7 @@
 // Helper pengguna demo (single-user demo untuk mahasiswa & admin)
 
 import { db } from "./db";
+import { wibDayKey } from "./rate-limit";
 
 export const DEMO_STUDENT_ID = "demo-student-ut";
 export const DEMO_ADMIN_ID = "demo-admin-ut";
@@ -35,22 +36,17 @@ export async function getOrCreateUsers() {
  * kemarin → +1; lebih lama → reset ke 1.
  */
 export function updateStreak(lastActive: Date, streakDays: number): number {
-  const now = new Date();
   const dayMs = 24 * 60 * 60 * 1000;
-  const last = new Date(lastActive);
-  const lastDay = new Date(
-    last.getFullYear(),
-    last.getMonth(),
-    last.getDate()
-  ).getTime();
-  const today = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate()
-  ).getTime();
+  const lastKey = wibDayKey(new Date(lastActive));
+  const todayKey = wibDayKey();
 
+  if (lastKey === todayKey) return Math.max(streakDays, 1);
+
+  // Bandingkan tanggal kalender WIB, bukan tanggal lokal server (Vercel = UTC).
+  const lastDay = Date.parse(`${lastKey}T00:00:00Z`);
+  const today = Date.parse(`${todayKey}T00:00:00Z`);
   const diff = Math.round((today - lastDay) / dayMs);
-  if (diff === 0) return Math.max(streakDays, 1);
+
   if (diff === 1) return streakDays + 1;
   return 1;
 }

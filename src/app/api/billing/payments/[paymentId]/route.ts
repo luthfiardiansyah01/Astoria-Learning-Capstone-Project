@@ -32,6 +32,36 @@ export async function DELETE(
     return NextResponse.json({ payment, gatewayCancelled: false, warning: "Pesanan sudah tidak aktif." });
   }
 
+  // Klaim transisi pending → cancelled secara atomik. Bila webhook settlement
+  // lebih dulu mengubah status menjadi paid, update ini tidak mengenai baris apa pun
+  // sehingga status lunas tidak tertimpa.
+  const claim = await db.payment.updateMany({
+    where: { id: payment.id, userId: auth.user.id, status: "pending" },
+    data: { status: "cancelled" },
+  });
+
+  if (claim.count === 0) {
+    const latest = await db.payment.findUnique({
+      where: { id: payment.id },
+      select: {
+        id: true,
+        orderId: true,
+        amount: true,
+        status: true,
+        durationDays: true,
+        createdAt: true,
+      },
+    });
+    return NextResponse.json(
+      {
+        payment: latest,
+        gatewayCancelled: false,
+        warning: "Status pesanan sudah berubah; pembatalan tidak dilakukan.",
+      },
+      { status: 409 }
+    );
+  }
+
   const gateway = await cancelProviderPayment({
     provider: payment.provider,
     orderId: payment.orderId,
@@ -41,7 +71,6 @@ export async function DELETE(
   const updated = await db.payment.update({
     where: { id: payment.id },
     data: {
-      status: "cancelled",
       rawPayload: {
         cancelledAt: new Date().toISOString(),
         cancelledBy: auth.user.id,

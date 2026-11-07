@@ -16,3 +16,16 @@ test("smoke mobile 375x812 untuk Beranda, Mentor, dan Kuis", async ({ page }) =>
   await expect(page.getByText("Uji Pemahaman Modul")).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
+
+test("link Collab tersedia dan bisa dibuka di mobile 375px", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await login(page, E2E_USERS.student);
+
+  const collab = page.getByTestId("nav-collab");
+  await expect(collab).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  await collab.click();
+  await expect(page).toHaveURL(/\/collab/);
+  await expect(page.getByText(/Tim & Proyek Saya/i).first()).toBeVisible();
+});

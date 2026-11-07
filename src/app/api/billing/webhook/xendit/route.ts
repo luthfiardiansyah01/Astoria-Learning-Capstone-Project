@@ -33,12 +33,25 @@ export async function POST(req: NextRequest) {
   }
 
   const status = xenditStatus(payload.status);
+
+  // Nominal wajib valid untuk status lunas; jangan lewati pengecekan amount
+  // hanya karena provider mengirim string/field berbeda.
+  let amount: number | undefined;
+  if (status === "paid") {
+    const rawAmount = payload.paid_amount ?? payload.amount;
+    const parsedAmount = typeof rawAmount === "number" ? rawAmount : Number(rawAmount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      return NextResponse.json({ error: "Nominal pembayaran tidak valid." }, { status: 400 });
+    }
+    amount = parsedAmount;
+  }
+
   const result = await updatePaymentStatus({
     orderId: payload.external_id,
     status,
     providerRef: payload.id ?? null,
     rawPayload: payload,
-    amount: typeof payload.paid_amount === "number" ? payload.paid_amount : undefined,
+    amount,
   });
 
   if ("ok" in result && !result.ok) {

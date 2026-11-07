@@ -78,7 +78,13 @@ export async function DELETE(
     const { projectId } = await params;
     const existing = await db.project.findUnique({ where: { id: projectId } });
     if (!existing) return NextResponse.json({ error: "Proyek tidak ditemukan." }, { status: 404 });
-    await assertTeamMember(user.id, existing.teamId);
+    const member = await assertTeamMember(user.id, existing.teamId);
+    if (user.role !== "admin" && member.role !== "owner") {
+      return NextResponse.json(
+        { error: "Hanya owner tim yang bisa menghapus proyek." },
+        { status: 403 }
+      );
+    }
 
     await db.project.delete({ where: { id: projectId } });
     return NextResponse.json({ ok: true });

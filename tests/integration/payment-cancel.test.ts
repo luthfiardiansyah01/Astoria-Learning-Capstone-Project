@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
+import { updatePaymentStatus } from "@/lib/billing";
 import { createUser, jsonRequest, params, resetDb, setAuthUser } from "./helpers";
 import * as cancelRoute from "@/app/api/billing/payments/[paymentId]/route";
 import * as adminPaymentRoute from "@/app/api/admin/payments/[paymentId]/route";
@@ -82,9 +83,80 @@ describe("DELETE /api/billing/payments/[paymentId]", () => {
     );
     expect(res.status).toBe(200);
   });
+
+  it("tidak membuka kembali pesanan cancelled karena webhook terlambat", async () => {
+    const user = await createUser();
+    const payment = await createPayment(user.id, { status: "cancelled" });
+
+    await updatePaymentStatus({ orderId: payment.orderId, status: "pending" });
+
+    const after = await db.payment.findUniqueOrThrow({ where: { id: payment.id } });
+    expect(after.status).toBe("cancelled");
+  });
+
+  it("mencatat refund untuk pesanan yang sudah lunas", async () => {
+    const user = await createUser();
+    const payment = await createPayment(user.id, { status: "paid" });
+
+    const result = await updatePaymentStatus({ orderId: payment.orderId, status: "refunded" });
+    expect("count" in result ? result.count : 0).toBe(1);
+
+    const after = await db.payment.findUniqueOrThrow({ where: { id: payment.id } });
+    expect(after.status).toBe("refunded");
+  });
+
+  it("tidak membuka refunded kembali menjadi pending", async () => {
+    const user = await createUser();
+    const payment = await createPayment(user.id, { status: "refunded" });
+
+    await updatePaymentStatus({ orderId: payment.orderId, status: "pending" });
+
+    const after = await db.payment.findUniqueOrThrow({ where: { id: payment.id } });
+    expect(after.status).toBe("refunded");
+  });
+
+  it("tidak menandai refund untuk pesanan yang belum lunas", async () => {
+    const user = await createUser();
+    const payment = await createPayment(user.id, { status: "pending" });
+
+    const result = await updatePaymentStatus({ orderId: payment.orderId, status: "refunded" });
+    expect("count" in result ? result.count : 0).toBe(0);
+    expect((await db.payment.findUniqueOrThrow({ where: { id: payment.id } })).status).toBe(
+      "pending"
+    );
+  });
 });
 
 describe("admin membatalkan pesanan", () => {
+  it("menolak membatalkan pesanan yang sudah lunas", async () => {
+    const admin = await createUser({ role: "admin" });
+    const user = await createUser();
+    const payment = await createPayment(user.id, { status: "paid" });
+    setAuthUser(admin);
+
+    const res = await adminPaymentRoute.PATCH(
+      jsonRequest(`/api/admin/payments/${payment.id}`, "PATCH", { status: "cancelled" }),
+      params({ paymentId: payment.id })
+    );
+    expect(res.status).toBe(400);
+    expect((await db.payment.findUniqueOrThrow({ where: { id: payment.id } })).status).toBe("paid");
+  });
+
+  it("mencatat refund untuk pesanan lunas", async () => {
+    const admin = await createUser({ role: "admin" });
+    const user = await createUser();
+    const payment = await createPayment(user.id, { status: "paid" });
+    setAuthUser(admin);
+
+    const res = await adminPaymentRoute.PATCH(
+      jsonRequest(`/api/admin/payments/${payment.id}`, "PATCH", { status: "refunded" }),
+      params({ paymentId: payment.id })
+    );
+    const body = (await res.json()) as { payment: { status: string } };
+    expect(res.status).toBe(200);
+    expect(body.payment.status).toBe("refunded");
+  });
+
   it("mengubah status menjadi cancelled", async () => {
     const admin = await createUser({ role: "admin" });
     const user = await createUser();

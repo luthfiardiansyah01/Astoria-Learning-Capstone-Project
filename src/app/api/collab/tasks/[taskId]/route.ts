@@ -4,13 +4,23 @@ import { logger } from "@/lib/logger";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/current-user";
+import { getCurrentUser, canUseDocument } from "@/lib/current-user";
 import { assertTeamMember, logActivity, ForbiddenError } from "@/lib/collab";
 import { awardTeamXp } from "@/lib/collab-gamif";
 import { notifyTeam } from "@/lib/collab-notify";
 import { checkTeamBadges } from "@/lib/collab-badges";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { readBody, taskUpdateSchema } from "@/lib/validation";
+
+/**
+ * Tanggal dari <input type="date"> berupa YYYY-MM-DD. Simpan sebagai akhir hari
+ * WIB (23:59:59.999+07:00), bukan 00:00 UTC yang berarti pukul 07.00 WIB.
+ */
+function parseWibDueDate(value: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T23:59:59.999+07:00`)
+    : new Date(value);
+}
 
 export async function PATCH(
   req: NextRequest,
@@ -29,6 +39,32 @@ export async function PATCH(
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const { status, order, assigneeId, title, description, documentId, dueDate } = parsed.data;
 
+    if (assigneeId) {
+      const assignee = await db.teamMember.findUnique({
+        where: { teamId_userId: { teamId: task.project.teamId, userId: assigneeId } },
+        select: { userId: true },
+      });
+      if (!assignee) {
+        return NextResponse.json(
+          { error: "Penerima tugas harus anggota tim ini." },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (documentId) {
+      const document = await db.document.findUnique({ where: { id: documentId } });
+      if (!document) {
+        return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 400 });
+      }
+      if (!canUseDocument(user, document)) {
+        return NextResponse.json(
+          { error: "Kamu tidak punya akses ke dokumen ini." },
+          { status: 403 }
+        );
+      }
+    }
+
     const wasDone = task.status === "done";
     const willBeDone = status === "done";
 
@@ -41,9 +77,9 @@ export async function PATCH(
         ...(title?.trim() ? { title: title.trim() } : {}),
         ...(description !== undefined ? { description: description?.trim() || null } : {}),
         ...(documentId !== undefined ? { documentId: documentId || null } : {}),
-        ...(dueDate !== undefined ? { dueDate: dueDate ? new Date(dueDate) : null } : {}),
+        ...(dueDate !== undefined ? { dueDate: dueDate ? parseWibDueDate(dueDate) : null } : {}),
       },
-      include: { assignee: true },
+      include: { assignee: { select: { id: true, name: true } } },
     });
 
     let xpAward: Awaited<ReturnType<typeof awardTeamXp>> | null = null;
@@ -60,23 +96,38 @@ export async function PATCH(
     }
 
     if (!wasDone && willBeDone) {
-      xpAward = await awardTeamXp(task.project.teamId, task.xpReward);
-      await logActivity({
-        teamId: task.project.teamId,
-        projectId: task.projectId,
-        taskId: task.id,
-        userId: user.id,
-        type: "task_completed",
-        payload: { title: updated.title },
+      // Klaim "selesai pertama" secara atomik: hanya satu request yang boleh
+      // memberi XP walau pengguna mengulang done → todo → done atau mengirim paralel.
+      const firstCompletion = await db.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT id FROM "Task" WHERE id = ${taskId} FOR UPDATE`;
+        const existing = await tx.activityEvent.count({
+          where: { taskId, type: "task_completed" },
+        });
+        if (existing > 0) return false;
+        await tx.activityEvent.create({
+          data: {
+            teamId: task.project.teamId,
+            projectId: task.projectId,
+            taskId: task.id,
+            userId: user.id,
+            type: "task_completed",
+            payload: JSON.stringify({ title: updated.title }),
+          },
+        });
+        return true;
       });
-      await logActivity({
-        teamId: task.project.teamId,
-        projectId: task.projectId,
-        taskId: task.id,
-        userId: user.id,
-        type: "xp_awarded",
-        payload: { xp: xpAward.xpDiperoleh, newTeamXp: xpAward.newXp, levelNaik: xpAward.levelNaik },
-      });
+
+      if (firstCompletion) {
+        xpAward = await awardTeamXp(task.project.teamId, task.xpReward);
+        await logActivity({
+          teamId: task.project.teamId,
+          projectId: task.projectId,
+          taskId: task.id,
+          userId: user.id,
+          type: "xp_awarded",
+          payload: { xp: xpAward.xpDiperoleh, newTeamXp: xpAward.newXp, levelNaik: xpAward.levelNaik },
+        });
+      }
     }
 
     if (xpAward?.levelNaik) {

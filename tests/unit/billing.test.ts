@@ -157,6 +157,8 @@ describe("pemetaan status gateway", () => {
     expect(midtransStatus({ transaction_status: "settlement" })).toBe("paid");
     expect(midtransStatus({ transaction_status: "capture", fraud_status: "accept" })).toBe("paid");
     expect(midtransStatus({ transaction_status: "capture", fraud_status: "challenge" })).toBe("pending");
+    expect(midtransStatus({ transaction_status: "capture", fraud_status: "deny" })).toBe("failed");
+    expect(midtransStatus({ transaction_status: "authorize" })).toBe("pending");
     expect(midtransStatus({ transaction_status: "pending" })).toBe("pending");
     expect(midtransStatus({ transaction_status: "expire" })).toBe("expired");
     expect(midtransStatus({ transaction_status: "deny" })).toBe("failed");

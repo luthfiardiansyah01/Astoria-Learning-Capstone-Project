@@ -4,7 +4,7 @@ import { logger } from "@/lib/logger";
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/current-user";
+import { getCurrentUser, canUseDocument } from "@/lib/current-user";
 import { assertTeamMember, logActivity, ForbiddenError } from "@/lib/collab";
 import { chatComplete, isAiQuotaError, aiQuotaMessage } from "@/lib/ai";
 import { TASK_MENTOR_SYSTEM_PROMPT, buildTaskMentorUserTurn, buildRagContext, PARAMS } from "@/lib/prompts";
@@ -85,9 +85,16 @@ export async function POST(
       data: { taskId, userId: user.id, role: "user", content: question },
     });
 
-    // Konteks dokumen modul (jika task ditautkan ke dokumen) → RAG hybrid
+    // Konteks dokumen modul (jika task ditautkan ke dokumen) → RAG hybrid.
+    // Ulangi cek kepemilikan: dokumen bisa saja ditautkan sebelum aturan akses berubah.
     let systemPrompt = TASK_MENTOR_SYSTEM_PROMPT;
     if (task.document) {
+      if (!canUseDocument(user, task.document)) {
+        return NextResponse.json(
+          { error: "Kamu tidak punya akses ke dokumen ini." },
+          { status: 403 }
+        );
+      }
       const { context, isPartial } = await retrieveForDocument(
         task.document.id,
         `${task.title} ${question}`
@@ -148,7 +155,8 @@ export async function POST(
       taskId: task.id,
       userId: user.id,
       type: "ai_mentor_used",
-      payload: { question },
+      // Jangan simpan pertanyaan lengkap: activity feed bisa dibaca seluruh tim.
+      payload: { questionLength: question.length },
     });
 
     const newBadges = await checkTeamBadges(task.project.teamId, user.id);

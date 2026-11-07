@@ -121,7 +121,7 @@ export const adminPlanUpdateSchema = z.object({
 });
 
 export const adminPaymentUpdateSchema = z.object({
-  status: z.enum(["paid", "failed", "expired", "cancelled"], {
+  status: z.enum(["paid", "failed", "expired", "cancelled", "refunded"], {
     message: "Status pembayaran tidak valid.",
   }),
 });

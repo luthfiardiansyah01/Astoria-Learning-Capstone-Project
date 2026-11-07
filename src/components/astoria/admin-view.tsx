@@ -24,6 +24,16 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Markdown } from "./markdown";
 import { AdminPlanPanel } from "./admin-plan-panel";
 import { useToast } from "@/hooks/use-toast";
@@ -71,6 +81,7 @@ export function AdminView() {
   const [loading, setLoading] = useState(true);
   const [insightLoading, setInsightLoading] = useState(false);
   const [busyDoc, setBusyDoc] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminDoc | null>(null);
 
   const loadAll = async () => {
     setLoading(true);
@@ -79,10 +90,17 @@ export function AdminView() {
         fetch("/api/documents"),
         fetch("/api/admin/analytics"),
       ]);
+      if (!dRes.ok || !aRes.ok) throw new Error("Gagal memuat data admin.");
       const d = await dRes.json();
       const a = await aRes.json();
       setDocs(d.documents ?? []);
       setAnalytics(a.analytics ?? null);
+    } catch {
+      toast({
+        title: "Gagal memuat data admin",
+        description: "Periksa koneksi lalu coba lagi.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -100,14 +118,22 @@ export function AdminView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ documentId, decision }),
       });
-      if (res.ok) {
-        setDocs((prev) =>
-          prev.map((d) => (d.id === documentId ? { ...d, status: decision } : d))
-        );
-        toast({
-          title: `Dokumen ${decision === "approved" ? "diaktifkan" : decision === "rejected" ? "ditolak" : "dikembalikan ke review"} ✓`,
-        });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Gagal menyimpan keputusan.");
       }
+      setDocs((prev) =>
+        prev.map((d) => (d.id === documentId ? { ...d, status: decision } : d))
+      );
+      toast({
+        title: `Dokumen ${decision === "approved" ? "diaktifkan" : decision === "rejected" ? "ditolak" : "dikembalikan ke review"} ✓`,
+      });
+    } catch (e) {
+      toast({
+        title: "Keputusan gagal disimpan",
+        description: e instanceof Error ? e.message : "Coba lagi.",
+        variant: "destructive",
+      });
     } finally {
       setBusyDoc(null);
     }
@@ -117,10 +143,18 @@ export function AdminView() {
     setBusyDoc(id);
     try {
       const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setDocs((prev) => prev.filter((d) => d.id !== id));
-        toast({ title: "Dokumen dihapus 🗑️" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Gagal menghapus dokumen.");
       }
+      setDocs((prev) => prev.filter((d) => d.id !== id));
+      toast({ title: "Dokumen dihapus 🗑️" });
+    } catch (e) {
+      toast({
+        title: "Dokumen gagal dihapus",
+        description: e instanceof Error ? e.message : "Coba lagi.",
+        variant: "destructive",
+      });
     } finally {
       setBusyDoc(null);
     }
@@ -130,8 +164,15 @@ export function AdminView() {
     setInsightLoading(true);
     try {
       const res = await fetch("/api/admin/analytics?insight=1");
+      if (!res.ok) throw new Error("Gagal membuat insight.");
       const a = await res.json();
       setAnalytics(a.analytics ?? null);
+    } catch (e) {
+      toast({
+        title: "Insight AI gagal dibuat",
+        description: e instanceof Error ? e.message : "Coba lagi.",
+        variant: "destructive",
+      });
     } finally {
       setInsightLoading(false);
     }
@@ -235,9 +276,9 @@ export function AdminView() {
                               size="icon"
                               variant="ghost"
                               className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                              onClick={() => removeDoc(d.id)}
+                              onClick={() => setDeleteTarget(d)}
                               title="Hapus dokumen"
-                              aria-label="Hapus dokumen"
+                              aria-label={`Hapus dokumen ${d.fileName}`}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -418,6 +459,36 @@ export function AdminView() {
       </div>
 
       <AdminPlanPanel />
+
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus dokumen “{deleteTarget?.fileName}”?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Dokumen, chunk, dan riwayat terkait akan dihapus permanen. Tindakan ini tidak bisa
+              dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                if (deleteTarget) {
+                  void removeDoc(deleteTarget.id).finally(() => setDeleteTarget(null));
+                }
+              }}
+              disabled={!!deleteTarget && busyDoc === deleteTarget.id}
+            >
+              {deleteTarget && busyDoc === deleteTarget.id ? "Menghapus..." : "Hapus Dokumen"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
