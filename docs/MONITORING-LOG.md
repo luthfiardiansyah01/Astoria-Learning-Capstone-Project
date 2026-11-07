@@ -76,7 +76,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P2 | Integritas XP | Selesai | XP hanya percobaan pertama per soal |
 | 2026-11-07 | P2 | Aksesibilitas | Selesai | Keyboard Kanban, dropdown status, aria-live chat/kuis |
 | 2026-11-07 | P2 | Performa | Selesai | Greeting tanpa AI, badge ganda dihapus, dependency tak terpakai dihapus |
-| 2026-11-07 | P2 | Regresi | Selesai | Unit 150, integration 136, E2E 13 |
+| 2026-11-07 | P2 | Regresi | Selesai | Unit 150, integration 139, E2E 13 |
 | 2026-11-07 | P2 | Bugfix | Selesai | XP paralel soal sama tidak ganda; sesi kuis dipisah per pengguna |
 | 2026-11-07 | P1 | Bugfix undangan | Selesai | Owner bisa membatalkan undangan pending; label aktivitas/notifikasi diperbaiki |
 
@@ -193,7 +193,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Tujuh dependency tak terpakai dihapus; loading khusus auth/legal ditambahkan.
 
 **Verifikasi**
-- Unit 150 / integration 136 / E2E 13 lulus.
+- Unit 150 / integration 139 / E2E 13 lulus.
 - Build produksi lulus.
 - Test konkuren: dua request tim/tugas paralel menghasilkan satu 200 dan satu 403.
 - Test konkuren kuis: dua submit paralel soal yang sama hanya menambah XP sekali.

@@ -6,6 +6,7 @@ import { createUser, jsonRequest, resetDb, setAuthUser } from "./helpers";
 import * as rootRoute from "@/app/api/route";
 import * as registerRoute from "@/app/api/auth/register/route";
 import * as verifyEmailRoute from "@/app/api/auth/verify-email/route";
+import * as resendVerificationRoute from "@/app/api/auth/verify-email/resend/route";
 import * as planRoute from "@/app/api/plan/route";
 import { guardAi } from "@/lib/rate-limit";
 import * as checkoutRoute from "@/app/api/billing/checkout/route";
@@ -192,6 +193,37 @@ describe("POST /api/auth/register", () => {
       ((after.planExpiresAt?.getTime() ?? 0) - Date.now()) / (24 * 60 * 60 * 1000)
     );
     expect(trialDays).toBe(7);
+  });
+
+  it("mengirim ulang verifikasi untuk akun belum terverifikasi", async () => {
+    const user = await createUser({ email: "resend@example.com", emailVerifiedAt: null });
+    setAuthUser(user);
+
+    const res = await resendVerificationRoute.POST();
+    const body = (await res.json()) as { verificationUrl?: string };
+    expect(res.status).toBe(200);
+    expect(body.verificationUrl).toContain("/verify-email?token=");
+    expect(
+      await db.emailVerificationToken.count({ where: { userId: user.id } })
+    ).toBe(1);
+  });
+
+  it("menolak resend untuk akun yang sudah terverifikasi", async () => {
+    const user = await createUser({
+      email: "verified@example.com",
+      emailVerifiedAt: new Date(),
+    });
+    setAuthUser(user);
+
+    const res = await resendVerificationRoute.POST();
+    expect(res.status).toBe(400);
+  });
+
+  it("menolak token verifikasi yang tidak valid", async () => {
+    const res = await verifyEmailRoute.POST(
+      jsonRequest("/api/auth/verify-email", "POST", { token: "token-palsu-panjang" })
+    );
+    expect(res.status).toBe(400);
   });
 
   it("menolak klaim trial manual dan AI sebelum verifikasi email", async () => {
