@@ -133,19 +133,20 @@ export async function POST(req: NextRequest) {
         : null;
     const badgeBaru = serverBadge ?? aiBadge;
 
-    if (badgeBaru) {
-      await db.badge.upsert({
-        where: { userId_name: { userId: student.id, name: badgeBaru } },
-        update: {},
-        create: { userId: student.id, name: badgeBaru },
-      });
-    }
-
-    // ── Simpan attempt + update user secara atomik ──
+    // ── Simpan attempt, badge, dan update user secara atomik ──
     // Kunci baris user agar dua submit paralel untuk soal yang sama tidak
-    // sama-sama memberi XP pada percobaan pertama.
+    // bentrok saat upsert badge atau memberi XP ganda.
     const { attempt, updatedUser, xpDiperoleh } = await db.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${student.id} FOR UPDATE`;
+
+      if (badgeBaru) {
+        await tx.badge.upsert({
+          where: { userId_name: { userId: student.id, name: badgeBaru } },
+          update: {},
+          create: { userId: student.id, name: badgeBaru },
+        });
+      }
+
       const previous = await tx.quizAttempt.count({
         where: { userId: student.id, questionId: question.id },
       });

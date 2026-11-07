@@ -203,6 +203,8 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 **Bugfix setelah audit P2**
 - XP kuis kini dihitung di dalam transaksi dengan row lock User, sehingga dua
   submit paralel untuk soal yang sama tidak memberi XP ganda.
+- Upsert badge juga dipindah ke transaksi yang sama untuk mencegah konflik
+  `P2002` saat dua submit paralel.
 - Sesi kuis di sessionStorage dipisah per `userId` agar tidak terbawa antar akun
   di browser yang sama.
 
