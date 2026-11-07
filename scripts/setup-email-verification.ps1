@@ -16,7 +16,7 @@ param(
   [switch]$Cleanup
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 $base = Join-Path $env:TEMP "opencode"
 $files = @{
   RESEND_API_KEY                = Join-Path $base "resend-api-key.txt"
@@ -38,9 +38,13 @@ foreach ($name in $files.Keys) {
 }
 
 function Set-VercelEnv([string]$name, [string]$value, [switch]$Sensitive) {
-  $args = @("env", "add", $name, "production", "--value", $value, "--force")
-  if ($Sensitive) { $args += "--sensitive" }
-  & vercel @args 1>$null 2>$null
+  $cmdArgs = @("env", "add", $name, "production", "--value", $value, "--yes", "--force")
+  if ($Sensitive) {
+    $cmdArgs += @("--type", "secret", "--sensitive")
+  } else {
+    $cmdArgs += @("--type", "config")
+  }
+  & vercel @cmdArgs 1>$null 2>$null
   if ($LASTEXITCODE -ne 0) { throw "Gagal menulis $name ke Vercel." }
   Write-Host "OK  $name"
 }

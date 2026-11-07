@@ -1,5 +1,7 @@
 # Setup Verifikasi Email & CAPTCHA
 
+**Status: aktif di produksi sejak 7 November 2026.**
+
 Fitur ini mengaktifkan:
 
 - verifikasi email sebelum trial Premium 7 hari diberikan,

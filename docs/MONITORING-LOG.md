@@ -14,7 +14,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Fase | Status | Commit terakhir | Catatan |
 |---|---|---|---|
 | P0 | Selesai | `322c481` | Rotasi DB, rate limit, admin, Midtrans internal |
-| P1 | Selesai (kode) | — | Menunggu aktivasi kunci Resend + Turnstile untuk verifikasi email/CAPTCHA |
+| P1 | Selesai | `179b2d6` | Semua item P1 aktif dan terverifikasi di produksi |
 
 ## Checklist monitoring
 
@@ -66,8 +66,9 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P1 | Moderasi dokumen | Selesai | Moderasi seluruh teks; tidak ada auto-approve; dokumen baru `pending` |
 | 2026-11-07 | P1 | Undangan tim | Selesai | Tabel `TeamInvite`; anggota baru harus menerima; email tidak diekspos |
 | 2026-11-07 | P1 | Audit RLS | Selesai | Produksi: 18 tabel RLS aktif, 0 policy publik; `TeamInvite` RLS aktif |
-| 2026-11-07 | P1 | Verifikasi email/CAPTCHA | Selesai (kode) | Resend + Turnstile terpasang; trial ditunda sampai verifikasi; perlu 2 kunci produksi |
+| 2026-11-07 | P1 | Verifikasi email/CAPTCHA | Selesai | Aktif di produksi; CAPTCHA menolak tanpa token; verifikasi memberi trial 7 hari |
 | 2026-11-07 | P1 | Regresi | Selesai | Unit 150, integration 131, E2E 12; build lulus |
+| 2026-11-07 | P1 | Aktivasi produksi | Selesai | Resend terkirim; Turnstile aktif; akun baru Free sampai verifikasi; verifikasi memberi trial 7 hari |
 
 ### Detail entri P0 — 7 November 2026
 
@@ -148,13 +149,16 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   verifikasi ditolak saat klaim trial dan AI.
 
 **Status produksi**
-- Kode sudah siap dan sudah dideploy; `EMAIL_VERIFICATION_ENABLED` masih
-  `false` sampai `RESEND_API_KEY`, `EMAIL_FROM`, serta kunci Turnstile
-  ditambahkan ke Vercel.
+- Aktif sejak 7 November 2026: `EMAIL_VERIFICATION_ENABLED=true`, kunci Resend
+  dan Turnstile terpasang di Vercel Production.
+- Resend berhasil mengirim email uji; Turnstile termuat di form registrasi.
+- Uji produksi: registrasi dengan CAPTCHA berhasil, akun baru Free dan belum
+  terverifikasi, banner verifikasi muncul, AI dan klaim trial manual ditolak
+  `403 email_unverified`.
+- Verifikasi produksi: endpoint `200`, trial 7 hari aktif, lalu akun uji dihapus.
 - Produksi: migrasi ke-7 diterapkan, 19 tabel RLS aktif, `/verify-email` `200`,
   `/api/plan` sudah mengembalikan `emailVerified`.
-- Setelah kunci ditambahkan: set flag `true`, redeploy, lalu uji registrasi
-  end-to-end. Panduan: `docs/EMAIL-VERIFICATION-SETUP.md`.
+- Panduan: `docs/EMAIL-VERIFICATION-SETUP.md`.
 
 **Sisa risiko**
 - Email deliverability bergantung pada verifikasi domain Resend (SPF/DKIM).

@@ -32,9 +32,9 @@ analitik admin.
   bisa mengakses proyek/tugas. Undangan pending dihitung terhadap batas anggota.
 - **Dokumen unggahan baru selalu berstatus `pending`**. AI hanya boleh menolak
   otomatis; persetujuan untuk membagikan dokumen selalu dilakukan admin.
-- **Trial Premium 7 hari otomatis** untuk akun baru dan pengguna Free yang belum
-  pernah trial (`trialUsedAt`). Selama trial, fitur Premium terbuka tetapi kuota
-  AI tetap dibatasi sesuai paket Premium. Admin dapat mereset trial dari panel admin.
+- **Trial Premium 7 hari** diberikan setelah email terverifikasi. Akun baru
+  berstatus Free sampai verifikasi; fitur AI dan klaim trial manual ditolak
+  sebelum email diverifikasi. Pengguna lama di-backfill sebagai terverifikasi.
 - **Kuota AI harian direset setiap 00.00 WIB**, bukan 24 jam sejak request pertama.
   Kuota per menit tetap berlaku.
 - **Admin selalu Premium** tanpa perlu langganan.
