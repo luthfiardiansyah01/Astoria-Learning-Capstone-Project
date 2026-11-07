@@ -103,7 +103,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P3 | Data orphan | Selesai | `Anim Team` (1 proyek/1 task) dihapus; backup JSON tersimpan di temp |
 | 2026-11-07 | P3 | Regresi | Selesai | Unit 150, integration 139, E2E 13 |
 
-### Detail entri P0 — 7 November 2026
+## Detail Fase P0 — 7 November 2026
 
 **Perubahan**
 - Rotasi password database melalui Supabase Management API.
@@ -128,7 +128,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Channel pembayaran Midtrans belum aktif; alur manual tetap tersedia.
 - Layanan eksternal di luar repo yang masih memakai password DB lama perlu diperbarui.
 
-### Detail entri P1 — 7 November 2026
+## Detail Fase P1 — 7 November 2026
 
 **Perubahan**
 - Middleware batas body: 1 MB untuk API umum, 256 KB untuk webhook.
@@ -162,7 +162,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Sediakan `RESEND_API_KEY`/SMTP dan kunci Turnstile untuk P1 lanjutan.
 - Atomickan batas anggota tim dan pertimbangkan undangan via email.
 
-### Detail entri P1 lanjutan — verifikasi email & CAPTCHA (7 November 2026)
+## Detail Fase P1 — Verifikasi Email & CAPTCHA (7 November 2026)
 
 **Perubahan**
 - Tambah `User.emailVerifiedAt` dan model `EmailVerificationToken` (hash SHA-256,
@@ -198,7 +198,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Resend dan Turnstile adalah dependensi eksternal; outage dapat menunda
   registrasi/verifikasi.
 
-### Detail entri P2 — 7 November 2026
+## Detail Fase P2 — 7 November 2026
 
 **Perubahan**
 - Semua cek batas paket (tim, proyek, tugas, anggota) memakai transaksi +
@@ -239,7 +239,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   agar tidak memotong kuota.
 - Komponen UI lama dan dependency tak terpakai sudah dibersihkan di P3.
 
-### Detail entri P3 — 7 November 2026
+## Detail Fase P3 — 7 November 2026
 
 **Perubahan**
 - Migrasi `20261107030000_p3_constraints_indexes`:
