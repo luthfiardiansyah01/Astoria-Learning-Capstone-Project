@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { TurnstileWidget } from "./turnstile-widget";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [website, setWebsite] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -23,7 +25,7 @@ export function RegisterForm() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, website }),
+        body: JSON.stringify({ name, email, password, website, turnstileToken }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -32,6 +34,9 @@ export function RegisterForm() {
       }
 
       const signInRes = await signIn("credentials", { email, password, redirect: false });
+      if (data.verificationRequired) {
+        toast.success("Akun dibuat. Cek email untuk verifikasi dan aktifkan trial Premium.");
+      }
       if (signInRes?.error) {
         toast.success("Akun dibuat, silakan masuk.");
         router.push("/login");
@@ -86,6 +91,7 @@ export function RegisterForm() {
           onChange={(e) => setWebsite(e.target.value)}
         />
       </div>
+      <TurnstileWidget onToken={setTurnstileToken} />
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Mendaftar..." : "Daftar"}
       </Button>

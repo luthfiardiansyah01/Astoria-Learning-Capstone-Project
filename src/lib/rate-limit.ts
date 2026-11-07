@@ -263,7 +263,29 @@ export async function getRateLimitStatus(
 }
 
 /** Batas gabungan untuk rute AI: per menit dan per hari. Null berarti boleh lanjut. */
-export async function guardAi(userId: string, plan: Plan = "free"): Promise<NextResponse | null> {
+export async function guardAi(
+  userId: string,
+  plan: Plan = "free",
+  account?: { emailVerifiedAt?: Date | string | null; role?: string | null }
+): Promise<NextResponse | null> {
+  // Bila verifikasi email diwajibkan, akun yang belum verifikasi tidak boleh
+  // memakai AI (mencegah farm akun trial/kuota). Pemanggil meneruskan data
+  // pengguna agar modul ini tidak perlu query database.
+  if (
+    process.env.EMAIL_VERIFICATION_ENABLED === "true" &&
+    account &&
+    account.role !== "admin" &&
+    !account.emailVerifiedAt
+  ) {
+    return NextResponse.json(
+      {
+        error: "Verifikasi email dulu untuk menggunakan fitur AI.",
+        code: "email_unverified",
+      },
+      { status: 403 }
+    );
+  }
+
   const limits = PLAN_LIMITS[plan];
   const minute = await rateLimit("ai-minute", userId, limits.aiPerMinute, 60, { failClosed: true });
   if (!minute.ok) return tooManyRequests(minute);

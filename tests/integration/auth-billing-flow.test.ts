@@ -5,6 +5,9 @@ import { db } from "@/lib/db";
 import { createUser, jsonRequest, resetDb, setAuthUser } from "./helpers";
 import * as rootRoute from "@/app/api/route";
 import * as registerRoute from "@/app/api/auth/register/route";
+import * as verifyEmailRoute from "@/app/api/auth/verify-email/route";
+import * as planRoute from "@/app/api/plan/route";
+import { guardAi } from "@/lib/rate-limit";
 import * as checkoutRoute from "@/app/api/billing/checkout/route";
 import * as midtransWebhook from "@/app/api/billing/webhook/midtrans/route";
 import * as xenditWebhook from "@/app/api/billing/webhook/xendit/route";
@@ -43,6 +46,9 @@ beforeEach(async () => {
   delete process.env.XENDIT_SECRET_KEY;
   delete process.env.XENDIT_CALLBACK_TOKEN;
   delete process.env.PAYMENT_PROVIDER;
+  delete process.env.EMAIL_VERIFICATION_ENABLED;
+  delete process.env.TURNSTILE_SECRET_KEY;
+  delete process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 });
 
 afterEach(() => {
@@ -51,6 +57,9 @@ afterEach(() => {
   delete process.env.XENDIT_SECRET_KEY;
   delete process.env.XENDIT_CALLBACK_TOKEN;
   delete process.env.PAYMENT_PROVIDER;
+  delete process.env.EMAIL_VERIFICATION_ENABLED;
+  delete process.env.TURNSTILE_SECRET_KEY;
+  delete process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 });
 
 describe("GET /api", () => {
@@ -144,6 +153,59 @@ describe("POST /api/auth/register", () => {
     );
     expect(blocked.status).toBe(429);
     expect(blocked.headers.get("Retry-After")).toBeTruthy();
+  });
+
+  it("menunda trial sampai email terverifikasi", async () => {
+    process.env.EMAIL_VERIFICATION_ENABLED = "true";
+    const res = await registerRoute.POST(
+      registerRequest({
+        name: "Pendaftar Verifikasi",
+        email: "verify-me@example.com",
+        password: "rahasia123",
+      })
+    );
+    const body = (await res.json()) as {
+      user: { id: string };
+      verificationRequired: boolean;
+      verificationUrl?: string;
+    };
+    expect(res.status).toBe(200);
+    expect(body.verificationRequired).toBe(true);
+    expect(body.verificationUrl).toContain("/verify-email?token=");
+
+    const before = await db.user.findUniqueOrThrow({ where: { id: body.user.id } });
+    expect(before.plan).toBe("free");
+    expect(before.emailVerifiedAt).toBeNull();
+    expect(before.trialUsedAt).toBeNull();
+
+    const token = new URL(body.verificationUrl!).searchParams.get("token")!;
+    const verify = await verifyEmailRoute.POST(
+      jsonRequest("/api/auth/verify-email", "POST", { token })
+    );
+    expect(verify.status).toBe(200);
+
+    const after = await db.user.findUniqueOrThrow({ where: { id: body.user.id } });
+    expect(after.emailVerifiedAt).toBeTruthy();
+    expect(after.plan).toBe("premium");
+    expect(after.trialUsedAt).toBeTruthy();
+    const trialDays = Math.round(
+      ((after.planExpiresAt?.getTime() ?? 0) - Date.now()) / (24 * 60 * 60 * 1000)
+    );
+    expect(trialDays).toBe(7);
+  });
+
+  it("menolak klaim trial manual dan AI sebelum verifikasi email", async () => {
+    process.env.EMAIL_VERIFICATION_ENABLED = "true";
+    const user = await createUser({ emailVerifiedAt: null });
+    setAuthUser(user);
+
+    const claim = await planRoute.POST();
+    expect(claim.status).toBe(403);
+
+    const ai = await guardAi(user.id, "free", user);
+    expect(ai?.status).toBe(403);
+    const body = (await ai?.json()) as { code: string };
+    expect(body.code).toBe("email_unverified");
   });
 });
 

@@ -20,6 +20,8 @@ export async function GET() {
       limits: PLAN_LIMITS[plan],
       planExpiresAt: auth.user.planExpiresAt,
       trialUsedAt: auth.user.trialUsedAt,
+      emailVerified: Boolean(auth.user.emailVerifiedAt),
+      emailVerificationRequired: process.env.EMAIL_VERIFICATION_ENABLED === "true",
     });
   } catch (e) {
     logger.error("[/api/plan GET]", { error: e });
@@ -32,6 +34,13 @@ export async function POST() {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const user = auth.user;
+
+    if (process.env.EMAIL_VERIFICATION_ENABLED === "true" && !user.emailVerifiedAt) {
+      return NextResponse.json(
+        { error: "Verifikasi email dulu untuk mengaktifkan trial Premium." },
+        { status: 403 }
+      );
+    }
 
     if (effectivePlan(user) === "premium") {
       return NextResponse.json({ error: "Akun ini sudah Premium." }, { status: 400 });

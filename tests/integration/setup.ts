@@ -48,6 +48,12 @@ vi.mock("@/lib/current-user", async () => {
   };
 });
 
+// Email tidak dikirim sungguhan; test dapat memeriksa pemanggilan mock.
+vi.mock("@/lib/email", () => ({
+  emailConfigured: vi.fn(() => true),
+  sendEmail: vi.fn(async () => ({ ok: true })),
+}));
+
 // AI tidak pernah dipanggil sungguhan di integration test.
 vi.mock("@/lib/ai", async () => {
   const actual = await vi.importActual<typeof import("@/lib/ai")>("@/lib/ai");

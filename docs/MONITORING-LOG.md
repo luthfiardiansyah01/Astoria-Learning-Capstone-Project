@@ -14,7 +14,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Fase | Status | Commit terakhir | Catatan |
 |---|---|---|---|
 | P0 | Selesai | `322c481` | Rotasi DB, rate limit, admin, Midtrans internal |
-| P1 | Selesai sebagian | `733a6a7` | Body limit, webhook, moderasi, undangan, RLS; verifikasi email/CAPTCHA menunggu kredensial |
+| P1 | Selesai (kode) | — | Menunggu aktivasi kunci Resend + Turnstile untuk verifikasi email/CAPTCHA |
 
 ## Checklist monitoring
 
@@ -66,8 +66,8 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P1 | Moderasi dokumen | Selesai | Moderasi seluruh teks; tidak ada auto-approve; dokumen baru `pending` |
 | 2026-11-07 | P1 | Undangan tim | Selesai | Tabel `TeamInvite`; anggota baru harus menerima; email tidak diekspos |
 | 2026-11-07 | P1 | Audit RLS | Selesai | Produksi: 18 tabel RLS aktif, 0 policy publik; `TeamInvite` RLS aktif |
-| 2026-11-07 | P1 | Verifikasi email/CAPTCHA | Terblokir | Belum ada kredensial SMTP/Resend/Turnstile; honeypot + rate limit sebagai interim |
-| 2026-11-07 | P1 | Regresi | Selesai | Unit 146, integration 129, E2E 12; build lulus |
+| 2026-11-07 | P1 | Verifikasi email/CAPTCHA | Selesai (kode) | Resend + Turnstile terpasang; trial ditunda sampai verifikasi; perlu 2 kunci produksi |
+| 2026-11-07 | P1 | Regresi | Selesai | Unit 150, integration 131, E2E 12; build lulus |
 
 ### Detail entri P0 — 7 November 2026
 
@@ -127,6 +127,35 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 **Tindak lanjut**
 - Sediakan `RESEND_API_KEY`/SMTP dan kunci Turnstile untuk P1 lanjutan.
 - Atomickan batas anggota tim dan pertimbangkan undangan via email.
+
+### Detail entri P1 lanjutan — verifikasi email & CAPTCHA (7 November 2026)
+
+**Perubahan**
+- Tambah `User.emailVerifiedAt` dan model `EmailVerificationToken` (hash SHA-256,
+  berlaku 24 jam, sekali pakai).
+- Registrasi dengan `EMAIL_VERIFICATION_ENABLED=true` membuat akun Free tanpa
+  trial; trial 7 hari baru diberikan setelah email diverifikasi.
+- Endpoint verifikasi, kirim ulang, halaman `/verify-email`, dan banner beranda.
+- Cloudflare Turnstile pada form registrasi (aktif bila site/secret key diisi).
+- `guardAi` menolak akun belum verifikasi; klaim trial manual juga ditolak.
+- Pengguna lama di-backfill sebagai terverifikasi oleh migrasi.
+- Panduan manual: `docs/EMAIL-VERIFICATION-SETUP.md`.
+
+**Verifikasi**
+- Unit 150 / integration 131 / E2E 12 lulus.
+- Migrasi `20261107020000_email_verification` diterapkan ke test DB.
+- Alur test: registrasi → token → verifikasi → trial 7 hari; akun belum
+  verifikasi ditolak saat klaim trial dan AI.
+
+**Status produksi**
+- Kode sudah siap, tetapi `EMAIL_VERIFICATION_ENABLED` masih `false` sampai
+  `RESEND_API_KEY`, `EMAIL_FROM`, serta kunci Turnstile ditambahkan ke Vercel.
+- Setelah kunci ditambahkan: set flag `true`, redeploy, lalu uji registrasi
+  end-to-end.
+
+**Sisa risiko**
+- Email deliverability bergantung pada verifikasi domain Resend (SPF/DKIM).
+- CAPTCHA hanya aktif bila kedua kunci Turnstile terisi.
 
 ## Template entri tahap berikutnya
 

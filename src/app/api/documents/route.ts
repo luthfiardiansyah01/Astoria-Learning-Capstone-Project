@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     if (auth.res) return auth.res;
     const student = auth.user;
     const plan = effectivePlan(student);
-    const limited = await guardAi(student.id, plan);
+    const limited = await guardAi(student.id, plan, student);
     if (limited) return limited;
     const uploadLimit = await rateLimit("upload", student.id, LIMITS.upload.max, LIMITS.upload.windowSec, {
       failClosed: true,

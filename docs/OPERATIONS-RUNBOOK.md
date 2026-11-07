@@ -6,6 +6,8 @@ Dokumen ini merangkum prosedur darurat dan operasi rutin yang tidak tercakup di
 Catatan monitoring harian, status tiap fase, dan sisa risiko dicatat di
 `docs/MONITORING-LOG.md`. Setiap tahap baru wajib menambahkan entri di sana.
 
+Setup verifikasi email dan CAPTCHA ada di `docs/EMAIL-VERIFICATION-SETUP.md`.
+
 ## 1. Akun admin
 
 Admin saat ini:

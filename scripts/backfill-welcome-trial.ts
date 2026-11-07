@@ -8,7 +8,7 @@ const db = new PrismaClient({ log: [] });
 try {
   const now = new Date();
   const candidates = await db.user.findMany({
-    where: { role: { not: "admin" }, plan: "free", trialUsedAt: null },
+    where: { role: { not: "admin" }, plan: "free", trialUsedAt: null, emailVerifiedAt: { not: null } },
     select: { id: true, email: true, name: true },
   });
 

@@ -34,8 +34,8 @@ async function main() {
   // Password hanya dipakai saat akun dibuat; seed ulang tidak menimpa password lama.
   const admin = await db.user.upsert({
     where: { email },
-    update: { role: "admin", name },
-    create: { email, name, role: "admin", passwordHash },
+    update: { role: "admin", name, emailVerifiedAt: new Date() },
+    create: { email, name, role: "admin", passwordHash, emailVerifiedAt: new Date() },
   });
   console.log(`Admin siap: ${admin.email} (${admin.role})`);
 

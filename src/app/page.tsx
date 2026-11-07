@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { XP_LEVELS } from "@/lib/gamif";
 import { useAstoria, type ViewKey } from "@/components/astoria/store";
 import { HomeView } from "@/components/astoria/home-view";
+import { EmailVerificationBanner } from "@/components/astoria/email-verification-banner";
 import { AiQuotaBadge } from "@/components/astoria/ai-quota-badge";
 import { PlanBadge } from "@/components/astoria/plan-badge";
 import { CONTACT_EMAIL } from "@/lib/contact";
@@ -284,6 +285,7 @@ export default function AstoriaPage() {
 
       {/* ── Konten ── */}
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-6">
+        <EmailVerificationBanner />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={view}

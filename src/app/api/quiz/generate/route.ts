@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   try {
     const auth = await requireUser();
     if (auth.res) return auth.res;
-    const limited = await guardAi(auth.user.id, effectivePlan(auth.user));
+    const limited = await guardAi(auth.user.id, effectivePlan(auth.user), auth.user);
     if (limited) return limited;
     const parsed = await readBody(req, quizGenerateSchema);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });

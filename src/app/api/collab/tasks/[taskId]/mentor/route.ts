@@ -55,7 +55,7 @@ export async function POST(
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Belum masuk." }, { status: 401 });
 
-    const limited = await guardAi(user.id, effectivePlan(user));
+    const limited = await guardAi(user.id, effectivePlan(user), user);
     if (limited) return limited;
 
     const { taskId } = await params;

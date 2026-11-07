@@ -9,6 +9,13 @@ import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { clientIp, LIMITS, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { TRIAL_MS } from "@/lib/plans";
 import { readBody, registerSchema } from "@/lib/validation";
+import { emailConfigured, sendEmail } from "@/lib/email";
+import {
+  createVerificationToken,
+  verificationEmail,
+  verificationUrl,
+} from "@/lib/email-verification";
+import { turnstileConfigured, verifyTurnstile } from "@/lib/turnstile";
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,6 +38,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Pendaftaran tidak valid." }, { status: 400 });
     }
 
+    if (turnstileConfigured()) {
+      const captcha = await verifyTurnstile(parsed.data.turnstileToken, ip);
+      if (!captcha.ok) {
+        return NextResponse.json(
+          { error: captcha.error ?? "CAPTCHA tidak valid." },
+          { status: 400 }
+        );
+      }
+    }
+
+    const verificationEnabled = process.env.EMAIL_VERIFICATION_ENABLED === "true";
+    if (verificationEnabled && !emailConfigured()) {
+      return NextResponse.json(
+        { error: "Verifikasi email belum dikonfigurasi. Hubungi admin." },
+        { status: 503 }
+      );
+    }
+
     const existing = await db.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json(
@@ -47,15 +72,34 @@ export async function POST(req: NextRequest) {
         email,
         passwordHash,
         role: "mahasiswa",
-        // Semua akun baru langsung mendapat trial Premium 7 hari.
-        plan: "premium",
-        planExpiresAt: new Date(now.getTime() + TRIAL_MS),
-        trialUsedAt: now,
+        // Trial Premium hanya diberikan setelah email terverifikasi.
+        plan: verificationEnabled ? "free" : "premium",
+        planExpiresAt: verificationEnabled ? null : new Date(now.getTime() + TRIAL_MS),
+        trialUsedAt: verificationEnabled ? null : now,
+        emailVerifiedAt: verificationEnabled ? null : now,
       },
     });
 
+    let devVerificationUrl: string | undefined;
+    if (verificationEnabled) {
+      const { token } = await createVerificationToken(user.id);
+      const url = verificationUrl(token);
+      const mail = verificationEmail(name, url);
+      const sent = await sendEmail({ to: email, ...mail });
+      if (!sent.ok) {
+        await db.user.delete({ where: { id: user.id } }).catch(() => null);
+        return NextResponse.json(
+          { error: "Gagal mengirim email verifikasi. Coba lagi beberapa saat." },
+          { status: 502 }
+        );
+      }
+      if (process.env.NODE_ENV !== "production") devVerificationUrl = url;
+    }
+
     return NextResponse.json({
       user: { id: user.id, name: user.name, email: user.email },
+      verificationRequired: verificationEnabled,
+      ...(devVerificationUrl ? { verificationUrl: devVerificationUrl } : {}),
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {

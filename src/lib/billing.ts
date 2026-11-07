@@ -8,6 +8,9 @@ import crypto from "crypto";
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { createNotification } from "./collab-notify";
+import { appUrl } from "./app-url";
+
+export { appUrl };
 
 export type BillingProvider = "midtrans" | "xendit" | "none";
 export type PaymentStatus = "pending" | "paid" | "failed" | "expired" | "refunded" | "cancelled";
@@ -28,19 +31,6 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 function envFlag(value: string | undefined, fallback = false) {
   if (value === undefined) return fallback;
   return ["1", "true", "yes", "on"].includes(value.trim().toLowerCase());
-}
-
-export function appUrl() {
-  // Di Vercel, VERCEL_PROJECT_PRODUCTION_URL selalu berisi domain produksi.
-  // NEXTAUTH_URL bisa saja masih menunjuk ke localhost pada deployment lama.
-  const vercelDomain =
-    process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || "";
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (vercelDomain ? `https://${vercelDomain}` : "") ||
-    process.env.NEXTAUTH_URL ||
-    "http://localhost:3000";
-  return base.replace(/\/$/, "");
 }
 
 export function midtransIsProduction() {

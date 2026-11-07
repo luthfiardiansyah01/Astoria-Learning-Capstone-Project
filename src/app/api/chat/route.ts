@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const user = auth.user;
-    const limited = await guardAi(user.id, effectivePlan(user));
+    const limited = await guardAi(user.id, effectivePlan(user), user);
     if (limited) return limited;
     const parsed = await readBody(req, chatSchema);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });

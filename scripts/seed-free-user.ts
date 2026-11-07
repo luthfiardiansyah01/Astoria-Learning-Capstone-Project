@@ -29,6 +29,7 @@ try {
       role: "mahasiswa",
       plan: "free",
       planExpiresAt: null,
+      emailVerifiedAt: new Date(),
       // Tandai trial sudah terpakai agar akun ini tidak ikut di-upgrade
       // oleh backfill trial dan tetap Free Plan.
       trialUsedAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -41,6 +42,7 @@ try {
       role: "mahasiswa",
       plan: "free",
       planExpiresAt: null,
+      emailVerifiedAt: new Date(),
       trialUsedAt: new Date("2026-01-01T00:00:00.000Z"),
     },
   });

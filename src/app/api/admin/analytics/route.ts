@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
     // ── AI Analytics Summarizer (Seksi 5.2), hanya saat diminta ──
     let insight: string | null = null;
     if (withInsight) {
-      const limited = await guardAi(auth.user.id, effectivePlan(auth.user));
+      const limited = await guardAi(auth.user.id, effectivePlan(auth.user), auth.user);
       if (limited) return limited;
 
       try {

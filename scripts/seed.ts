@@ -35,12 +35,13 @@ async function main() {
         streakDays: 1,
         email: "raka@ut.ac.id",
         passwordHash,
+        emailVerifiedAt: new Date(),
       },
     }));
 
   await db.user.updateMany({
     where: { id: "demo-student-ut", email: null },
-    data: { email: "raka@ut.ac.id", passwordHash },
+    data: { email: "raka@ut.ac.id", passwordHash, emailVerifiedAt: new Date() },
   });
 
   await db.user.upsert({
@@ -52,12 +53,13 @@ async function main() {
       role: "admin",
       email: "admin@ut.ac.id",
       passwordHash,
+      emailVerifiedAt: new Date(),
     },
   });
 
   await db.user.updateMany({
     where: { id: "demo-admin-ut", email: null },
-    data: { email: "admin@ut.ac.id", passwordHash },
+    data: { email: "admin@ut.ac.id", passwordHash, emailVerifiedAt: new Date() },
   });
 
   console.log(`Demo login: raka@ut.ac.id / admin@ut.ac.id — password: ${DEV_PASSWORD}`);

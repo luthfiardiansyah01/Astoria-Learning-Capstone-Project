@@ -35,7 +35,7 @@ export async function GET() {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const student = auth.user;
-    const limited = await guardAi(student.id, effectivePlan(student));
+    const limited = await guardAi(student.id, effectivePlan(student), student);
     if (limited) return limited;
     const { clock, label } = wibNow();
 

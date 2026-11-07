@@ -26,6 +26,8 @@ export const registerSchema = z.object({
     .max(200, "Password terlalu panjang (maks 200 karakter)."),
   /** Honeypot anti-bot: harus kosong. */
   website: z.string().max(200).optional(),
+  /** Token Cloudflare Turnstile (opsional bila CAPTCHA belum dikonfigurasi). */
+  turnstileToken: z.string().max(4096).optional(),
 });
 
 export const chatSchema = z.object({

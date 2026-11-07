@@ -17,6 +17,7 @@ model User {
   planExpiresAt    DateTime?
   trialUsedAt      DateTime?
   email            String?           @unique
+  emailVerifiedAt  DateTime?
   passwordHash     String?
   xp               Int               @default(0)
   level            Int               @default(1)
@@ -31,6 +32,7 @@ model User {
   teamMemberships  TeamMember[]
   teamInvitesReceived TeamInvite[]  @relation("TeamInviteInvitee")
   teamInvitesSent     TeamInvite[]  @relation("TeamInviteInviter")
+  verificationTokens  EmailVerificationToken[]
   assignedTasks    Task[]            @relation("TaskAssignee")
   taskChatMessages TaskChatMessage[]
   activityEvents   ActivityEvent[]
@@ -119,6 +121,19 @@ model TeamMember {
 
   @@unique([teamId, userId])
   @@index([teamId])
+  @@index([userId])
+}
+
+// Token verifikasi email sekali pakai.
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
   @@index([userId])
 }
 
