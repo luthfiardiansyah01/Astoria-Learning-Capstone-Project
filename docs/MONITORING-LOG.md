@@ -16,7 +16,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | P0 | Selesai | `322c481` | Rotasi DB, rate limit, admin, Midtrans internal |
 | P1 | Selesai | `179b2d6` | Semua item P1 aktif dan terverifikasi di produksi |
 | P2 | Selesai | `17fe563` | Limit atomik, URL/quiz state, toast, XP, a11y, performa |
-| P3 | Selesai | — | Index/CHECK, cleanup UI/deps, CSP report-only, docs sanitized, orphan team |
+| P3 | Selesai | `c1e96a2` | Index/CHECK, cleanup UI/deps, CSP report-only, docs sanitized, orphan team |
 
 ## Checklist monitoring
 
@@ -243,8 +243,12 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 **Verifikasi**
 - Unit 150 / integration 139 / E2E 13 lulus.
 - Build produksi lulus.
-- Migrasi diterapkan ke test DB dan produksi.
+- Migrasi diterapkan ke test DB dan produksi (8/8).
 - Audit data: 0 nilai status/role/plan tidak valid; 0 duplikat urutan tugas.
+- Produksi: 7 CHECK constraint dan 5 index baru terpasang; 19 tabel RLS aktif.
+- `Anim Team` sudah tidak ada; `CSP Report-Only`, HSTS, `nosniff`, `DENY` terkirim.
+- `/login`, `/register`, `/verify-email` 200; log produksi 0 error/0 5xx.
+- CI `c1e96a2` sukses.
 
 **Sisa risiko**
 - CSP masih `Report-Only`; ubah menjadi enforced setelah laporan pelanggaran bersih.
