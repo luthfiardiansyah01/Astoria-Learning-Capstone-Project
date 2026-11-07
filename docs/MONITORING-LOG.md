@@ -7,16 +7,32 @@ verifikasi, dan sisa risiko tidak hilang.
 - **Produksi:** https://astoria-learning-capstone-project.vercel.app
 - **Repo:** `luthfiardiansyah01/Astoria-Learning-Capstone-Project`
 - **Runbook terkait:** `docs/OPERATIONS-RUNBOOK.md`
-- **Terakhir diperbarui:** 7 November 2026
+- **Terakhir diperbarui:** 7 November 2026, setelah P3 selesai dan diverifikasi
 
 ## Status ringkas
 
 | Fase | Status | Commit terakhir | Catatan |
 |---|---|---|---|
 | P0 | Selesai | `322c481` | Rotasi DB, rate limit, admin, Midtrans internal |
-| P1 | Selesai | `179b2d6` | Semua item P1 aktif dan terverifikasi di produksi |
-| P2 | Selesai | `17fe563` | Limit atomik, URL/quiz state, toast, XP, a11y, performa |
+| P1 | Selesai | `4764de7` | Body limit, moderasi, undangan, verifikasi email/CAPTCHA aktif |
+| P2 | Selesai | `6fc1afe` | Limit atomik, URL/quiz state, toast, XP, a11y, performa |
 | P3 | Selesai | `c1e96a2` | Index/CHECK, cleanup UI/deps, CSP report-only, docs sanitized, orphan team |
+
+## Status produksi saat ini
+
+| Pemeriksaan | Kondisi terakhir |
+|---|---|
+| Deployment | Production **Ready** |
+| Commit kode | `c1e96a2` (dokumentasi akhir `87425f0`) |
+| Migrasi database | **8/8** diterapkan |
+| RLS | **19 tabel** aktif, **0 policy publik** |
+| CHECK constraint | **7** terpasang |
+| Index baru P3 | **5** terpasang |
+| Verifikasi email + CAPTCHA | **Aktif** (`EMAIL_VERIFICATION_ENABLED=true`) |
+| Tim orphan | `Anim Team` **dihapus** (backup di temp) |
+| Test | **150 unit / 139 integration / 13 E2E** |
+| Log produksi terakhir | **0 error, 0 respons 5xx** |
+| CSP | **Report-Only** (belum enforced) |
 
 ## Checklist monitoring
 
@@ -71,6 +87,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P1 | Verifikasi email/CAPTCHA | Selesai | Aktif di produksi; CAPTCHA menolak tanpa token; verifikasi memberi trial 7 hari |
 | 2026-11-07 | P1 | Regresi | Selesai | Unit 150, integration 133, E2E 12; build lulus |
 | 2026-11-07 | P1 | Aktivasi produksi | Selesai | Resend terkirim; Turnstile aktif; akun baru Free sampai verifikasi; verifikasi memberi trial 7 hari |
+| 2026-11-07 | P1 | Bugfix undangan | Selesai | Owner bisa membatalkan undangan pending; label aktivitas/notifikasi diperbaiki |
 | 2026-11-07 | P2 | Limit atomik | Selesai | Row lock untuk tim/proyek/tugas/anggota; test request paralel |
 | 2026-11-07 | P2 | URL & sesi kuis | Selesai | View tersimpan di `?view=`; sesi kuis dipulihkan dari sessionStorage |
 | 2026-11-07 | P2 | Konsistensi UI | Selesai | Satu sistem toast (Sonner); QueryState loading/error/empty/retry |
@@ -85,7 +102,6 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P3 | Sanitasi dokumen | Selesai | Kredensial demo di 2 file .docx diganti placeholder |
 | 2026-11-07 | P3 | Data orphan | Selesai | `Anim Team` (1 proyek/1 task) dihapus; backup JSON tersimpan di temp |
 | 2026-11-07 | P3 | Regresi | Selesai | Unit 150, integration 139, E2E 13 |
-| 2026-11-07 | P1 | Bugfix undangan | Selesai | Owner bisa membatalkan undangan pending; label aktivitas/notifikasi diperbaiki |
 
 ### Detail entri P0 — 7 November 2026
 
@@ -135,10 +151,10 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Log produksi 20 menit: 0 error, 0 respons 5xx.
 - CI `733a6a7` sukses; deployment Production Ready.
 
-**Sisa risiko**
-- Verifikasi email dan CAPTCHA belum aktif karena belum ada kredensial
-  SMTP/Resend/Turnstile. Honeypot + rate limit hanya mitigasi sementara.
-- Batas anggota tim masih memakai pola hitung-lalu-buat (race condition).
+**Sisa risiko (saat P1 awal)**
+- Verifikasi email dan CAPTCHA saat itu belum aktif; kemudian diaktifkan —
+  lihat bagian **Detail entri P1 lanjutan**.
+- Batas anggota tim saat itu masih hitung-lalu-buat; kemudian dibuat atomik di P2.
 - Admin legacy `admin@sobat-adi.id` masih aktif.
 - Channel pembayaran Midtrans tetap menunggu business review.
 
@@ -178,8 +194,9 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Panduan: `docs/EMAIL-VERIFICATION-SETUP.md`.
 
 **Sisa risiko**
-- Email deliverability bergantung pada verifikasi domain Resend (SPF/DKIM).
-- CAPTCHA hanya aktif bila kedua kunci Turnstile terisi.
+- Email deliverability tetap dipantau (SPF/DKIM/DMARC).
+- Resend dan Turnstile adalah dependensi eksternal; outage dapat menunda
+  registrasi/verifikasi.
 
 ### Detail entri P2 — 7 November 2026
 
@@ -220,8 +237,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   memakai row lock tetap mengikuti isolasi default PostgreSQL.
 - Greeting kini lokal (tanpa AI); bila ingin sapaan AI lagi, tambahkan cache
   agar tidak memotong kuota.
-- Beberapa komponen UI lama masih ada di repo meski dependency beratnya sudah
-  dihapus; pembersihan lanjutan bisa dilakukan di P3.
+- Komponen UI lama dan dependency tak terpakai sudah dibersihkan di P3.
 
 ### Detail entri P3 — 7 November 2026
 
