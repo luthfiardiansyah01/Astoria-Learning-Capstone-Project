@@ -8,11 +8,13 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   closestCorners,
 } from "@dnd-kit/core";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { KanbanColumn } from "./kanban-column";
 import { TaskCard, type CollabTask } from "./task-card";
 import { ProjectItemMenu } from "./project-item-menu";
@@ -21,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 import { TEAM_BADGE_META } from "@/lib/collab-badge-meta";
+import { QueryState } from "@/components/astoria/query-state";
 import { toast } from "sonner";
 
 const STATUSES = ["todo", "in_progress", "review", "done"];
@@ -43,7 +46,7 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
 
   const queryKey = ["collab", "project", projectId];
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey,
     queryFn: async () => {
       const res = await fetch(`/api/collab/projects/${projectId}`);
@@ -52,7 +55,10 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
     },
   });
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const columns = useMemo(() => {
     const grouped: Record<string, CollabTask[]> = { todo: [], in_progress: [], review: [], done: [] };
@@ -151,8 +157,26 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
     moveMutation.mutate({ taskId, status: targetStatus, order: newOrder });
   }
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Memuat papan...</p>;
-  if (!data) return <p className="text-sm text-muted-foreground">Proyek tidak ditemukan.</p>;
+  if (isLoading) return <QueryState isLoading loadingText="Memuat papan..." />;
+  if (isError) {
+    return (
+      <QueryState
+        isLoading={false}
+        isError
+        onRetry={() => refetch()}
+        errorText="Gagal memuat proyek. Periksa koneksi lalu coba lagi."
+      />
+    );
+  }
+  if (!data) {
+    return (
+      <QueryState
+        isLoading={false}
+        isEmpty
+        emptyText="Proyek tidak ditemukan atau kamu tidak punya akses."
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">

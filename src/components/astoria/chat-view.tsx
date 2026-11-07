@@ -25,8 +25,6 @@ import { useAstoria } from "./store";
 import { Markdown } from "./markdown";
 import { RealtimeClock } from "./realtime-clock";
 import { ElapsedTimer } from "./elapsed-timer";
-import { AiQuotaBadge } from "./ai-quota-badge";
-import { PlanBadge } from "./plan-badge";
 
 interface DocItem {
   id: string;
@@ -286,18 +284,23 @@ export function ChatView() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <PlanBadge className="hidden sm:inline-flex" />
-            <AiQuotaBadge className="hidden sm:inline-flex" />
             <RealtimeClock className="hidden md:inline text-[11px] text-muted-foreground" />
             {activeDocumentId && messages.length > 0 && (
-              <Button size="sm" variant="ghost" onClick={clearChat} title="Bersihkan riwayat">
+              <Button size="sm" variant="ghost" onClick={clearChat} title="Bersihkan riwayat" aria-label="Bersihkan riwayat chat">
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}
           </div>
         </div>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 astoria-scroll">
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto p-4 space-y-4 astoria-scroll"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+          aria-busy={sending}
+        >
           {messages.length === 0 && !sending && (
             <div className="h-full flex items-center justify-center">
               <div className="text-center max-w-md px-4 py-10">

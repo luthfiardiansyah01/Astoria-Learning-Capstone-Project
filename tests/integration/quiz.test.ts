@@ -157,7 +157,7 @@ describe("POST /api/quiz/submit", () => {
     expect(await db.badge.count({ where: { userId: user.id, name: "Pemberani" } })).toBe(1);
   });
 
-  it("tidak menggandakan badge pada submit berikutnya", async () => {
+  it("tidak menggandakan XP/badge pada submit berikutnya", async () => {
     const { user, question } = await setupQuestion({ tingkat: "Lanjut" });
     setAuthUser(user);
     vi.mocked(chatJSON).mockResolvedValue(evaluation as never);
@@ -172,7 +172,8 @@ describe("POST /api/quiz/submit", () => {
     );
 
     const afterSecond = await db.user.findUniqueOrThrow({ where: { id: user.id } });
-    expect(afterSecond.xp).toBe(130);
+    // XP hanya diberikan pada percobaan pertama untuk soal yang sama.
+    expect(afterSecond.xp).toBe(110);
     expect(await db.badge.count({ where: { userId: user.id, name: "Pemberani" } })).toBe(1);
     expect(await db.quizAttempt.count({ where: { userId: user.id } })).toBe(2);
   });

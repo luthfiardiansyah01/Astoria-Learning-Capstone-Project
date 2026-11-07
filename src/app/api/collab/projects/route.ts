@@ -21,9 +21,20 @@ export async function POST(req: NextRequest) {
     await assertTeamMember(user.id, teamId);
 
     const plan = await teamOwnerPlan(teamId, user);
-    const projectCount = await db.project.count({ where: { teamId } });
     const maxProjects = PLAN_LIMITS[plan].maxProjectsPerTeam;
-    if (projectCount >= maxProjects) {
+
+    // Kunci baris tim agar batas proyek tidak bisa dilewati request paralel.
+    const result = await db.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "Team" WHERE id = ${teamId} FOR UPDATE`;
+      const projectCount = await tx.project.count({ where: { teamId } });
+      if (projectCount >= maxProjects) return { created: false as const };
+      const project = await tx.project.create({
+        data: { teamId, name: name.trim(), description: description?.trim() || null },
+      });
+      return { created: true as const, project };
+    });
+
+    if (!result.created) {
       return NextResponse.json(
         {
           error: `Batas paket tim (${plan === "premium" ? "Premium" : "Free"}): maksimal ${maxProjects} proyek per tim. Upgrade paket owner untuk menambah proyek.`,
@@ -32,11 +43,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const project = await db.project.create({
-      data: { teamId, name: name.trim(), description: description?.trim() || null },
-    });
-
-    return NextResponse.json({ project });
+    return NextResponse.json({ project: result.project });
   } catch (e) {
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });

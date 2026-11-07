@@ -15,6 +15,7 @@ verifikasi, dan sisa risiko tidak hilang.
 |---|---|---|---|
 | P0 | Selesai | `322c481` | Rotasi DB, rate limit, admin, Midtrans internal |
 | P1 | Selesai | `179b2d6` | Semua item P1 aktif dan terverifikasi di produksi |
+| P2 | Selesai | — | Limit atomik, URL/quiz state, toast, XP, a11y, performa |
 
 ## Checklist monitoring
 
@@ -69,6 +70,13 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P1 | Verifikasi email/CAPTCHA | Selesai | Aktif di produksi; CAPTCHA menolak tanpa token; verifikasi memberi trial 7 hari |
 | 2026-11-07 | P1 | Regresi | Selesai | Unit 150, integration 133, E2E 12; build lulus |
 | 2026-11-07 | P1 | Aktivasi produksi | Selesai | Resend terkirim; Turnstile aktif; akun baru Free sampai verifikasi; verifikasi memberi trial 7 hari |
+| 2026-11-07 | P2 | Limit atomik | Selesai | Row lock untuk tim/proyek/tugas/anggota; test request paralel |
+| 2026-11-07 | P2 | URL & sesi kuis | Selesai | View tersimpan di `?view=`; sesi kuis dipulihkan dari sessionStorage |
+| 2026-11-07 | P2 | Konsistensi UI | Selesai | Satu sistem toast (Sonner); QueryState loading/error/empty/retry |
+| 2026-11-07 | P2 | Integritas XP | Selesai | XP hanya percobaan pertama per soal |
+| 2026-11-07 | P2 | Aksesibilitas | Selesai | Keyboard Kanban, dropdown status, aria-live chat/kuis |
+| 2026-11-07 | P2 | Performa | Selesai | Greeting tanpa AI, badge ganda dihapus, dependency tak terpakai dihapus |
+| 2026-11-07 | P2 | Regresi | Selesai | Unit 150, integration 135, E2E 13 |
 | 2026-11-07 | P1 | Bugfix undangan | Selesai | Owner bisa membatalkan undangan pending; label aktivitas/notifikasi diperbaiki |
 
 ### Detail entri P0 — 7 November 2026
@@ -164,6 +172,39 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 **Sisa risiko**
 - Email deliverability bergantung pada verifikasi domain Resend (SPF/DKIM).
 - CAPTCHA hanya aktif bila kedua kunci Turnstile terisi.
+
+### Detail entri P2 — 7 November 2026
+
+**Perubahan**
+- Semua cek batas paket (tim, proyek, tugas, anggota) memakai transaksi +
+  `SELECT ... FOR UPDATE` pada baris User/Team/Project, sehingga request paralel
+  tidak bisa melewati batas. Urutan tugas juga atomik.
+- View aktif disimpan di `?view=`; refresh, back/forward, dan deep-link bekerja.
+  Sesi kuis (soal, jawaban, hasil) disimpan di sessionStorage dan dipulihkan.
+- Toast disatukan ke Sonner; komponen `QueryState` dipakai untuk
+  loading/error/empty + retry di halaman kolaborasi dan Kanban.
+- XP kuis hanya diberikan pada percobaan pertama per soal; badge tetap idempoten.
+- Kanban mendapat `KeyboardSensor`, kartu bisa dibuka dengan Enter, dan panel
+  tugas punya dropdown status untuk pengguna keyboard.
+- Chat memakai `role="log"` + `aria-live`; hasil kuis memakai `aria-live`.
+- Greeting beranda tidak lagi memanggil AI/memotong kuota; badge plan/kuota
+  duplikat di chat dihapus; `MotionConfig reducedMotion="user"` ditambahkan.
+- Tujuh dependency tak terpakai dihapus; loading khusus auth/legal ditambahkan.
+
+**Verifikasi**
+- Unit 150 / integration 135 / E2E 13 lulus.
+- Build produksi lulus.
+- Test konkuren: dua request tim/tugas paralel menghasilkan satu 200 dan satu 403.
+- E2E memverifikasi `?view=mentor` bertahan setelah refresh dan hasil kuis
+  bertahan setelah reload.
+
+**Sisa risiko**
+- Batas paket kini aman untuk request paralel, tetapi operasi lain yang tidak
+  memakai row lock tetap mengikuti isolasi default PostgreSQL.
+- Greeting kini lokal (tanpa AI); bila ingin sapaan AI lagi, tambahkan cache
+  agar tidak memotong kuota.
+- Beberapa komponen UI lama masih ada di repo meski dependency beratnya sudah
+  dihapus; pembersihan lanjutan bisa dilakukan di P3.
 
 ## Template entri tahap berikutnya
 

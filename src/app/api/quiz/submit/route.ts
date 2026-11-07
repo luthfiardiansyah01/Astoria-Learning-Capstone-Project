@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     if (!canUseDocument(student, question.document)) return forbidden("Soal ini bukan dari dokumenmu.");
 
     // ── Data kontekstual untuk evaluator & trigger badge ──
-    const [answeredInThisDoc, last5, earnedBadges, firstLanjutDone] = await Promise.all([
+    const [answeredInThisDoc, last5, earnedBadges, firstLanjutDone, previousAttempts] = await Promise.all([
       db.quizAttempt.count({
         where: { userId: student.id, documentId: question.documentId },
       }),
@@ -71,6 +71,9 @@ export async function POST(req: NextRequest) {
       db.quizAttempt.findFirst({
         where: { userId: student.id, question: { tingkat: "Lanjut" } },
         select: { id: true },
+      }),
+      db.quizAttempt.count({
+        where: { userId: student.id, questionId: question.id },
       }),
     ]);
 
@@ -117,7 +120,8 @@ export async function POST(req: NextRequest) {
 
     // ── Normalisasi + penguji server-side ──
     const skor = clampSkor(result.skor);
-    const xpDiperoleh = clampXp(result.xp_diperoleh);
+    // XP hanya diberikan pada percobaan pertama untuk soal yang sama.
+    const xpDiperoleh = previousAttempts > 0 ? 0 : clampXp(result.xp_diperoleh);
 
     // Badge: prioritaskan hasil AI jika valid, jika tidak cek trigger deterministik
     const serverBadge = checkBadgeTriggers({

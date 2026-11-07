@@ -12,6 +12,7 @@ import { TeamBadges } from "./team-badges";
 import { NotificationBell } from "./notification-bell";
 import { TeamCardMenu } from "./team-card-menu";
 import { ProjectItemMenu } from "./project-item-menu";
+import { QueryState } from "@/components/astoria/query-state";
 import { BarChart3, FolderKanban, Users2 } from "lucide-react";
 
 interface Team {
@@ -28,7 +29,7 @@ interface Team {
 export function ProjectList() {
   const { data: session } = useSession();
   const reduceMotion = useReducedMotion();
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["collab", "teams"],
     queryFn: async () => {
       const res = await fetch("/api/collab/teams");
@@ -53,14 +54,16 @@ export function ProjectList() {
         </div>
       </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Memuat...</p>}
-      {!isLoading && data?.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          Kamu belum tergabung dalam tim. Buat tim baru untuk mulai berkolaborasi.
-        </p>
-      )}
-
-      <div className="grid gap-4 sm:grid-cols-2">
+      <QueryState
+        isLoading={isLoading}
+        isError={isError}
+        isEmpty={(data?.length ?? 0) === 0}
+        onRetry={() => refetch()}
+        loadingText="Memuat tim..."
+        errorText="Gagal memuat tim. Periksa koneksi lalu coba lagi."
+        emptyText="Kamu belum tergabung dalam tim. Buat tim baru untuk mulai berkolaborasi."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
         {data?.map((team, index) => {
           const isOwner = team.members.some(
             (m) => m.userId === session?.user?.id && m.role === "owner"
@@ -115,7 +118,8 @@ export function ProjectList() {
             </motion.div>
           );
         })}
-      </div>
+        </div>
+      </QueryState>
     </div>
   );
 }

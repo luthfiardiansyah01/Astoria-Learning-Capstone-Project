@@ -24,6 +24,7 @@ test("kuis: generate → jawab → skor/XP tampil dan tidak menggandakan XP", as
   expect(firstProfile.profile.xp).toBe(beforeXp + 20);
 
   await page.reload();
+  await expect(page.getByText("Skor 100")).toBeVisible({ timeout: 20_000 });
   const secondProfile = await (await page.request.get("/api/profile")).json();
   expect(secondProfile.profile.xp).toBe(beforeXp + 20);
 });

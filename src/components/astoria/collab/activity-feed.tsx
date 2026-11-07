@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, Award, CheckCircle2, PlusCircle, Sparkles, Trophy, UserPlus, ArrowRightLeft } from "lucide-react";
+import { QueryState } from "@/components/astoria/query-state";
 
 interface ActivityEvent {
   id: string;
@@ -39,7 +40,7 @@ const LABELS: Record<string, (e: ActivityEvent) => string> = {
 };
 
 export function ActivityFeed({ projectId }: { projectId: string }) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["collab", "activity", projectId],
     queryFn: async () => {
       const res = await fetch(`/api/collab/projects/${projectId}/activity`);
@@ -57,25 +58,31 @@ export function ActivityFeed({ projectId }: { projectId: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2.5 max-h-80 overflow-y-auto astoria-scroll">
-        {isLoading && <p className="text-sm text-muted-foreground">Memuat...</p>}
-        {data?.length === 0 && (
-          <p className="text-xs text-muted-foreground">Belum ada aktivitas.</p>
-        )}
-        {data?.map((e) => {
-          const Icon = ICONS[e.type] ?? Activity;
-          const label = LABELS[e.type]?.(e) ?? e.type;
-          return (
-            <div key={e.id} className="flex items-start gap-2 text-xs">
-              <Icon className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
-              <div>
-                <p>{label}</p>
-                <p className="text-[10px] text-muted-foreground">
-                  {new Date(e.createdAt).toLocaleString("id-ID")}
-                </p>
+        <QueryState
+          isLoading={isLoading}
+          isError={isError}
+          isEmpty={(data?.length ?? 0) === 0}
+          onRetry={() => refetch()}
+          loadingText="Memuat aktivitas..."
+          errorText="Gagal memuat aktivitas."
+          emptyText="Belum ada aktivitas."
+        >
+          {data?.map((e) => {
+            const Icon = ICONS[e.type] ?? Activity;
+            const label = LABELS[e.type]?.(e) ?? e.type;
+            return (
+              <div key={e.id} className="flex items-start gap-2 text-xs">
+                <Icon className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                <div>
+                  <p>{label}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {new Date(e.createdAt).toLocaleString("id-ID")}
+                  </p>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </QueryState>
       </CardContent>
     </Card>
   );

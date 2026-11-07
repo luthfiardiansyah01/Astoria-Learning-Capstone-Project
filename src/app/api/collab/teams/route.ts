@@ -45,9 +45,26 @@ export async function POST(req: NextRequest) {
     const { name } = parsed.data;
 
     const plan = effectivePlan(user);
-    const teamCount = await db.teamMember.count({ where: { userId: user.id, role: "owner" } });
     const maxTeams = PLAN_LIMITS[plan].maxTeams;
-    if (teamCount >= maxTeams) {
+
+    // Kunci baris user agar dua request paralel tidak sama-sama lolos cek batas.
+    const result = await db.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${user.id} FOR UPDATE`;
+      const teamCount = await tx.teamMember.count({
+        where: { userId: user.id, role: "owner" },
+      });
+      if (teamCount >= maxTeams) return { created: false as const };
+      const team = await tx.team.create({
+        data: {
+          name: name.trim(),
+          members: { create: { userId: user.id, role: "owner" } },
+        },
+        include: { members: { include: { user: { select: { id: true, name: true } } } } },
+      });
+      return { created: true as const, team };
+    });
+
+    if (!result.created) {
       return NextResponse.json(
         {
           error: `Batas paket ${plan === "premium" ? "Premium" : "Free"}: maksimal ${maxTeams} tim yang bisa kamu buat. Upgrade untuk membuat lebih banyak tim.`,
@@ -56,15 +73,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const team = await db.team.create({
-      data: {
-        name: name.trim(),
-        members: { create: { userId: user.id, role: "owner" } },
-      },
-      include: { members: { include: { user: { select: { id: true, name: true } } } } },
-    });
-
-    return NextResponse.json({ team });
+    return NextResponse.json({ team: result.team });
   } catch (e) {
     logger.error("[/api/collab/teams POST]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });

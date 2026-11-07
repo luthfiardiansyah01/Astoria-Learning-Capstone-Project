@@ -126,7 +126,7 @@ export function TeamMembers({
                 type="button"
                 aria-label={`Keluarkan ${m.user.name}`}
                 onClick={() => removeMutation.mutate(m.userId)}
-                className="ml-1 inline-flex align-middle hover:text-destructive"
+                className="ml-1 inline-flex rounded p-1 align-middle hover:text-destructive"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -144,7 +144,7 @@ export function TeamMembers({
                 type="button"
                 aria-label={`Batalkan undangan ${invite.user.name}`}
                 onClick={() => cancelInvite.mutate(invite.id)}
-                className="ml-1 inline-flex align-middle hover:text-destructive"
+                className="ml-1 inline-flex rounded p-1 align-middle hover:text-destructive"
               >
                 <X className="h-3 w-3" />
               </button>

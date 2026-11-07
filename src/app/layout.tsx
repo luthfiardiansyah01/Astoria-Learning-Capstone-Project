@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { AstoriaSessionProvider } from "@/components/providers/session-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,9 +37,10 @@ export default function RootLayout({
       >
         <AstoriaSessionProvider>
           <QueryProvider>
-            {children}
-            <Toaster />
-            <SonnerToaster />
+            <MotionProvider>
+              {children}
+              <SonnerToaster />
+            </MotionProvider>
           </QueryProvider>
         </AstoriaSessionProvider>
       </body>

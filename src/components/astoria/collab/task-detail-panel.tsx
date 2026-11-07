@@ -76,6 +76,7 @@ function TaskForm({
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description ?? "");
   const [assigneeId, setAssigneeId] = useState(task.assignee?.id ?? "");
+  const [status, setStatus] = useState(task.status);
   const [dueDate, setDueDate] = useState(task.dueDate ? task.dueDate.slice(0, 10) : "");
 
   const saveMutation = useMutation({
@@ -87,6 +88,7 @@ function TaskForm({
           title,
           description,
           assigneeId: assigneeId || null,
+          status,
           dueDate: dueDate || null,
         }),
       });
@@ -166,6 +168,23 @@ function TaskForm({
             rows={4}
             placeholder="Detail tugas (opsional)"
           />
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="task-status" className="text-sm font-semibold">
+            Status
+          </label>
+          <select
+            id="task-status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+          >
+            <option value="todo">Todo</option>
+            <option value="in_progress">Dikerjakan</option>
+            <option value="review">Review</option>
+            <option value="done">Selesai</option>
+          </select>
         </div>
 
         <div className="space-y-1.5">

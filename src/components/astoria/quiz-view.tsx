@@ -54,6 +54,15 @@ interface AnswerResult {
   kunci: string | null;
 }
 
+const QUIZ_STORAGE_KEY = "sobadi:quiz-session:v1";
+
+interface SavedQuiz {
+  documentId: string | null;
+  questions: Question[];
+  answers: Record<string, string>;
+  results: Record<string, AnswerResult>;
+}
+
 export function QuizView() {
   const { toast } = useToast();
   const { activeDocumentId, setActiveDocument, refreshStats } = useAstoria();
@@ -64,7 +73,46 @@ export function QuizView() {
   const [generating, setGenerating] = useState(false);
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const doneConfetti = useCallback(() => setShowConfetti(false), []);
+
+  // Pulihkan sesi kuis dari sessionStorage agar progres tidak hilang saat
+  // berpindah tab atau refresh.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(QUIZ_STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as SavedQuiz;
+        if (saved.documentId) setActiveDocument(saved.documentId);
+        setQuestions(saved.questions ?? []);
+        setAnswers(saved.answers ?? {});
+        setResults(saved.results ?? {});
+      }
+    } catch {
+      // Abaikan sesi rusak.
+    } finally {
+      setHydrated(true);
+    }
+  }, [setActiveDocument]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      if (questions.length === 0) {
+        sessionStorage.removeItem(QUIZ_STORAGE_KEY);
+        return;
+      }
+      const saved: SavedQuiz = {
+        documentId: activeDocumentId,
+        questions,
+        answers,
+        results,
+      };
+      sessionStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(saved));
+    } catch {
+      // sessionStorage bisa penuh/diblokir; abaikan.
+    }
+  }, [hydrated, activeDocumentId, questions, answers, results]);
 
   useEffect(() => {
     (async () => {
@@ -291,7 +339,13 @@ export function QuizView() {
                     </Button>
                   </>
                 ) : (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="space-y-3"
+                    role="status"
+                    aria-live="polite"
+                  >
                     {/* Skor & XP */}
                     <div className="flex flex-wrap items-center gap-3">
                       <Badge

@@ -71,6 +71,18 @@ describe("tim", () => {
     expect(await db.team.count()).toBe(1);
   });
 
+  it("tidak bisa melewati batas tim lewat request paralel", async () => {
+    const user = await createUser();
+    setAuthUser(user);
+
+    const results = await Promise.all([
+      teamsRoute.POST(jsonRequest("/api/collab/teams", "POST", { name: "Paralel A" })),
+      teamsRoute.POST(jsonRequest("/api/collab/teams", "POST", { name: "Paralel B" })),
+    ]);
+    expect(results.map((r) => r.status).sort()).toEqual([200, 403]);
+    expect(await db.team.count()).toBe(1);
+  });
+
   it("mengizinkan Premium membuat 10 tim", async () => {
     const owner = await createUser({ plan: "premium", planExpiresAt: null });
     for (let i = 0; i < 9; i++) await createTeam(owner.id, `Tim ${i}`);
@@ -277,6 +289,27 @@ describe("tugas", () => {
       params({ projectId: project.id })
     );
     expect(res.status).toBe(403);
+  });
+
+  it("tidak bisa melewati batas tugas lewat request paralel", async () => {
+    const owner = await createUser();
+    const team = await createTeam(owner.id);
+    const project = await createProject(team.id);
+    for (let i = 0; i < 9; i++) await createTask(project.id, `Tugas ${i}`);
+    setAuthUser(owner);
+
+    const results = await Promise.all([
+      tasksRoute.POST(
+        jsonRequest(`/api/collab/projects/${project.id}/tasks`, "POST", { title: "Paralel A" }),
+        params({ projectId: project.id })
+      ),
+      tasksRoute.POST(
+        jsonRequest(`/api/collab/projects/${project.id}/tasks`, "POST", { title: "Paralel B" }),
+        params({ projectId: project.id })
+      ),
+    ]);
+    expect(results.map((r) => r.status).sort()).toEqual([200, 403]);
+    expect(await db.task.count({ where: { projectId: project.id } })).toBe(10);
   });
 
   it("mengizinkan Premium melewati batas Free", async () => {

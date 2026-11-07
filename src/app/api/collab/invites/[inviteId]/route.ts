@@ -65,27 +65,31 @@ export async function POST(
     }
 
     const plan = await teamOwnerPlan(invite.teamId, user);
-    const memberCount = await db.teamMember.count({ where: { teamId: invite.teamId } });
-    if (memberCount >= PLAN_LIMITS[plan].maxTeamMembers) {
+    const maxMembers = PLAN_LIMITS[plan].maxTeamMembers;
+
+    const accepted = await db.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "Team" WHERE id = ${invite.teamId} FOR UPDATE`;
+      const memberCount = await tx.teamMember.count({ where: { teamId: invite.teamId } });
+      if (memberCount >= maxMembers) return "limit" as const;
+
+      const claimed = await tx.teamInvite.updateMany({
+        where: { id: invite.id, userId: user.id, status: "pending" },
+        data: { status: "accepted", respondedAt: new Date() },
+      });
+      if (claimed.count === 0) return "processed" as const;
+      await tx.teamMember.create({
+        data: { teamId: invite.teamId, userId: user.id, role: "member" },
+      });
+      return "ok" as const;
+    });
+
+    if (accepted === "limit") {
       return NextResponse.json(
         { error: "Tim sudah mencapai batas anggota paket owner." },
         { status: 403 }
       );
     }
-
-    const accepted = await db.$transaction(async (tx) => {
-      const claimed = await tx.teamInvite.updateMany({
-        where: { id: invite.id, userId: user.id, status: "pending" },
-        data: { status: "accepted", respondedAt: new Date() },
-      });
-      if (claimed.count === 0) return false;
-      await tx.teamMember.create({
-        data: { teamId: invite.teamId, userId: user.id, role: "member" },
-      });
-      return true;
-    });
-
-    if (!accepted) {
+    if (accepted === "processed") {
       return NextResponse.json({ error: "Undangan sudah diproses." }, { status: 409 });
     }
 

@@ -43,6 +43,12 @@ export function TaskCard({ task, onOpen }: { task: CollabTask; onOpen: (id: stri
         {...attributes}
         {...listeners}
         onClick={() => onOpen(task.id)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onOpen(task.id);
+          }
+        }}
         className="p-3 cursor-grab active:cursor-grabbing hover:border-primary/50 hover:shadow-md transition-[border-color,box-shadow]"
       >
       <p className="text-sm font-medium leading-snug">{task.title}</p>

@@ -4,12 +4,8 @@ import { logger } from "@/lib/logger";
 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { GREETING_PROMPT, buildGreetingUserTurn, PARAMS } from "@/lib/prompts";
-import { chatComplete } from "@/lib/ai";
-import { formatLastActive, wibNow } from "@/lib/user";
+import { wibNow } from "@/lib/user";
 import { requireUser } from "@/lib/current-user";
-import { guardAi } from "@/lib/rate-limit";
-import { effectivePlan } from "@/lib/plans";
 
 export const maxDuration = 60;
 
@@ -35,9 +31,7 @@ export async function GET() {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const student = auth.user;
-    const limited = await guardAi(student.id, effectivePlan(student), student);
-    if (limited) return limited;
-    const { clock, label } = wibNow();
+    const { hour, label } = wibNow();
 
     // Modul aktif = dokumen terakhir yang dipakai chat / diunggah
     const [lastDoc, totalQuiz, docCount] = await Promise.all([
@@ -52,49 +46,7 @@ export async function GET() {
 
     const modulAktif = lastDoc?.fileName ?? "belum ada modul";
     const progressPct = Math.min(100, Math.round((totalQuiz / 15) * 100));
-
-    let greeting: string;
-    const fallbackGreeting = localGreeting(
-      student.name,
-      new Date().getUTCHours() + 7,
-      student.streakDays
-    );
-    const aiGreeting = chatComplete(
-      [
-        { role: "system", content: GREETING_PROMPT },
-        {
-          role: "user",
-          content: buildGreetingUserTurn({
-            nama: student.name,
-            streak: student.streakDays,
-            lastActive: formatLastActive(student.lastActive),
-            modulAktif,
-            progressPct,
-            jamSaatIni: clock,
-          }),
-        },
-      ],
-      PARAMS.gamif_eval,
-      { timeoutMs: 1500, retries: 1 }
-    )
-      .then((value) => value.replace(/^(sapaan|greeting)\s*:\s*/i, "").trim())
-      .catch((e) => {
-        logger.error("[/api/greeting] AI gagal, pakai sapaan lokal:", { error: e });
-        return fallbackGreeting;
-      });
-
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const deadline = new Promise<string>((_, reject) => {
-      timer = setTimeout(() => reject(new Error("greeting timeout")), 1500);
-    });
-
-    try {
-      greeting = await Promise.race([aiGreeting, deadline]);
-    } catch {
-      greeting = fallbackGreeting;
-    } finally {
-      if (timer) clearTimeout(timer);
-    }
+    const greeting = localGreeting(student.name, hour, student.streakDays);
 
     return NextResponse.json({
       greeting,

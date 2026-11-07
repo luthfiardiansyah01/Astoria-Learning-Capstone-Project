@@ -1,7 +1,7 @@
 // SOBAT ADI — halaman utama (single-page app dengan 5 view)
 "use client";
 
-import { useEffect, type ElementType } from "react";
+import { useEffect, useState, type ElementType } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
@@ -144,6 +144,31 @@ export default function AstoriaPage() {
   const { data: session, status } = useSession();
   const isAdmin = session?.user?.role === "admin";
   const navItems = NAV.filter((n) => n.key !== "admin" || isAdmin);
+  const [urlReady, setUrlReady] = useState(false);
+
+  useEffect(() => {
+    const apply = () => {
+      const requested = new URLSearchParams(window.location.search).get("view");
+      if (requested && NAV.some((n) => n.key === requested)) {
+        setView(requested as ViewKey);
+      } else {
+        setView("beranda");
+      }
+    };
+    apply();
+    setUrlReady(true);
+    window.addEventListener("popstate", apply);
+    return () => window.removeEventListener("popstate", apply);
+  }, [setView]);
+
+  // Simpan view aktif di URL agar refresh, back/forward, dan deep-link bekerja.
+  useEffect(() => {
+    if (!urlReady) return;
+    const url = new URL(window.location.href);
+    if (view === "beranda") url.searchParams.delete("view");
+    else url.searchParams.set("view", view);
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }, [view, urlReady]);
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");

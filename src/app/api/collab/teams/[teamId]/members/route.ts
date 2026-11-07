@@ -57,28 +57,47 @@ export async function POST(
       return NextResponse.json({ error: "Akun admin tidak bisa diundang ke tim." }, { status: 400 });
     }
 
-    const existingMember = await db.teamMember.findUnique({
-      where: { teamId_userId: { teamId, userId: target.id } },
-      include: { user: { select: { id: true, name: true } } },
-    });
-    if (existingMember) {
-      return NextResponse.json({ member: existingMember, alreadyMember: true });
-    }
-
-    const existingInvite = await db.teamInvite.findUnique({
-      where: { teamId_userId: { teamId, userId: target.id } },
-    });
-    if (existingInvite?.status === "pending") {
-      return NextResponse.json({ invite: existingInvite, pending: true, alreadyInvited: true });
-    }
-
     const plan = effectivePlan(user);
-    const [memberCount, inviteCount] = await Promise.all([
-      db.teamMember.count({ where: { teamId } }),
-      db.teamInvite.count({ where: { teamId, status: "pending" } }),
-    ]);
     const maxMembers = PLAN_LIMITS[plan].maxTeamMembers;
-    if (memberCount + inviteCount >= maxMembers) {
+
+    // Kunci baris tim agar batas anggota + undangan tidak bisa dilewati paralel.
+    const result = await db.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "Team" WHERE id = ${teamId} FOR UPDATE`;
+
+      const existingMember = await tx.teamMember.findUnique({
+        where: { teamId_userId: { teamId, userId: target.id } },
+        include: { user: { select: { id: true, name: true } } },
+      });
+      if (existingMember) return { kind: "member" as const, member: existingMember };
+
+      const existingInvite = await tx.teamInvite.findUnique({
+        where: { teamId_userId: { teamId, userId: target.id } },
+      });
+      if (existingInvite?.status === "pending") {
+        return { kind: "invite" as const, invite: existingInvite, alreadyInvited: true };
+      }
+
+      const [memberCount, inviteCount] = await Promise.all([
+        tx.teamMember.count({ where: { teamId } }),
+        tx.teamInvite.count({ where: { teamId, status: "pending" } }),
+      ]);
+      if (memberCount + inviteCount >= maxMembers) return { kind: "limit" as const };
+
+      const invite = existingInvite
+        ? await tx.teamInvite.update({
+            where: { id: existingInvite.id },
+            data: { status: "pending", invitedById: user.id, respondedAt: null, createdAt: new Date() },
+          })
+        : await tx.teamInvite.create({
+            data: { teamId, userId: target.id, invitedById: user.id },
+          });
+      return { kind: "invite" as const, invite, alreadyInvited: false };
+    });
+
+    if (result.kind === "member") {
+      return NextResponse.json({ member: result.member, alreadyMember: true });
+    }
+    if (result.kind === "limit") {
       return NextResponse.json(
         {
           error: `Batas paket ${plan === "premium" ? "Premium" : "Free"}: maksimal ${maxMembers} anggota per tim. Upgrade untuk menambah anggota.`,
@@ -87,37 +106,31 @@ export async function POST(
       );
     }
 
-    const invite = existingInvite
-      ? await db.teamInvite.update({
-          where: { id: existingInvite.id },
-          data: { status: "pending", invitedById: user.id, respondedAt: null, createdAt: new Date() },
-        })
-      : await db.teamInvite.create({
-          data: { teamId, userId: target.id, invitedById: user.id },
-        });
-
-    const team = await db.team.findUnique({ where: { id: teamId }, select: { name: true } });
-    await logActivity({
-      teamId,
-      userId: user.id,
-      type: "member_invited",
-      payload: { name: target.name },
-    });
-    await createNotification(target.id, {
-      type: "team_invite",
-      title: `Undangan bergabung ke tim ${team?.name ?? ""}`.trim(),
-      body: `Diundang oleh ${user.name}. Buka Collab untuk menerima atau menolak.`,
-      link: "/collab",
-    });
+    if (!result.alreadyInvited) {
+      const team = await db.team.findUnique({ where: { id: teamId }, select: { name: true } });
+      await logActivity({
+        teamId,
+        userId: user.id,
+        type: "member_invited",
+        payload: { name: target.name },
+      }).catch(() => null);
+      await createNotification(target.id, {
+        type: "team_invite",
+        title: `Undangan bergabung ke tim ${team?.name ?? ""}`.trim(),
+        body: `Diundang oleh ${user.name}. Buka Collab untuk menerima atau menolak.`,
+        link: "/collab",
+      }).catch(() => null);
+    }
 
     return NextResponse.json({
       invite: {
-        id: invite.id,
-        userId: invite.userId,
-        status: invite.status,
+        id: result.invite.id,
+        userId: result.invite.userId,
+        status: result.invite.status,
         user: { id: target.id, name: target.name },
       },
       pending: true,
+      alreadyInvited: result.alreadyInvited,
     });
   } catch (e) {
     if (e instanceof ForbiddenError) {
