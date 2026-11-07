@@ -148,10 +148,13 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   verifikasi ditolak saat klaim trial dan AI.
 
 **Status produksi**
-- Kode sudah siap, tetapi `EMAIL_VERIFICATION_ENABLED` masih `false` sampai
-  `RESEND_API_KEY`, `EMAIL_FROM`, serta kunci Turnstile ditambahkan ke Vercel.
+- Kode sudah siap dan sudah dideploy; `EMAIL_VERIFICATION_ENABLED` masih
+  `false` sampai `RESEND_API_KEY`, `EMAIL_FROM`, serta kunci Turnstile
+  ditambahkan ke Vercel.
+- Produksi: migrasi ke-7 diterapkan, 19 tabel RLS aktif, `/verify-email` `200`,
+  `/api/plan` sudah mengembalikan `emailVerified`.
 - Setelah kunci ditambahkan: set flag `true`, redeploy, lalu uji registrasi
-  end-to-end.
+  end-to-end. Panduan: `docs/EMAIL-VERIFICATION-SETUP.md`.
 
 **Sisa risiko**
 - Email deliverability bergantung pada verifikasi domain Resend (SPF/DKIM).

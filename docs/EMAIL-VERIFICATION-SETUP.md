@@ -50,6 +50,25 @@ Tambahkan di Vercel → Project → Settings → Environment Variables →
 
 Untuk lokal, isi variabel yang sama di `.env` (jangan commit).
 
+### Otomatis via script
+
+Simpan tiga kunci ke file lokal (satu baris, tanpa tanda kutip):
+
+```text
+C:\Users\AsusV16\AppData\Local\Temp\opencode\resend-api-key.txt
+C:\Users\AsusV16\AppData\Local\Temp\opencode\turnstile-site-key.txt
+C:\Users\AsusV16\AppData\Local\Temp\opencode\turnstile-secret-key.txt
+```
+
+Lalu jalankan:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup-email-verification.ps1 -Deploy -Cleanup
+```
+
+Script menulis env ke Vercel Production, menyalakan
+`EMAIL_VERIFICATION_ENABLED`, mendeploy, lalu menghapus file kunci lokal.
+
 > `NEXT_PUBLIC_` memang terlihat di browser; itu normal untuk site key.
 > `RESEND_API_KEY` dan `TURNSTILE_SECRET_KEY` tidak boleh memakai prefix
 > `NEXT_PUBLIC_`.
