@@ -68,8 +68,27 @@ Jangan cetak password ke terminal, log, atau chat.
 6. Verifikasi login, dashboard, dan satu operasi tulis (mis. update profil).
 7. Hapus salinan password lama dari catatan sementara.
 
+Alternatif otomatis (yang dipakai pada rotasi 7 November 2026): buat Personal
+Access Token yang di-scope ke project dengan izin `database_config_write`,
+simpan token di file lokal (jangan di chat), lalu panggil:
+
+```text
+PATCH https://api.supabase.com/v1/projects/{ref}/database/password
+Authorization: Bearer <token>
+{ "password": "<password-baru>" }
+```
+
+Setelah `DATABASE_URL`/`DIRECT_URL` diperbarui dan deploy diverifikasi, hapus
+token tersebut.
+
 Downtime singkat mungkin terjadi antara rotasi dan deploy selesai. Lakukan di
 luar jam sibuk.
+
+Riwayat rotasi:
+- 7 November 2026 — password database dirotasi lewat Supabase Management API
+  (`PATCH /v1/projects/{ref}/database/password`), lalu `DATABASE_URL` dan
+  `DIRECT_URL` diperbarui di Vercel Production. Koneksi baru diverifikasi
+  sebelum token akses dihapus.
 
 ## 4. Pembayaran manual (saat channel gateway belum tersedia)
 
