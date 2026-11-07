@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { useSession } from "next-auth/react";
 import { useAstoria } from "./store";
 import { Confetti } from "./confetti";
 
@@ -65,6 +66,9 @@ interface SavedQuiz {
 
 export function QuizView() {
   const { toast } = useToast();
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  const storageKey = userId ? `${QUIZ_STORAGE_KEY}:${userId}` : null;
   const { activeDocumentId, setActiveDocument, refreshStats } = useAstoria();
   const [docs, setDocs] = useState<DocItem[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -77,29 +81,41 @@ export function QuizView() {
   const doneConfetti = useCallback(() => setShowConfetti(false), []);
 
   // Pulihkan sesi kuis dari sessionStorage agar progres tidak hilang saat
-  // berpindah tab atau refresh.
+  // berpindah tab atau refresh. Kunci dipisah per pengguna.
   useEffect(() => {
+    if (!storageKey) {
+      setQuestions([]);
+      setAnswers({});
+      setResults({});
+      setHydrated(true);
+      return;
+    }
+    setHydrated(false);
     try {
-      const raw = sessionStorage.getItem(QUIZ_STORAGE_KEY);
+      const raw = sessionStorage.getItem(storageKey);
       if (raw) {
         const saved = JSON.parse(raw) as SavedQuiz;
         if (saved.documentId) setActiveDocument(saved.documentId);
         setQuestions(saved.questions ?? []);
         setAnswers(saved.answers ?? {});
         setResults(saved.results ?? {});
+      } else {
+        setQuestions([]);
+        setAnswers({});
+        setResults({});
       }
     } catch {
       // Abaikan sesi rusak.
     } finally {
       setHydrated(true);
     }
-  }, [setActiveDocument]);
+  }, [storageKey, setActiveDocument]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !storageKey) return;
     try {
       if (questions.length === 0) {
-        sessionStorage.removeItem(QUIZ_STORAGE_KEY);
+        sessionStorage.removeItem(storageKey);
         return;
       }
       const saved: SavedQuiz = {
@@ -108,11 +124,11 @@ export function QuizView() {
         answers,
         results,
       };
-      sessionStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(saved));
+      sessionStorage.setItem(storageKey, JSON.stringify(saved));
     } catch {
       // sessionStorage bisa penuh/diblokir; abaikan.
     }
-  }, [hydrated, activeDocumentId, questions, answers, results]);
+  }, [hydrated, storageKey, activeDocumentId, questions, answers, results]);
 
   useEffect(() => {
     (async () => {

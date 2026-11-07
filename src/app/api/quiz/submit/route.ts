@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     if (!canUseDocument(student, question.document)) return forbidden("Soal ini bukan dari dokumenmu.");
 
     // ── Data kontekstual untuk evaluator & trigger badge ──
-    const [answeredInThisDoc, last5, earnedBadges, firstLanjutDone, previousAttempts] = await Promise.all([
+    const [answeredInThisDoc, last5, earnedBadges, firstLanjutDone] = await Promise.all([
       db.quizAttempt.count({
         where: { userId: student.id, documentId: question.documentId },
       }),
@@ -71,9 +71,6 @@ export async function POST(req: NextRequest) {
       db.quizAttempt.findFirst({
         where: { userId: student.id, question: { tingkat: "Lanjut" } },
         select: { id: true },
-      }),
-      db.quizAttempt.count({
-        where: { userId: student.id, questionId: question.id },
       }),
     ]);
 
@@ -120,8 +117,7 @@ export async function POST(req: NextRequest) {
 
     // ── Normalisasi + penguji server-side ──
     const skor = clampSkor(result.skor);
-    // XP hanya diberikan pada percobaan pertama untuk soal yang sama.
-    const xpDiperoleh = previousAttempts > 0 ? 0 : clampXp(result.xp_diperoleh);
+    const rawXp = clampXp(result.xp_diperoleh);
 
     // Badge: prioritaskan hasil AI jika valid, jika tidak cek trigger deterministik
     const serverBadge = checkBadgeTriggers({
@@ -145,37 +141,48 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── Simpan attempt + update user ──
-    const attempt = await db.quizAttempt.create({
-      data: {
-        userId: student.id,
-        questionId: question.id,
-        documentId: question.documentId,
-        jawaban: jawaban.trim(),
-        skor,
-        xpDiperoleh: xpDiperoleh,
-        badgeBaru,
-        feedback: result.feedback || "Kerja bagus, terus belajar ya! 💪",
-        koreksi: result.koreksi || "",
-      },
-    });
+    // ── Simpan attempt + update user secara atomik ──
+    // Kunci baris user agar dua submit paralel untuk soal yang sama tidak
+    // sama-sama memberi XP pada percobaan pertama.
+    const { attempt, updatedUser, xpDiperoleh } = await db.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${student.id} FOR UPDATE`;
+      const previous = await tx.quizAttempt.count({
+        where: { userId: student.id, questionId: question.id },
+      });
+      const finalXp = previous > 0 ? 0 : rawXp;
 
-    // XP ditambahkan secara atomik agar submit paralel tidak saling menimpa.
-    const updatedUser = await db.$transaction(async (tx) => {
+      const attempt = await tx.quizAttempt.create({
+        data: {
+          userId: student.id,
+          questionId: question.id,
+          documentId: question.documentId,
+          jawaban: jawaban.trim(),
+          skor,
+          xpDiperoleh: finalXp,
+          badgeBaru,
+          feedback: result.feedback || "Kerja bagus, terus belajar ya! 💪",
+          koreksi: result.koreksi || "",
+        },
+      });
+
       const current = await tx.user.update({
         where: { id: student.id },
         data: {
-          xp: { increment: xpDiperoleh },
+          xp: { increment: finalXp },
           streakDays,
           lastActive: new Date(),
         },
       });
       const nextLevel = levelFromXp(current.xp);
-      if (nextLevel === current.level) return current;
-      return tx.user.update({
-        where: { id: current.id },
-        data: { level: nextLevel },
-      });
+      const updatedUser =
+        nextLevel === current.level
+          ? current
+          : await tx.user.update({
+              where: { id: current.id },
+              data: { level: nextLevel },
+            });
+
+      return { attempt, updatedUser, xpDiperoleh: finalXp };
     });
 
     const newXp = updatedUser.xp;

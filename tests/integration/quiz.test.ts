@@ -178,6 +178,28 @@ describe("POST /api/quiz/submit", () => {
     expect(await db.quizAttempt.count({ where: { userId: user.id } })).toBe(2);
   });
 
+  it("tidak memberi XP ganda pada submit paralel soal yang sama", async () => {
+    const { user, question } = await setupQuestion({ tingkat: "Lanjut" });
+    setAuthUser(user);
+    vi.mocked(chatJSON).mockResolvedValue(evaluation as never);
+
+    const results = await Promise.all([
+      quizSubmitRoute.POST(
+        jsonRequest("/api/quiz/submit", "POST", { questionId: question.id, jawaban: "Jawaban A" })
+      ),
+      quizSubmitRoute.POST(
+        jsonRequest("/api/quiz/submit", "POST", { questionId: question.id, jawaban: "Jawaban B" })
+      ),
+    ]);
+    expect(results.map((r) => r.status)).toEqual([200, 200]);
+
+    const after = await db.user.findUniqueOrThrow({ where: { id: user.id } });
+    expect(after.xp).toBe(110);
+    expect(
+      await db.quizAttempt.count({ where: { userId: user.id, questionId: question.id } })
+    ).toBe(2);
+  });
+
   it("menampilkan kunci saat skor rendah", async () => {
     const { user, question } = await setupQuestion();
     setAuthUser(user);
