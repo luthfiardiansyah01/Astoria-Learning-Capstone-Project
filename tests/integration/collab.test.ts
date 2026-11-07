@@ -512,6 +512,42 @@ describe("anggota tim", () => {
     expect((await db.teamInvite.findUniqueOrThrow({ where: { id: invite.id } })).status).toBe("declined");
   });
 
+  it("owner dapat membatalkan undangan pending", async () => {
+    const owner = await createUser();
+    const target = await createUser();
+    const team = await createTeam(owner.id);
+    const invite = await db.teamInvite.create({
+      data: { teamId: team.id, userId: target.id, invitedById: owner.id },
+    });
+    setAuthUser(owner);
+
+    const res = await inviteResponseRoute.DELETE(
+      jsonRequest(`/api/collab/invites/${invite.id}`, "DELETE"),
+      params({ inviteId: invite.id })
+    );
+    expect(res.status).toBe(200);
+    expect(await db.teamInvite.count({ where: { id: invite.id } })).toBe(0);
+  });
+
+  it("anggota biasa tidak bisa membatalkan undangan", async () => {
+    const owner = await createUser();
+    const member = await createUser();
+    const target = await createUser();
+    const team = await createTeam(owner.id);
+    await addMember(team.id, member.id);
+    const invite = await db.teamInvite.create({
+      data: { teamId: team.id, userId: target.id, invitedById: owner.id },
+    });
+    setAuthUser(member);
+
+    const res = await inviteResponseRoute.DELETE(
+      jsonRequest(`/api/collab/invites/${invite.id}`, "DELETE"),
+      params({ inviteId: invite.id })
+    );
+    expect(res.status).toBe(403);
+    expect(await db.teamInvite.count({ where: { id: invite.id } })).toBe(1);
+  });
+
   it("pengguna lain tidak bisa menerima undangan orang lain", async () => {
     const owner = await createUser();
     const target = await createUser();

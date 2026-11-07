@@ -14,7 +14,21 @@ interface Member {
   user: { id: string; name: string };
 }
 
-export function TeamMembers({ teamId, members }: { teamId: string; members: Member[] }) {
+interface PendingInvite {
+  id: string;
+  userId: string;
+  user: { id: string; name: string };
+}
+
+export function TeamMembers({
+  teamId,
+  members,
+  invites = [],
+}: {
+  teamId: string;
+  members: Member[];
+  invites?: PendingInvite[];
+}) {
   const [name, setName] = useState("");
   const [debounced, setDebounced] = useState("");
   const [open, setOpen] = useState(false);
@@ -47,6 +61,18 @@ export function TeamMembers({ teamId, members }: { teamId: string; members: Memb
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collab", "teams"] });
       toast.success("Anggota dikeluarkan.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const cancelInvite = useMutation({
+    mutationFn: async (inviteId: string) => {
+      const res = await fetch(`/api/collab/invites/${inviteId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error((await res.json()).error || "Gagal membatalkan undangan.");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["collab", "teams"] });
+      toast.success("Undangan dibatalkan.");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -100,6 +126,24 @@ export function TeamMembers({ teamId, members }: { teamId: string; members: Memb
                 type="button"
                 aria-label={`Keluarkan ${m.user.name}`}
                 onClick={() => removeMutation.mutate(m.userId)}
+                className="ml-1 inline-flex align-middle hover:text-destructive"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </span>
+        ))}
+        {invites.map((invite) => (
+          <span
+            key={invite.id}
+            className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs text-amber-800 dark:bg-amber-950/50 dark:text-amber-200"
+          >
+            {invite.user.name} · menunggu
+            {isOwner && (
+              <button
+                type="button"
+                aria-label={`Batalkan undangan ${invite.user.name}`}
+                onClick={() => cancelInvite.mutate(invite.id)}
                 className="ml-1 inline-flex align-middle hover:text-destructive"
               >
                 <X className="h-3 w-3" />

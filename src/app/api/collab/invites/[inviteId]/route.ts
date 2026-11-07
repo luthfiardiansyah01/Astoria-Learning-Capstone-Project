@@ -3,7 +3,7 @@ import { logger } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/current-user";
-import { logActivity } from "@/lib/collab";
+import { assertTeamMember, ForbiddenError, logActivity } from "@/lib/collab";
 import { createNotification } from "@/lib/collab-notify";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { PLAN_LIMITS } from "@/lib/plans";
@@ -105,6 +105,45 @@ export async function POST(
     return NextResponse.json({ ok: true, status: "accepted", teamId: invite.teamId });
   } catch (e) {
     logger.error("[/api/collab/invites/[inviteId] POST]", { error: e });
+    return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
+  }
+}
+
+// DELETE /api/collab/invites/[inviteId] — owner membatalkan undangan pending.
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ inviteId: string }> }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Belum masuk." }, { status: 401 });
+
+    const { inviteId } = await params;
+    const invite = await db.teamInvite.findUnique({
+      where: { id: inviteId },
+      select: { id: true, teamId: true, status: true },
+    });
+    if (!invite) {
+      return NextResponse.json({ error: "Undangan tidak ditemukan." }, { status: 404 });
+    }
+    const requester = await assertTeamMember(user.id, invite.teamId);
+    if (requester.role !== "owner" && user.role !== "admin") {
+      return NextResponse.json(
+        { error: "Hanya owner tim yang bisa membatalkan undangan." },
+        { status: 403 }
+      );
+    }
+    if (invite.status !== "pending") {
+      return NextResponse.json({ error: "Undangan sudah diproses." }, { status: 409 });
+    }
+
+    await db.teamInvite.delete({ where: { id: invite.id } });
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    if (e instanceof ForbiddenError) {
+      return NextResponse.json({ error: e.message }, { status: 403 });
+    }
+    logger.error("[/api/collab/invites/[inviteId] DELETE]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
   }
 }

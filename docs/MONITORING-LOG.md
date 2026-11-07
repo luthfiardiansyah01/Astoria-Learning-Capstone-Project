@@ -67,8 +67,9 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P1 | Undangan tim | Selesai | Tabel `TeamInvite`; anggota baru harus menerima; email tidak diekspos |
 | 2026-11-07 | P1 | Audit RLS | Selesai | Produksi: 18 tabel RLS aktif, 0 policy publik; `TeamInvite` RLS aktif |
 | 2026-11-07 | P1 | Verifikasi email/CAPTCHA | Selesai | Aktif di produksi; CAPTCHA menolak tanpa token; verifikasi memberi trial 7 hari |
-| 2026-11-07 | P1 | Regresi | Selesai | Unit 150, integration 131, E2E 12; build lulus |
+| 2026-11-07 | P1 | Regresi | Selesai | Unit 150, integration 133, E2E 12; build lulus |
 | 2026-11-07 | P1 | Aktivasi produksi | Selesai | Resend terkirim; Turnstile aktif; akun baru Free sampai verifikasi; verifikasi memberi trial 7 hari |
+| 2026-11-07 | P1 | Bugfix undangan | Selesai | Owner bisa membatalkan undangan pending; label aktivitas/notifikasi diperbaiki |
 
 ### Detail entri P0 — 7 November 2026
 

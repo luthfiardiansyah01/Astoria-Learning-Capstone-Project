@@ -18,6 +18,7 @@ const ICONS: Record<string, React.ElementType> = {
   task_moved: ArrowRightLeft,
   task_completed: CheckCircle2,
   member_joined: UserPlus,
+  member_invited: UserPlus,
   ai_mentor_used: Sparkles,
   xp_awarded: Trophy,
   badge_earned: Award,
@@ -29,6 +30,8 @@ const LABELS: Record<string, (e: ActivityEvent) => string> = {
     `${e.user?.name ?? "Seseorang"} memindahkan "${e.task?.title ?? ""}" ke ${e.payload?.to ?? "-"}`,
   task_completed: (e) => `${e.user?.name ?? "Seseorang"} menyelesaikan "${e.task?.title ?? ""}"`,
   member_joined: (e) => `${e.payload?.name ?? e.user?.name ?? "Anggota baru"} bergabung ke tim`,
+  member_invited: (e) =>
+    `${e.user?.name ?? "Seseorang"} mengundang ${e.payload?.name ?? "anggota baru"}`,
   ai_mentor_used: (e) => `${e.user?.name ?? "Seseorang"} bertanya ke Mentor AI di "${e.task?.title ?? ""}"`,
   xp_awarded: (e) => `Tim mendapat +${e.payload?.xp ?? 0} XP`,
   badge_earned: (e) => `Tim meraih badge ${e.payload?.emoji ?? ""} ${e.payload?.badge ?? ""}`.replace(/  +/g, " "),

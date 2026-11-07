@@ -20,6 +20,7 @@ interface Team {
   xp: number;
   level: number;
   members: { userId: string; role: string; user: { id: string; name: string } }[];
+  invites: { id: string; userId: string; user: { id: string; name: string } }[];
   projects: { id: string; name: string; description: string | null }[];
   badges: { name: string }[];
 }
@@ -88,7 +89,7 @@ export function ProjectList() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <TeamBadges badges={team.badges.map((b) => b.name)} />
-                <TeamMembers teamId={team.id} members={team.members} />
+                <TeamMembers teamId={team.id} members={team.members} invites={team.invites} />
 
                 <div className="space-y-1.5">
                   {team.projects.map((p) => (

@@ -18,6 +18,10 @@ export async function GET() {
       where: { members: { some: { userId: user.id } } },
       include: {
         members: { include: { user: { select: { id: true, name: true } } } },
+        invites: {
+          where: { status: "pending" },
+          select: { id: true, userId: true, user: { select: { id: true, name: true } } },
+        },
         projects: { select: { id: true, name: true, description: true } },
         badges: { select: { name: true } },
       },

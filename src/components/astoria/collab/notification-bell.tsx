@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { AlarmClock, Award, Bell, Trophy, UserPlus } from "lucide-react";
+import { AlarmClock, Award, Bell, Trophy, UserMinus, UserPlus } from "lucide-react";
 
 interface NotificationItem {
   id: string;
@@ -17,6 +17,8 @@ interface NotificationItem {
 
 const ICONS: Record<string, React.ElementType> = {
   member_added: UserPlus,
+  team_invite: UserPlus,
+  team_invite_declined: UserMinus,
   team_level_up: Trophy,
   badge_earned: Award,
   task_due_soon: AlarmClock,
