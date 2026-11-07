@@ -9,7 +9,7 @@ Admin saat ini:
 
 | Email | Status | Catatan |
 |---|---|---|
-| `admin@ut.ac.id` | Aktif | Domain aktif, dipakai untuk operasi harian. Password seed ada di `.env.supabase` (tidak di-track git). |
+| `admin@ut.ac.id` | Aktif | Domain aktif, dipakai untuk operasi harian. Password kuat ada di `.env.supabase` (tidak di-track git). |
 | `admin@sobat-adi.id` | Legacy | Domain tidak aktif. Jangan dihapus sebelum login admin aktif diverifikasi. |
 
 Aturan:
@@ -19,6 +19,9 @@ Aturan:
 3. Simpan kredensial di password manager. File `.env.supabase` hanya untuk seeding lokal.
 4. Bila salah satu admin diduga bocor: reset password akun tersebut, lalu audit
    `ActivityEvent` dan `Payment` untuk aktivitas mencurigakan.
+5. Jangan pernah mencetak password/URL database ke terminal. Riwayat PowerShell
+   yang memuat `DATABASE_URL` atau host database sudah dibersihkan; ulangi
+   pemeriksaan bila ada insiden.
 
 ## 2. Rate limit produksi
 
@@ -50,15 +53,20 @@ pastikan respons berikutnya ditolak. Jangan menguji ke akun admin asli.
 
 Jangan cetak password ke terminal, log, atau chat.
 
+> Catatan penting: role `postgres` di Supabase **bukan superuser**. Perintah
+> `ALTER ROLE postgres WITH PASSWORD ...` lewat SQL akan ditolak dengan
+> `42501 permission denied to alter role`. Rotasi harus lewat Dashboard.
+
 1. Buat password baru yang panjang (minimal 32 karakter acak).
-2. Perbarui password role `postgres` di Supabase (Dashboard → Database → Reset
-   database password, atau `ALTER ROLE postgres WITH PASSWORD '...'`).
-3. Perbarui `DATABASE_URL` dan `DIRECT_URL` di:
+2. Buka Supabase Dashboard → Project → Database → **Reset database password**
+   (atau Settings → Database → Reset database password).
+3. Simpan password baru di password manager.
+4. Perbarui `DATABASE_URL` dan `DIRECT_URL` di:
    - Vercel → Project → Settings → Environment Variables (Production)
    - `.env` dan `.env.supabase` lokal (tidak di-track)
-4. Redeploy production.
-5. Verifikasi login, dashboard, dan satu operasi tulis (mis. update profil).
-6. Hapus salinan password lama dari catatan sementara.
+5. Redeploy production.
+6. Verifikasi login, dashboard, dan satu operasi tulis (mis. update profil).
+7. Hapus salinan password lama dari catatan sementara.
 
 Downtime singkat mungkin terjadi antara rotasi dan deploy selesai. Lakukan di
 luar jam sibuk.
