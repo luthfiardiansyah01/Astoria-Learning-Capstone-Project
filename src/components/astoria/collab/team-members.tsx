@@ -59,15 +59,28 @@ export function TeamMembers({ teamId, members }: { teamId: string; members: Memb
         body: JSON.stringify({ name }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal menambah anggota.");
-      return data.member;
+      if (!res.ok) throw new Error(data.error || "Gagal mengirim undangan.");
+      return data as {
+        pending?: boolean;
+        alreadyInvited?: boolean;
+        invite?: { user: { id: string; name: string } };
+        member?: { user: { id: string; name: string } };
+      };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["collab", "teams"] });
       setName("");
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["collab", "user-search", teamId] });
-      toast.success("Anggota ditambahkan.");
+      if (data.pending && data.invite) {
+        toast.success(
+          data.alreadyInvited
+            ? `Undangan untuk ${data.invite.user.name} masih menunggu persetujuan.`
+            : `Undangan dikirim ke ${data.invite.user.name}. Menunggu persetujuan.`
+        );
+      } else {
+        toast.success("Anggota sudah ada di tim.");
+      }
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -96,6 +109,7 @@ export function TeamMembers({ teamId, members }: { teamId: string; members: Memb
         ))}
       </div>
       {isOwner && (
+      <div className="space-y-1">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -147,6 +161,10 @@ export function TeamMembers({ teamId, members }: { teamId: string; members: Memb
           <UserPlus className="h-3.5 w-3.5" />
         </Button>
       </form>
+      <p className="text-[11px] text-muted-foreground">
+        Anggota baru menerima undangan dan harus menyetujuinya sebelum bergabung.
+      </p>
+      </div>
       )}
     </div>
   );

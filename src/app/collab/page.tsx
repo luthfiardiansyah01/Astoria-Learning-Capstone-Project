@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { ProjectList } from "@/components/astoria/collab/project-list";
+import { PendingInvites } from "@/components/astoria/collab/pending-invites";
 import { BackButton } from "@/components/astoria/collab/back-button";
 import { PageTransition } from "@/components/astoria/page-transition";
 
@@ -15,7 +16,10 @@ export default async function CollabPage() {
         <BackButton href="/" label="Beranda" />
       </div>
       <PageTransition>
-        <ProjectList />
+        <div className="space-y-4">
+          <PendingInvites />
+          <ProjectList />
+        </div>
       </PageTransition>
     </main>
   );

@@ -45,7 +45,7 @@ test("tim → anggota → proyek → tugas → Mentor AI → geser Kanban", asyn
 
   await page.getByPlaceholder("Cari nama anggota baru").fill(E2E_USERS.helper.name);
   await page.getByTestId("add-member-submit").click();
-  await expect(page.getByText(E2E_USERS.helper.name).first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/Undangan dikirim/)).toBeVisible({ timeout: 15_000 });
 
   await page.getByRole("button", { name: /Proyek Baru/ }).click();
   await page.fill("#project-name", "Proyek E2E");

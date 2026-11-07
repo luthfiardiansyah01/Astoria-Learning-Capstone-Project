@@ -95,7 +95,7 @@ describe("POST /api/documents", () => {
       document: { id: string; status: string; metadata: { judul_dokumen: string }; chunkCount: number };
     };
     expect(res.status).toBe(200);
-    expect(body.document.status).toBe("approved");
+    expect(body.document.status).toBe("pending");
     expect(body.document.metadata.judul_dokumen).toBe("Modul Ekonomi");
     expect(body.document.chunkCount).toBeGreaterThan(0);
 

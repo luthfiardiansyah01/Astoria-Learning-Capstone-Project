@@ -14,7 +14,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Fase | Status | Commit terakhir | Catatan |
 |---|---|---|---|
 | P0 | Selesai | `322c481` | Rotasi DB, rate limit, admin, Midtrans internal |
-| P1 | Belum dimulai | — | Verifikasi email, moderasi dokumen, body limit, invite |
+| P1 | Selesai sebagian | — | Body limit, webhook, moderasi, undangan, RLS; verifikasi email/CAPTCHA menunggu kredensial |
 
 ## Checklist monitoring
 
@@ -62,6 +62,12 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P0 | Midtrans | Selesai (internal) | `configured=true`; alur manual teruji; channel menunggu business review |
 | 2026-11-07 | P0 | Regresi & log | Selesai | Unit 143, integration 124, E2E 11; log 0 error/0 5xx; CI `322c481` success |
 | 2026-11-07 | P0 | Sisa risiko | Terbuka | Admin legacy, fail-closed saat Upstash down, batas IP jaringan bersama, channel Midtrans |
+| 2026-11-07 | P1 | Body limit & webhook | Selesai | Middleware 1 MB (webhook 256 KB); rate limit webhook 120/menit per IP |
+| 2026-11-07 | P1 | Moderasi dokumen | Selesai | Moderasi seluruh teks; tidak ada auto-approve; dokumen baru `pending` |
+| 2026-11-07 | P1 | Undangan tim | Selesai | Tabel `TeamInvite`; anggota baru harus menerima; email tidak diekspos |
+| 2026-11-07 | P1 | Audit RLS | Selesai (test DB) | 18 tabel RLS aktif, 0 policy publik; ulangi di produksi setelah deploy |
+| 2026-11-07 | P1 | Verifikasi email/CAPTCHA | Terblokir | Belum ada kredensial SMTP/Resend/Turnstile; honeypot + rate limit sebagai interim |
+| 2026-11-07 | P1 | Regresi | Selesai | Unit 146, integration 129, E2E 12; build lulus |
 
 ### Detail entri P0 — 7 November 2026
 
@@ -87,6 +93,35 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Batas 60 login/15 menit per IP bisa terasa ketat di NAT kampus.
 - Channel pembayaran Midtrans belum aktif; alur manual tetap tersedia.
 - Layanan eksternal di luar repo yang masih memakai password DB lama perlu diperbarui.
+
+### Detail entri P1 — 7 November 2026
+
+**Perubahan**
+- Middleware batas body: 1 MB untuk API umum, 256 KB untuk webhook.
+- Rate limit webhook Midtrans/Xendit: 120 request/menit per IP, fail-open bila Redis down.
+- Moderasi dokumen memakai seluruh teks (bukan 2.000 karakter pertama), prompt
+  moderator diberi aturan anti-injection.
+- Dokumen unggahan baru selalu `pending`; AI hanya boleh menolak otomatis,
+  persetujuan selalu oleh admin.
+- Model `TeamInvite` + endpoint undangan; anggota baru harus menerima undangan
+  sebelum mengakses tim. Email target tidak lagi dikembalikan API.
+- Honeypot pada form registrasi sebagai mitigasi bot interim.
+
+**Verifikasi**
+- Unit 146 / integration 129 / E2E 12 lulus.
+- Build produksi + middleware lulus.
+- RLS test DB: 18 tabel aktif, 0 policy publik, `TeamInvite` RLS aktif.
+- Migrasi `20261107010000_team_invite` diterapkan ke test DB.
+
+**Sisa risiko**
+- Verifikasi email dan CAPTCHA belum aktif karena belum ada kredensial
+  SMTP/Resend/Turnstile. Honeypot + rate limit hanya mitigasi sementara.
+- Batas anggota tim masih memakai pola hitung-lalu-buat (race condition).
+- Perlu audit RLS produksi setelah migrasi `TeamInvite` diterapkan.
+
+**Tindak lanjut**
+- Sediakan `RESEND_API_KEY`/SMTP dan kunci Turnstile untuk P1 lanjutan.
+- Audit RLS produksi dan catat hasilnya di entri berikutnya.
 
 ## Template entri tahap berikutnya
 

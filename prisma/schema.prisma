@@ -29,6 +29,8 @@ model User {
   quizAttempts     QuizAttempt[]
   badges           Badge[]
   teamMemberships  TeamMember[]
+  teamInvitesReceived TeamInvite[]  @relation("TeamInviteInvitee")
+  teamInvitesSent     TeamInvite[]  @relation("TeamInviteInviter")
   assignedTasks    Task[]            @relation("TaskAssignee")
   taskChatMessages TaskChatMessage[]
   activityEvents   ActivityEvent[]
@@ -71,6 +73,7 @@ model Team {
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
   members    TeamMember[]
+  invites    TeamInvite[]
   projects   Project[]
   activities ActivityEvent[]
   badges     TeamBadge[]
@@ -117,6 +120,23 @@ model TeamMember {
   @@unique([teamId, userId])
   @@index([teamId])
   @@index([userId])
+}
+
+// Undangan bergabung ke tim. Anggota baru hanya aktif setelah menerima.
+model TeamInvite {
+  id          String    @id @default(cuid())
+  teamId      String
+  team        Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation("TeamInviteInvitee", fields: [userId], references: [id], onDelete: Cascade)
+  invitedById String
+  invitedBy   User      @relation("TeamInviteInviter", fields: [invitedById], references: [id], onDelete: Cascade)
+  status      String    @default("pending") // pending | accepted | declined
+  createdAt   DateTime  @default(now())
+  respondedAt DateTime?
+
+  @@unique([teamId, userId])
+  @@index([userId, status])
 }
 
 // Proyek kolaboratif milik sebuah tim

@@ -20,6 +20,8 @@ import * as projectDetailRoute from "@/app/api/collab/projects/[projectId]/route
 import * as tasksRoute from "@/app/api/collab/projects/[projectId]/tasks/route";
 import * as taskDetailRoute from "@/app/api/collab/tasks/[taskId]/route";
 import * as membersRoute from "@/app/api/collab/teams/[teamId]/members/route";
+import * as invitesRoute from "@/app/api/collab/invites/route";
+import * as inviteResponseRoute from "@/app/api/collab/invites/[inviteId]/route";
 import * as mentorRoute from "@/app/api/collab/tasks/[taskId]/mentor/route";
 import * as notificationsRoute from "@/app/api/collab/notifications/route";
 import * as analyticsRoute from "@/app/api/collab/analytics/route";
@@ -446,7 +448,7 @@ describe("anggota tim", () => {
     expect(res.status).toBe(403);
   });
 
-  it("menambah anggota lewat nama dan mengirim notifikasi", async () => {
+  it("mengirim undangan lewat nama tanpa langsung menambah anggota", async () => {
     const owner = await createUser();
     const target = await createUser({ name: "Anggota Baru" });
     const team = await createTeam(owner.id);
@@ -457,8 +459,88 @@ describe("anggota tim", () => {
       params({ teamId: team.id })
     );
     expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      invite: { userId: string; status: string; user: Record<string, unknown> };
+      pending: boolean;
+    };
+    expect(body.pending).toBe(true);
+    expect(body.invite.userId).toBe(target.id);
+    expect(body.invite.user.email).toBeUndefined();
+    expect(await db.teamMember.count({ where: { teamId: team.id, userId: target.id } })).toBe(0);
+    expect(await db.teamInvite.count({ where: { teamId: team.id, userId: target.id, status: "pending" } })).toBe(1);
+    expect(await db.notification.count({ where: { userId: target.id, type: "team_invite" } })).toBe(1);
+  });
+
+  it("anggota dapat menerima undangan dan baru menjadi anggota", async () => {
+    const owner = await createUser();
+    const target = await createUser({ name: "Anggota Baru" });
+    const team = await createTeam(owner.id);
+    const invite = await db.teamInvite.create({
+      data: { teamId: team.id, userId: target.id, invitedById: owner.id },
+    });
+    setAuthUser(target);
+
+    const list = await invitesRoute.GET();
+    expect(list.status).toBe(200);
+    const listBody = (await list.json()) as { invites: { id: string }[] };
+    expect(listBody.invites.map((i) => i.id)).toContain(invite.id);
+
+    const res = await inviteResponseRoute.POST(
+      jsonRequest(`/api/collab/invites/${invite.id}`, "POST", { action: "accept" }),
+      params({ inviteId: invite.id })
+    );
+    expect(res.status).toBe(200);
     expect(await db.teamMember.count({ where: { teamId: team.id, userId: target.id } })).toBe(1);
-    expect(await db.notification.count({ where: { userId: target.id, type: "member_added" } })).toBe(1);
+    expect((await db.teamInvite.findUniqueOrThrow({ where: { id: invite.id } })).status).toBe("accepted");
+  });
+
+  it("anggota dapat menolak undangan", async () => {
+    const owner = await createUser();
+    const target = await createUser({ name: "Anggota Baru" });
+    const team = await createTeam(owner.id);
+    const invite = await db.teamInvite.create({
+      data: { teamId: team.id, userId: target.id, invitedById: owner.id },
+    });
+    setAuthUser(target);
+
+    const res = await inviteResponseRoute.POST(
+      jsonRequest(`/api/collab/invites/${invite.id}`, "POST", { action: "decline" }),
+      params({ inviteId: invite.id })
+    );
+    expect(res.status).toBe(200);
+    expect(await db.teamMember.count({ where: { teamId: team.id, userId: target.id } })).toBe(0);
+    expect((await db.teamInvite.findUniqueOrThrow({ where: { id: invite.id } })).status).toBe("declined");
+  });
+
+  it("pengguna lain tidak bisa menerima undangan orang lain", async () => {
+    const owner = await createUser();
+    const target = await createUser();
+    const outsider = await createUser();
+    const team = await createTeam(owner.id);
+    const invite = await db.teamInvite.create({
+      data: { teamId: team.id, userId: target.id, invitedById: owner.id },
+    });
+    setAuthUser(outsider);
+
+    const res = await inviteResponseRoute.POST(
+      jsonRequest(`/api/collab/invites/${invite.id}`, "POST", { action: "accept" }),
+      params({ inviteId: invite.id })
+    );
+    expect(res.status).toBe(404);
+    expect(await db.teamMember.count({ where: { teamId: team.id, userId: outsider.id } })).toBe(0);
+  });
+
+  it("tidak bisa mengundang akun admin", async () => {
+    const owner = await createUser();
+    const admin = await createUser({ role: "admin", name: "Admin Uji" });
+    const team = await createTeam(owner.id);
+    setAuthUser(owner);
+
+    const res = await membersRoute.POST(
+      jsonRequest(`/api/collab/teams/${team.id}/members`, "POST", { name: admin.name }),
+      params({ teamId: team.id })
+    );
+    expect(res.status).toBe(400);
   });
 
   it("menolak nama yang tidak terdaftar", async () => {

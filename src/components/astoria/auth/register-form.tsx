@@ -13,6 +13,7 @@ export function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [website, setWebsite] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -22,7 +23,7 @@ export function RegisterForm() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, website }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -70,6 +71,19 @@ export function RegisterForm() {
           required
           minLength={8}
           autoComplete="new-password"
+        />
+      </div>
+      {/* Honeypot anti-bot: disembunyikan dari pengguna dan screen reader. */}
+      <div className="hidden" aria-hidden="true">
+        <label htmlFor="website">Website</label>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
         />
       </div>
       <Button type="submit" className="w-full" disabled={loading}>

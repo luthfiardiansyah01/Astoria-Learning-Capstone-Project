@@ -13,3 +13,10 @@ test("API terlindungi menolak request tanpa sesi", async ({ page }) => {
   const documents = await page.request.get("/api/documents");
   expect(documents.status()).toBe(401);
 });
+
+test("menolak body request yang terlalu besar", async ({ request }) => {
+  const res = await request.post("/api/auth/register", {
+    data: { name: "x".repeat(1_100_000) },
+  });
+  expect(res.status()).toBe(413);
+});

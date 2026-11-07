@@ -33,7 +33,7 @@ export async function POST(
     const { name } = parsed.data;
 
     // SQLite tidak mendukung `mode: "insensitive"` di Prisma, jadi filter manual.
-    const allUsers = await db.user.findMany({ select: { id: true, name: true, email: true, role: true } });
+    const allUsers = await db.user.findMany({ select: { id: true, name: true, role: true } });
     const needle = name.trim().toLowerCase();
     const matches = allUsers.filter((u) => u.name.toLowerCase() === needle);
     if (matches.length === 0) {
@@ -50,48 +50,75 @@ export async function POST(
     }
     const target = matches[0];
 
-    const alreadyMember = await db.teamMember.findUnique({
-      where: { teamId_userId: { teamId, userId: target.id } },
-    });
-
-    if (!alreadyMember) {
-      const plan = effectivePlan(user);
-      const memberCount = await db.teamMember.count({ where: { teamId } });
-      const maxMembers = PLAN_LIMITS[plan].maxTeamMembers;
-      if (memberCount >= maxMembers) {
-        return NextResponse.json(
-          {
-            error: `Batas paket ${plan === "premium" ? "Premium" : "Free"}: maksimal ${maxMembers} anggota per tim. Upgrade untuk menambah anggota.`,
-          },
-          { status: 403 }
-        );
-      }
+    if (target.id === user.id) {
+      return NextResponse.json({ error: "Kamu sudah menjadi owner tim ini." }, { status: 400 });
+    }
+    if (target.role === "admin") {
+      return NextResponse.json({ error: "Akun admin tidak bisa diundang ke tim." }, { status: 400 });
     }
 
-    const member = await db.teamMember.upsert({
+    const existingMember = await db.teamMember.findUnique({
       where: { teamId_userId: { teamId, userId: target.id } },
-      update: {},
-      create: { teamId, userId: target.id, role: "member" },
-      include: { user: { select: { id: true, name: true, email: true } } },
+      include: { user: { select: { id: true, name: true } } },
     });
-
-    if (!alreadyMember) {
-      const team = await db.team.findUnique({ where: { id: teamId }, select: { name: true } });
-      await logActivity({
-        teamId,
-        userId: target.id,
-        type: "member_joined",
-        payload: { name: target.name },
-      });
-      await createNotification(target.id, {
-        type: "member_added",
-        title: `Kamu ditambahkan ke tim ${team?.name ?? ""}`.trim(),
-        body: `Oleh ${user.name}`,
-        link: "/collab",
-      });
+    if (existingMember) {
+      return NextResponse.json({ member: existingMember, alreadyMember: true });
     }
 
-    return NextResponse.json({ member });
+    const existingInvite = await db.teamInvite.findUnique({
+      where: { teamId_userId: { teamId, userId: target.id } },
+    });
+    if (existingInvite?.status === "pending") {
+      return NextResponse.json({ invite: existingInvite, pending: true, alreadyInvited: true });
+    }
+
+    const plan = effectivePlan(user);
+    const [memberCount, inviteCount] = await Promise.all([
+      db.teamMember.count({ where: { teamId } }),
+      db.teamInvite.count({ where: { teamId, status: "pending" } }),
+    ]);
+    const maxMembers = PLAN_LIMITS[plan].maxTeamMembers;
+    if (memberCount + inviteCount >= maxMembers) {
+      return NextResponse.json(
+        {
+          error: `Batas paket ${plan === "premium" ? "Premium" : "Free"}: maksimal ${maxMembers} anggota per tim. Upgrade untuk menambah anggota.`,
+        },
+        { status: 403 }
+      );
+    }
+
+    const invite = existingInvite
+      ? await db.teamInvite.update({
+          where: { id: existingInvite.id },
+          data: { status: "pending", invitedById: user.id, respondedAt: null, createdAt: new Date() },
+        })
+      : await db.teamInvite.create({
+          data: { teamId, userId: target.id, invitedById: user.id },
+        });
+
+    const team = await db.team.findUnique({ where: { id: teamId }, select: { name: true } });
+    await logActivity({
+      teamId,
+      userId: user.id,
+      type: "member_invited",
+      payload: { name: target.name },
+    });
+    await createNotification(target.id, {
+      type: "team_invite",
+      title: `Undangan bergabung ke tim ${team?.name ?? ""}`.trim(),
+      body: `Diundang oleh ${user.name}. Buka Collab untuk menerima atau menolak.`,
+      link: "/collab",
+    });
+
+    return NextResponse.json({
+      invite: {
+        id: invite.id,
+        userId: invite.userId,
+        status: invite.status,
+        user: { id: target.id, name: target.name },
+      },
+      pending: true,
+    });
   } catch (e) {
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });

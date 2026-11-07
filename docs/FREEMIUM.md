@@ -28,6 +28,10 @@ analitik admin.
   meskipun anggotanya Free.
 - **Batas tim dihitung dari tim yang dibuat/dimiliki**, bukan jumlah tim yang
   diikuti. Pengguna Free tetap bisa diundang ke tim orang lain.
+- **Anggota baru harus menerima undangan** sebelum menjadi anggota aktif dan
+  bisa mengakses proyek/tugas. Undangan pending dihitung terhadap batas anggota.
+- **Dokumen unggahan baru selalu berstatus `pending`**. AI hanya boleh menolak
+  otomatis; persetujuan untuk membagikan dokumen selalu dilakukan admin.
 - **Trial Premium 7 hari otomatis** untuk akun baru dan pengguna Free yang belum
   pernah trial (`trialUsedAt`). Selama trial, fitur Premium terbuka tetapi kuota
   AI tetap dibatasi sesuai paket Premium. Admin dapat mereset trial dari panel admin.

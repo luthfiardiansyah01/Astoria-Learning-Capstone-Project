@@ -30,7 +30,7 @@ test("unggah dokumen → ekstraksi → chat menjawab dengan referensi", async ({
   const response = await uploadResponse;
   expect(response.status(), await response.text()).toBe(200);
 
-  await expect(page.getByText("Dokumen Aktif")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Dokumen Aktif|Menunggu Review Admin/)).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("Modul E2E Upload").first()).toBeVisible();
 
   await gotoNav(page, "mentor");

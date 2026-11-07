@@ -26,6 +26,11 @@ export async function POST(req: NextRequest) {
     const email = parsed.data.email.toLowerCase();
     const password = parsed.data.password;
 
+    // Honeypot: hanya bot yang mengisi field tersembunyi ini.
+    if (parsed.data.website?.trim()) {
+      return NextResponse.json({ error: "Pendaftaran tidak valid." }, { status: 400 });
+    }
+
     const existing = await db.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json(

@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
       chatJSON<ModerationResult>(
         [
           { role: "system", content: CONTENT_MODERATOR_PROMPT },
-          { role: "user", content: `Nama file: ${fileName}\n\n${content.slice(0, 2000)}` },
+          { role: "user", content: `Nama file: ${fileName}\n\n${content}` },
         ],
         PARAMS.admin_ops
       ),
@@ -169,14 +169,11 @@ export async function POST(req: NextRequest) {
       aiWarnings.push("AI moderasi tidak tersedia; dokumen menunggu review admin.");
     }
 
-    // Status awal dari rekomendasi AI moderator
+    // Moderation AI hanya boleh menolak otomatis. Persetujuan selalu lewat
+    // admin agar konten tak tepercaya tidak bisa mengaktifkan dirinya sendiri.
     let status = "pending";
-    if (moderation) {
-      if (moderation.rekomendasi_admin === "Aktifkan langsung" && moderation.layak) {
-        status = "approved";
-      } else if (moderation.rekomendasi_admin === "Tolak" || moderation.layak === false) {
-        status = "rejected";
-      }
+    if (moderation && (moderation.rekomendasi_admin === "Tolak" || moderation.layak === false)) {
+      status = "rejected";
     }
 
     const updated = await db.document.update({

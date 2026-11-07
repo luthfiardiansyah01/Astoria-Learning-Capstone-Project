@@ -24,6 +24,8 @@ export const registerSchema = z.object({
     .string()
     .min(8, "Password minimal 8 karakter.")
     .max(200, "Password terlalu panjang (maks 200 karakter)."),
+  /** Honeypot anti-bot: harus kosong. */
+  website: z.string().max(200).optional(),
 });
 
 export const chatSchema = z.object({
@@ -98,6 +100,10 @@ export const taskUpdateSchema = z
 
 export const memberAddSchema = z.object({
   name: wajib("Nama", 120),
+});
+
+export const inviteResponseSchema = z.object({
+  action: z.enum(["accept", "decline"], { message: "Aksi undangan tidak valid." }),
 });
 
 export const notificationReadSchema = z.object({

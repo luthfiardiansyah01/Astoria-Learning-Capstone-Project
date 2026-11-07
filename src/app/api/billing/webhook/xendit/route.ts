@@ -2,6 +2,7 @@
 // Verifikasi header x-callback-token lalu aktifkan Premium (idempoten).
 import { NextRequest, NextResponse } from "next/server";
 import { updatePaymentStatus, verifyXenditCallback, xenditStatus } from "@/lib/billing";
+import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,9 @@ interface XenditPayload {
 }
 
 export async function POST(req: NextRequest) {
+  const limited = await rateLimit("webhook-xendit", clientIp(req.headers), 120, 60);
+  if (!limited.ok) return tooManyRequests(limited);
+
   if (!verifyXenditCallback(req.headers.get("x-callback-token"))) {
     return NextResponse.json({ error: "Callback token tidak valid." }, { status: 401 });
   }

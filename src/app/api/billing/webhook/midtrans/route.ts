@@ -7,6 +7,7 @@ import {
   updatePaymentStatus,
   verifyMidtransSignature,
 } from "@/lib/billing";
+import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,11 @@ interface MidtransPayload {
 }
 
 export async function POST(req: NextRequest) {
+  // Lindungi webhook dari banjir request. Gagal Redis tidak memblokir pembayaran
+  // (fail-open) agar notifikasi yang sah tetap diproses.
+  const limited = await rateLimit("webhook-midtrans", clientIp(req.headers), 120, 60);
+  if (!limited.ok) return tooManyRequests(limited);
+
   const raw = await req.text();
 
   let payload: MidtransPayload;

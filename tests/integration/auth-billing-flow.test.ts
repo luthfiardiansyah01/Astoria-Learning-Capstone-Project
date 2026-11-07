@@ -70,6 +70,19 @@ describe("POST /api/auth/register", () => {
     expect(res.status).toBe(400);
   });
 
+  it("menolak pendaftaran yang mengisi honeypot", async () => {
+    const res = await registerRoute.POST(
+      registerRequest({
+        name: "Bot",
+        email: "bot@example.com",
+        password: "rahasia123",
+        website: "http://spam.example",
+      })
+    );
+    expect(res.status).toBe(400);
+    expect(await db.user.count({ where: { email: "bot@example.com" } })).toBe(0);
+  });
+
   it("membuat akun baru dengan email huruf kecil dan password hash", async () => {
     const res = await registerRoute.POST(
       registerRequest({
