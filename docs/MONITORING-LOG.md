@@ -7,7 +7,7 @@ verifikasi, dan sisa risiko tidak hilang.
 - **Produksi:** https://astoria-learning-capstone-project.vercel.app
 - **Repo:** `luthfiardiansyah01/Astoria-Learning-Capstone-Project`
 - **Runbook terkait:** `docs/OPERATIONS-RUNBOOK.md`
-- **Terakhir diperbarui:** 7 November 2026, setelah P3 selesai dan diverifikasi
+- **Terakhir diperbarui:** 8 November 2026, setelah audit & sinkronisasi dokumentasi
 
 ## Status ringkas
 
@@ -102,6 +102,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P3 | Sanitasi dokumen | Selesai | Kredensial demo di 2 file .docx diganti placeholder |
 | 2026-11-07 | P3 | Data orphan | Selesai | `Anim Team` (1 proyek/1 task) dihapus; backup JSON tersimpan di temp |
 | 2026-11-07 | P3 | Regresi | Selesai | Unit 150, integration 139, E2E 13 |
+| 2026-11-08 | Docs | Audit & sinkronisasi dokumentasi | Selesai | Indeks docs, pembayaran, deploy, database, freemium, runbook, onboarding Midtrans |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -271,6 +272,27 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - `Payment` sekarang `RESTRICT`; penghapusan user dengan riwayat pembayaran harus
   melalui proses arsip/soft-delete.
 - Backup tim orphan hanya di temp; hapus setelah yakin tidak diperlukan.
+
+## Detail Fase Dokumentasi — 8 November 2026
+
+**Perubahan**
+- Tambah `docs/README.md` sebagai indeks seluruh dokumentasi.
+- Tambah `docs/MIDTRANS-ONBOARDING.md` (tanpa kredensial) untuk status review
+  Midtrans.
+- Perbarui `PAYMENT-SETUP.md`: status Midtrans production/in review, alur
+  refund/cancel, status terminal, dan onboarding.
+- Perbarui `DEPLOY-VERCEL.md`: env email/CAPTCHA/fail-closed, checklist
+  verifikasi baru, 8 migrasi, 19 tabel RLS, CSP report-only.
+- Perbarui `DATABASE-SECURITY.md`: 19 tabel, `TeamInvite`,
+  `EmailVerificationToken`, CHECK/index P3, Payment restrict.
+- Perbarui `FREEMIUM.md`: sapaan beranda tidak lagi memakai kuota AI.
+- Perbarui `OPERATIONS-RUNBOOK.md` dan `CHECKLIST-UJI-PENGGUNA-SUS.md` untuk
+  verifikasi email/CAPTCHA/undangan dan artefak Midtrans.
+
+**Verifikasi**
+- Tidak ada perubahan kode aplikasi pada audit dokumentasi ini.
+- `docs/README.md` menjadi pintu masuk dokumentasi.
+- Artefak Midtrans berisi akun dummy tetap di luar repo.
 
 ## Template entri tahap berikutnya
 

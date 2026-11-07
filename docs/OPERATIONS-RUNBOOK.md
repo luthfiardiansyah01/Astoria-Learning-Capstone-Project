@@ -121,3 +121,14 @@ Jangan menandai `paid` tanpa bukti transfer yang cocok nominalnya.
 - [ ] Uji refund → status `refunded` tercatat.
 - [ ] Uji `capture + fraud_status=deny` → status `failed`, bukan `paid`.
 - [ ] Pastikan halaman legal dan kontak admin dapat diakses.
+
+## 6. Dokumentasi & artefak Midtrans
+
+- Indeks dokumen: `docs/README.md`.
+- Jawaban formulir onboarding: `docs/MIDTRANS-ONBOARDING.md`.
+- Katalog dan PDF alur transaksi (berisi akun dummy) disimpan di
+  `%TEMP%\opencode\midtrans-review\`, **tidak di-commit**.
+- Nonaktifkan akun dummy setelah review Midtrans selesai.
+- CSP masih `Report-Only`; pantau laporan sebelum mengubahnya menjadi enforced.
+- `Payment.userId` memakai `ON DELETE RESTRICT`; arsipkan user dengan riwayat
+  pembayaran sebelum menghapus.

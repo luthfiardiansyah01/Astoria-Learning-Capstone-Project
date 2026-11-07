@@ -10,8 +10,10 @@ Dokumen ini menjelaskan cara menaikkan SOBAT ADI ke produksi memakai Vercel (apl
 |---|---|---|
 | Aplikasi Next.js | Vercel | Paket Hobby, `maxDuration = 60` detik untuk rute AI |
 | Database | Supabase PostgreSQL | Satu proyek dipakai sebagai produksi |
-| Rate limit | Upstash Redis (REST) | Fallback ke memori bila env kosong |
+| Rate limit | Upstash Redis (REST) | Wajib di produksi; `RATE_LIMIT_FAIL_CLOSED=true` |
 | Model AI | OpenRouter (OpenAI-compatible) | Butuh `AI_API_KEY` |
+| Email verifikasi | Resend | `RESEND_API_KEY` + `EMAIL_FROM` |
+| CAPTCHA | Cloudflare Turnstile | Site key publik + secret key server |
 
 Alur koneksi database:
 
@@ -49,6 +51,12 @@ Buka **Project → Settings → Environment Variables**, lalu isi untuk environm
 | `AI_EMBED_MODEL` | tidak | mis. `nvidia/nemotron-3-embed-1b:free` | Untuk pencarian semantik |
 | `UPSTASH_REDIS_REST_URL` | ya (produksi) | Dashboard Upstash → REST API | Tanpa ini rate limit jatuh ke memori per-instance |
 | `UPSTASH_REDIS_REST_TOKEN` | ya (produksi) | Dashboard Upstash → REST API | Rahasia |
+| `RATE_LIMIT_FAIL_CLOSED` | ya (produksi) | `true` | Login/register/checkout/AI/upload ditolak bila Redis tidak tersedia |
+| `EMAIL_VERIFICATION_ENABLED` | ya | `true` | Wajibkan verifikasi email sebelum trial/AI |
+| `RESEND_API_KEY` | ya jika verifikasi email aktif | Dashboard Resend | Rahasia, permission sending |
+| `EMAIL_FROM` | ya jika verifikasi email aktif | `SOBAT ADI <no-reply@moedatrace.com>` | Domain harus terverifikasi di Resend |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | ya jika CAPTCHA aktif | Dashboard Turnstile | Site key publik |
+| `TURNSTILE_SECRET_KEY` | ya jika CAPTCHA aktif | Dashboard Turnstile | Rahasia server |
 
 Catatan:
 - `SEED_ADMIN_*` **tidak** perlu diisi di Vercel. Itu hanya untuk menjalankan `seed:prod` sekali dari mesin lokal.
@@ -103,11 +111,21 @@ Jalankan berurutan terhadap domain produksi:
 3. `GET /api/admin/analytics` tanpa login → **401**.
 4. Login sebagai mahasiswa → `GET /api/admin/analytics` → **403**.
 5. `POST /api/chat` dengan body kosong (setelah login) → **400**.
-6. Unggah satu dokumen kecil → status `ready`, lalu tanya AI tentang dokumen itu.
-7. Generate kuis → submit jawaban → XP bertambah.
-8. Buat tim dan proyek → anggota bisa menambah tugas; non-anggota ditolak **403**.
-9. Register 6 kali dari IP yang sama → permintaan ke-6 **429** dengan header `Retry-After`.
-10. Cek dashboard Upstash: key `sobadi:rl:register:<ip>` bertambah.
+6. Registrasi baru → wajib CAPTCHA; tanpa token → **400**; akun baru belum
+   terverifikasi sampai email diklik.
+7. Buka tautan verifikasi → trial Premium 7 hari aktif; sebelum verifikasi AI
+   dan klaim trial manual → **403** `email_unverified`.
+8. Unggah satu dokumen kecil → status awal `pending`; pemilik tetap bisa
+   memakainya, pengguna lain tidak.
+9. Generate kuis → submit jawaban → XP bertambah sekali per soal.
+10. Buat tim → undang anggota → anggota harus menerima undangan sebelum akses.
+11. Register 6 kali dari IP yang sama → permintaan ke-6 **429** dengan header
+    `Retry-After`; login dari satu IP juga dibatasi.
+12. Kirim body >1 MB ke API umum → **413**; webhook >256 KB → **413**.
+13. Cek header `Content-Security-Policy-Report-Only`, HSTS, `nosniff`,
+    `X-Frame-Options: DENY`.
+14. Cek dashboard Upstash: key `sobadi:rl:login-ip:*` dan `sobadi:rl:login:*`
+    bertambah.
 
 Untuk pengujian cepat sebagian besar alur di atas, `scripts/smoke.ps1` bisa diarahkan ke domain produksi dengan mengubah variabel `$Base` di bagian atas skrip (hati-hati: skrip ini membuat user dan tim uji, jadi bersihkan setelahnya).
 
@@ -143,3 +161,5 @@ Jika `DIRECT_URL` kosong saat Production, build sengaja **gagal lebih awal** den
 - Rotasi `NEXTAUTH_SECRET` akan membuat semua sesi lama logout — lakukan bila curiga bocor.
 - Rotasi API key OpenRouter dan token Upstash secara berkala.
 - Bila sebuah rahasia pernah ter-commit, mengubah nilainya di Vercel **tidak** menghapusnya dari riwayat Git; rotasi nilai tersebut adalah wajib.
+- CSP saat ini dikirim sebagai **`Content-Security-Policy-Report-Only`**. Setelah laporan pelanggaran bersih, ubah menjadi header enforced.
+- Per 8 November 2026: **8 migrasi**, **19 tabel RLS**, **7 CHECK constraint**, dan **5 index baru P3** sudah diterapkan di produksi.

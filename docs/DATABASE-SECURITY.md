@@ -4,12 +4,22 @@
 
 Sejak migrasi `20261105000000_enable_row_level_security`, **semua tabel di schema
 `public` memiliki RLS aktif** dan tidak memiliki policy publik.
+Per 8 November 2026 ada **19 tabel** dan **8 migrasi** yang diterapkan.
 
 Tabel yang dicakup:
 
 `_prisma_migrations`, `User`, `Team`, `TeamBadge`, `Notification`, `TeamMember`,
 `Project`, `Task`, `Document`, `TaskChatMessage`, `ActivityEvent`, `Chunk`,
-`ChatMessage`, `QuizQuestion`, `QuizAttempt`, `Badge`, `Payment`.
+`ChatMessage`, `QuizQuestion`, `QuizAttempt`, `Badge`, `Payment`, `TeamInvite`,
+`EmailVerificationToken`.
+
+Migrasi P3 `20261107030000_p3_constraints_indexes` juga menambahkan:
+
+- unique `(projectId, status, order)` pada `Task`,
+- index komposit untuk `Payment`, `QuizAttempt`, dan `Document`,
+- CHECK constraint untuk role/plan/status,
+- FK `Payment.userId` dengan `ON DELETE RESTRICT` agar riwayat pembayaran
+  tidak hilang saat user dihapus.
 
 ## Kenapa aman untuk aplikasi
 
@@ -55,7 +65,10 @@ memang ada kebutuhan akses publik yang disengaja.
 
 ## Catatan
 
-- Linter Supabase sebelumnya melaporkan 17 temuan `rls_disabled_in_public`;
-  setelah migrasi ini, seluruh tabel sudah memiliki RLS.
+- Linter Supabase awalnya melaporkan 17 temuan `rls_disabled_in_public`; setelah
+  migrasi RLS dan dua tabel baru (`TeamInvite`, `EmailVerificationToken`),
+  seluruh **19 tabel** sudah memiliki RLS.
 - RLS bukan pengganti otorisasi aplikasi. Route API tetap memeriksa sesi,
   role admin, kepemilikan dokumen, dan keanggotaan tim di sisi server.
+- `Payment` memakai `ON DELETE RESTRICT`; user dengan riwayat pembayaran harus
+  diarsipkan/soft-delete, bukan dihapus langsung.

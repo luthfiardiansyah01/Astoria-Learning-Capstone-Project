@@ -3,7 +3,8 @@
 Dokumen pelengkap `Panduan-Uji-Pengguna-SUS.docx`. Fokus: **5–8 peserta**, satu sesi ±75 menit, kuota AI **$5** dengan model berbayar murah.
 
 - Aplikasi: `https://astoria-learning-capstone-project.vercel.app`
-- Fitur terbaru yang diuji: unggah PDF/TXT, batas 20.000 karakter, CRUD tim/proyek/tugas, back button, cache/hapus dokumen, jam & timer Mentor AI, badge sisa kuota AI.
+- Fitur terbaru yang diuji: unggah PDF/TXT, batas 20.000 karakter, CRUD tim/proyek/tugas, back button, cache/hapus dokumen, jam & timer Mentor AI, badge sisa kuota AI, verifikasi email, CAPTCHA, dan undangan tim.
+- Catatan 8 November 2026: registrasi baru memakai CAPTCHA Turnstile dan verifikasi email. Siapkan inbox peserta atau gunakan akun uji yang sudah terverifikasi. Anggota tim baru harus menerima undangan sebelum bisa mengakses proyek.
 - Prinsip: yang diuji aplikasi, bukan peserta. Tidak ada jawaban benar/salah.
 
 ---

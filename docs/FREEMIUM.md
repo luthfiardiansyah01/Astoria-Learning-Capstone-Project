@@ -17,9 +17,10 @@ berupa validasi UI, dan hal yang perlu diperhatikan sebelum peluncuran publik.
 | Tugas / proyek | 10 | 100 | `POST /api/collab/projects/:id/tasks` |
 | Anggota / tim | 3 | 30 | `POST /api/collab/teams/:id/members` |
 
-Rute AI yang memakai kuota: chat Mentor, sapaan beranda, generate kuis, submit kuis,
-unggah dokumen (prosesor + moderator + embedding), Mentor AI tugas Collab, dan
-analitik admin.
+Rute AI yang memakai kuota: chat Mentor, generate kuis, submit kuis, unggah
+dokumen (prosesor + moderator + embedding), Mentor AI tugas Collab, dan
+analitik admin. Sapaan beranda sekarang dibuat lokal tanpa memanggil AI,
+sehingga tidak memotong kuota.
 
 ## Aturan penting
 

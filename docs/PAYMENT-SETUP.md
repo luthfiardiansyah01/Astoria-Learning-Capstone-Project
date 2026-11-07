@@ -1,11 +1,18 @@
 # Panduan Pembayaran Premium (Midtrans / Xendit)
 
-Integrasi pembayaran sudah tersedia, tetapi **nonaktif sampai kredensial diisi**.
-Selama belum dikonfigurasi:
+## Status produksi (8 November 2026)
 
-- Tombol upgrade menampilkan "Pembayaran otomatis belum dikonfigurasi".
-- Pengguna diarahkan menghubungi admin (`admin1@moedatrace.com`).
-- Admin tetap bisa mengaktifkan Premium manual di **Admin → Paket & Pembayaran**.
+- Provider aktif: **Midtrans production** (`MIDTRANS_IS_PRODUCTION=true`).
+- `GET /api/billing/config` melaporkan `configured=true`.
+- **Channel pembayaran belum tersedia** karena akun masih dalam proses
+  **business review** Midtrans.
+- Selama channel belum aktif, admin tetap dapat mengaktifkan Premium manual di
+  **Admin → Paket & Pembayaran**.
+- Setelah review disetujui, uji satu transaksi kecil end-to-end dan refund.
+
+Integrasi pembayaran sudah tersedia. Bila kredensial belum diisi, tombol upgrade
+menampilkan status belum dikonfigurasi dan pengguna diarahkan ke admin
+(`admin1@moedatrace.com`).
 
 ## Variabel environment
 
@@ -61,6 +68,35 @@ Signature webhook diverifikasi dengan:
 
 Aktivasi bersifat **idempoten**: webhook berulang tidak menambah masa aktif dua kali.
 
+Status pembayaran:
+
+- `pending` → `paid`, `failed`, `expired`, atau `cancelled`.
+- `paid` → `refunded` (dicatat admin/webhook refund).
+- Status terminal (`paid` selain refund, `cancelled`, `refunded`) tidak dibuka
+  kembali oleh webhook terlambat.
+- Midtrans `capture + fraud_status=deny` dipetakan ke `failed`, bukan `paid`.
+- `authorize` dipetakan ke `pending`.
+
+Pembatalan pengguna memakai conditional update `pending → cancelled`, sehingga
+tidak menimpa pembayaran yang sudah lunas. Invoice pending dipakai ulang sampai
+24 jam agar tidak ada tagihan ganda.
+
+Webhook dilindungi signature/token, rate limit per IP, dan batas body 256 KB.
+Refund `paid → refunded` tidak mencabut Premium otomatis; admin dapat menurunkan
+paket manual bila perlu.
+
+## Onboarding Midtrans
+
+Akun Midtrans masih **in review**. Dokumen yang disiapkan:
+
+- katalog produk (produk, harga Rp19.000/30 hari, fitur, screenshot),
+- alur transaksi end-to-end dengan screenshot,
+- akun dummy untuk reviewer.
+
+Artefak yang berisi akun dummy **tidak disimpan di repo**; salinannya ada di
+`%TEMP%\opencode\midtrans-review\`. Ringkasan jawaban formulir ada di
+[`MIDTRANS-ONBOARDING.md`](./MIDTRANS-ONBOARDING.md).
+
 ## Konfirmasi manual
 
 Jika gateway belum aktif atau pengguna membayar lewat transfer:
@@ -69,6 +105,10 @@ Jika gateway belum aktif atau pengguna membayar lewat transfer:
 2. Cari pengguna, pilih durasi (30/90/365 hari), klik **Premium**.
 3. Atau, untuk transaksi `pending` yang sudah dibuat, klik ikon centang
    **Tandai lunas** pada daftar pembayaran.
+4. Untuk dana yang dikembalikan, ubah status pembayaran `paid` menjadi
+   `refunded`. Status ini hanya bisa dicatat dari `paid`; Premium tidak dicabut
+   otomatis.
+5. Pembayaran `paid` tidak bisa diubah menjadi `cancelled`; gunakan `refunded`.
 
 ## Endpoint
 
