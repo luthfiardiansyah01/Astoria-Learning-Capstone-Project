@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { RegisterForm } from "@/components/astoria/auth/register-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Daftar — SOBAT ADI",
+  description: "Buat akun SOBAT ADI dan mulai trial Premium 7 hari setelah verifikasi email.",
+};
 
 export default function RegisterPage() {
   return (

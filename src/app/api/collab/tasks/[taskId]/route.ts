@@ -3,6 +3,7 @@ import { logger } from "@/lib/logger";
 // DELETE /api/collab/tasks/[taskId] — hapus tugas
 
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getCurrentUser, canUseDocument } from "@/lib/current-user";
 import { assertTeamMember, logActivity, ForbiddenError } from "@/lib/collab";
@@ -146,6 +147,12 @@ export async function PATCH(
   } catch (e) {
     if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: e.message }, { status: 403 });
+    }
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      return NextResponse.json(
+        { error: "Urutan tugas bentrok. Coba pindahkan lagi." },
+        { status: 409 }
+      );
     }
     logger.error("[/api/collab/tasks/[taskId] PATCH]", { error: e });
     return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });

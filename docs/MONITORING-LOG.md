@@ -16,6 +16,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | P0 | Selesai | `322c481` | Rotasi DB, rate limit, admin, Midtrans internal |
 | P1 | Selesai | `179b2d6` | Semua item P1 aktif dan terverifikasi di produksi |
 | P2 | Selesai | `17fe563` | Limit atomik, URL/quiz state, toast, XP, a11y, performa |
+| P3 | Selesai | — | Index/CHECK, cleanup UI/deps, CSP report-only, docs sanitized, orphan team |
 
 ## Checklist monitoring
 
@@ -77,7 +78,13 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P2 | Aksesibilitas | Selesai | Keyboard Kanban, dropdown status, aria-live chat/kuis |
 | 2026-11-07 | P2 | Performa | Selesai | Greeting tanpa AI, badge ganda dihapus, dependency tak terpakai dihapus |
 | 2026-11-07 | P2 | Regresi | Selesai | Unit 150, integration 139, E2E 13 |
-| 2026-11-07 | P2 | Bugfix | Selesai | XP paralel soal sama tidak ganda; sesi kuis dipisah per pengguna |
+| 2026-11-07 | P2 | Bugfix | Selesai | XP/badge paralel aman; sesi kuis per pengguna |
+| 2026-11-07 | P3 | Schema hardening | Selesai | Index komposit, unique urutan tugas, CHECK status/role/plan, Payment restrict |
+| 2026-11-07 | P3 | Cleanup UI/dependency | Selesai | 23 komponen UI tak terpakai + 23 dependency dihapus |
+| 2026-11-07 | P3 | CSP & deployment | Selesai | CSP report-only, port proxy Caddy dihapus, metadata auth |
+| 2026-11-07 | P3 | Sanitasi dokumen | Selesai | Kredensial demo di 2 file .docx diganti placeholder |
+| 2026-11-07 | P3 | Data orphan | Selesai | `Anim Team` (1 proyek/1 task) dihapus; backup JSON tersimpan di temp |
+| 2026-11-07 | P3 | Regresi | Selesai | Unit 150, integration 139, E2E 13 |
 | 2026-11-07 | P1 | Bugfix undangan | Selesai | Owner bisa membatalkan undangan pending; label aktivitas/notifikasi diperbaiki |
 
 ### Detail entri P0 — 7 November 2026
@@ -215,6 +222,35 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   agar tidak memotong kuota.
 - Beberapa komponen UI lama masih ada di repo meski dependency beratnya sudah
   dihapus; pembersihan lanjutan bisa dilakukan di P3.
+
+### Detail entri P3 — 7 November 2026
+
+**Perubahan**
+- Migrasi `20261107030000_p3_constraints_indexes`:
+  - index komposit Payment, QuizAttempt, Document,
+  - unique `(projectId, status, order)` pada Task setelah renumber,
+  - CHECK untuk role/plan/status,
+  - FK Payment `ON DELETE RESTRICT` agar riwayat pembayaran tidak hilang.
+- Kanban memakai `max(order)+1` saat pindah kolom; P2002 urutan mengembalikan 409.
+- 23 komponen UI tak terpakai dan 23 dependency dihapus.
+- CSP `Report-Only` ditambahkan; port proxy arbitrer Caddy dihapus.
+- Metadata halaman login/register ditambahkan.
+- Kredensial demo di `Buku-Manual-Aplikasi.docx` dan
+  `Ringkasan-Sesi-SOBAT-ADI.docx` diganti placeholder.
+- Tim orphan `Anim Team` (1 proyek, 1 task, tanpa anggota) dihapus; backup JSON
+  disimpan di `%TEMP%\opencode\orphan-anim-team-backup.json`.
+
+**Verifikasi**
+- Unit 150 / integration 139 / E2E 13 lulus.
+- Build produksi lulus.
+- Migrasi diterapkan ke test DB dan produksi.
+- Audit data: 0 nilai status/role/plan tidak valid; 0 duplikat urutan tugas.
+
+**Sisa risiko**
+- CSP masih `Report-Only`; ubah menjadi enforced setelah laporan pelanggaran bersih.
+- `Payment` sekarang `RESTRICT`; penghapusan user dengan riwayat pembayaran harus
+  melalui proses arsip/soft-delete.
+- Backup tim orphan hanya di temp; hapus setelah yakin tidak diperlukan.
 
 ## Template entri tahap berikutnya
 

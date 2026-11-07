@@ -73,8 +73,26 @@ export async function createTask(
   title = "Tugas Test",
   overrides: Partial<Prisma.TaskUncheckedCreateInput> = {}
 ) {
+  if (overrides.order !== undefined) {
+    return db.task.create({
+      data: { projectId, title, xpReward: 10, ...overrides },
+    });
+  }
+  const status = overrides.status ?? "todo";
+  const last = await db.task.findFirst({
+    where: { projectId, status },
+    orderBy: { order: "desc" },
+    select: { order: true },
+  });
   return db.task.create({
-    data: { projectId, title, xpReward: 10, ...overrides },
+    data: {
+      projectId,
+      title,
+      xpReward: 10,
+      status,
+      ...overrides,
+      order: (last?.order ?? -1) + 1,
+    },
   });
 }
 

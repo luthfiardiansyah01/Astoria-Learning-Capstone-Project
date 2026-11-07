@@ -152,7 +152,8 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
     if (targetStatus === task.status) return;
 
     const targetColumnTasks = columns[targetStatus] ?? [];
-    const newOrder = targetColumnTasks.length;
+    const newOrder =
+      targetColumnTasks.reduce((max, t) => Math.max(max, t.order), -1) + 1;
 
     moveMutation.mutate({ taskId, status: targetStatus, order: newOrder });
   }

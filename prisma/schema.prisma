@@ -44,7 +44,7 @@ model User {
 model Payment {
   id           String    @id @default(cuid())
   userId       String
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Restrict)
   provider     String // midtrans | xendit | manual
   orderId      String    @unique
   amount       Int
@@ -62,6 +62,8 @@ model Payment {
 
   @@index([userId])
   @@index([status])
+  @@index([userId, status, createdAt])
+  @@index([createdAt])
 }
 
 // ===== Astoria Collab =====
@@ -192,6 +194,7 @@ model Task {
 
   @@index([projectId])
   @@index([assigneeId])
+  @@unique([projectId, status, order])
 }
 
 // Riwayat chat Mentor AI kontekstual per task
@@ -248,6 +251,7 @@ model Document {
 
   @@index([uploaderId])
   @@index([status])
+  @@index([status, createdAt])
 }
 
 // Potongan dokumen untuk retrieval RAG
@@ -310,6 +314,7 @@ model QuizAttempt {
   createdAt   DateTime     @default(now())
 
   @@index([userId, createdAt])
+  @@index([userId, questionId])
 }
 
 // Lencana yang diperoleh mahasiswa
