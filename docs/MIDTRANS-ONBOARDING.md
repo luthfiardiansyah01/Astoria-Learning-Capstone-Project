@@ -1,6 +1,19 @@
 # Onboarding Midtrans — SOBAT ADI
 
-Status: **business review / in review** (8 November 2026).
+Status: **koreksi dokumen / in review** (10 November 2026).
+
+Midtrans meminta **Business Supporting Document** dan **Website** untuk empat
+metode pembayaran. Checklist lengkap ada di
+[`MIDTRANS-BUSINESS-DOCS.md`](./MIDTRANS-BUSINESS-DOCS.md).
+
+Karena SOBAT ADI masih **proyek kampus** tanpa badan usaha, jalur yang paling
+realistis adalah memakai entitas universitas/institusi sebagai merchant. Template
+surat ada di
+[`MIDTRANS-CAMPUS-LETTER-TEMPLATE.md`](./MIDTRANS-CAMPUS-LETTER-TEMPLATE.md).
+Tanpa entitas legal/NIB/NPWP dan rekening bisnis, channel aggregator seperti
+QRIS/VA/e-money kemungkinan besar tidak disetujui.
+
+**Website publik:** https://astoria-learning-capstone-project.vercel.app/produk
 
 Dokumen ini merangkum jawaban formulir "Data Tambahan / Data Susulan Onboarding"
 Midtrans. Artefak yang berisi akun dummy **tidak disimpan di repo**; salinannya

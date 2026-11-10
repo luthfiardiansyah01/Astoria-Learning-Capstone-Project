@@ -103,6 +103,9 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-07 | P3 | Data orphan | Selesai | `Anim Team` (1 proyek/1 task) dihapus; backup JSON tersimpan di temp |
 | 2026-11-07 | P3 | Regresi | Selesai | Unit 150, integration 139, E2E 13 |
 | 2026-11-08 | Docs | Audit & sinkronisasi dokumentasi | Selesai | Indeks docs, pembayaran, deploy, database, freemium, runbook, onboarding Midtrans |
+| 2026-11-10 | Midtrans | Halaman produk publik | Selesai | `/produk` menampilkan produk, harga, fitur, alur bayar, legal, kontak |
+| 2026-11-10 | Midtrans | Checklist Business Supporting Document | Selesai | `MIDTRANS-BUSINESS-DOCS.md` untuk 4 metode pembayaran |
+| 2026-11-10 | Midtrans | Status proyek kampus & template surat | Selesai | Jalur entitas kampus/perorangan + template surat institusi |
 
 ## Detail Fase P0 — 7 November 2026
 

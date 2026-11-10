@@ -23,6 +23,8 @@ operasional.
 | Paket Free/Premium, trial, kuota | [`FREEMIUM.md`](./FREEMIUM.md) |
 | Pembayaran Midtrans/Xendit & manual | [`PAYMENT-SETUP.md`](./PAYMENT-SETUP.md) |
 | Onboarding Midtrans (status in review) | [`MIDTRANS-ONBOARDING.md`](./MIDTRANS-ONBOARDING.md) |
+| Business Supporting Document Midtrans | [`MIDTRANS-BUSINESS-DOCS.md`](./MIDTRANS-BUSINESS-DOCS.md) |
+| Template surat institusi untuk Midtrans | [`MIDTRANS-CAMPUS-LETTER-TEMPLATE.md`](./MIDTRANS-CAMPUS-LETTER-TEMPLATE.md) |
 | Setup Resend + Turnstile | [`EMAIL-VERIFICATION-SETUP.md`](./EMAIL-VERIFICATION-SETUP.md) |
 | RLS & keamanan database | [`DATABASE-SECURITY.md`](./DATABASE-SECURITY.md) |
 | Checklist uji pengguna/SUS | [`CHECKLIST-UJI-PENGGUNA-SUS.md`](./CHECKLIST-UJI-PENGGUNA-SUS.md) |
