@@ -23,6 +23,11 @@ export default function LoginPage() {
               Daftar
             </Link>
           </p>
+          <p className="text-center text-xs">
+            <Link href="/produk" className="text-primary underline hover:text-primary/80">
+              Pelajari paket & harga
+            </Link>
+          </p>
           <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
             Dengan masuk, Anda menyetujui{" "}
             <Link href="/legal/syarat-ketentuan" className="underline hover:text-foreground">
