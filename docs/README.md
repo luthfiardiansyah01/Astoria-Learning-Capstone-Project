@@ -18,6 +18,7 @@ operasional.
 | Kebutuhan | Dokumen |
 |---|---|
 | Status, riwayat, dan checklist monitoring | [`MONITORING-LOG.md`](./MONITORING-LOG.md) |
+| Pemetaan user, role, plan, dan akses | [`USER-ROLE-MAPPING.md`](./USER-ROLE-MAPPING.md) |
 | Prosedur darurat & operasi rutin | [`OPERATIONS-RUNBOOK.md`](./OPERATIONS-RUNBOOK.md) |
 | Deploy, env Vercel, migrasi | [`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md) |
 | Paket Free/Premium, trial, kuota | [`FREEMIUM.md`](./FREEMIUM.md) |

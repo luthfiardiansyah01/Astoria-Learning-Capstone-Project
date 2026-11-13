@@ -7,7 +7,7 @@ verifikasi, dan sisa risiko tidak hilang.
 - **Produksi:** https://astoria-learning-capstone-project.vercel.app
 - **Repo:** `luthfiardiansyah01/Astoria-Learning-Capstone-Project`
 - **Runbook terkait:** `docs/OPERATIONS-RUNBOOK.md`
-- **Terakhir diperbarui:** 8 November 2026, setelah audit & sinkronisasi dokumentasi
+- **Terakhir diperbarui:** 13 November 2026, setelah pemetaan user & role
 
 ## Status ringkas
 
@@ -106,6 +106,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-10 | Midtrans | Halaman produk publik | Selesai | `/produk` menampilkan produk, harga, fitur, alur bayar, legal, kontak |
 | 2026-11-10 | Midtrans | Checklist Business Supporting Document | Selesai | `MIDTRANS-BUSINESS-DOCS.md` untuk 4 metode pembayaran |
 | 2026-11-10 | Midtrans | Status proyek kampus & template surat | Selesai | Jalur entitas kampus/perorangan + template surat institusi |
+| 2026-11-13 | Docs | Pemetaan user & role | Selesai | `USER-ROLE-MAPPING.md`: role, plan, tim, kepemilikan data, enforcement |
 
 ## Detail Fase P0 — 7 November 2026
 
