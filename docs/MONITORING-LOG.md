@@ -116,6 +116,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-16 | Docs | Sinkronisasi dokumen teknis | Selesai | Region `hnd1`, env pembayaran, runbook rotasi admin, snapshot user 16 Nov, status freemium; unit 150 lulus |
 | 2026-11-16 | Docs | SOP aktivasi Premium manual | Selesai | Jalur B utama (konfirmasi `Payment`) + Jalur A cadangan; bukti transaksi 14 Nov |
 | 2026-11-16 | Ops | Verifikasi produksi | Selesai | 5 halaman 200, webhook 200, 8 migrasi, 19/19 RLS, 7 CHECK, 5 index, header keamanan lengkap |
+| 2026-11-16 | Deploy | Halaman privasi & info penyelenggara live | Selesai | Commit `c7050c2`/`adc2d9d`; `/legal/kebijakan-privasi` 200; `/produk` memuat info penyelenggara + tautan privasi |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -346,6 +347,9 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - `docs/DATABASE-SECURITY.md`: verifikasi RLS diperbarui ke 16 November 2026.
 - `docs/RENCANA-IMPLEMENTASI.md`: diberi penanda **arsip** agar status lama
   ("menunggu URL Supabase") tidak disalahartikan sebagai kondisi sekarang.
+- **Website publik**: halaman `/legal/kebijakan-privasi` (13 bagian), blok
+  **Informasi Penyelenggara** di `/produk`, dan tautan privasi di footer
+  aplikasi serta seluruh halaman legal.
 
 **Verifikasi**
 
@@ -360,6 +364,10 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   Midtrans, dan AI. Xendit serta variabel opsional belum diisi.
 - `GET /api/billing/webhook/midtrans` → **200**; `GET /api/billing/config`
   tanpa sesi → **401**.
+- Build lokal (`bun run build`) lulus; halaman `/legal/kebijakan-privasi`
+  ter-prerender statis.
+- Deployment produksi **Ready** (59 detik): `/legal/kebijakan-privasi` **200**,
+  `/produk` memuat "Informasi Penyelenggara" dan tautan "Kebijakan Privasi".
 
 **Sisa risiko**
 
