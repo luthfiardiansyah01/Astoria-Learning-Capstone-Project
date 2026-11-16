@@ -7,7 +7,7 @@ verifikasi, dan sisa risiko tidak hilang.
 - **Produksi:** https://astoria-learning-capstone-project.vercel.app
 - **Repo:** `luthfiardiansyah01/Astoria-Learning-Capstone-Project`
 - **Runbook terkait:** `docs/OPERATIONS-RUNBOOK.md`
-- **Terakhir diperbarui:** 13 November 2026, setelah pemetaan user & role
+- **Terakhir diperbarui:** 16 November 2026, setelah verifikasi produksi & sinkronisasi dokumen
 
 ## Status ringkas
 
@@ -22,17 +22,22 @@ verifikasi, dan sisa risiko tidak hilang.
 
 | Pemeriksaan | Kondisi terakhir |
 |---|---|
-| Deployment | Production **Ready** |
-| Commit kode | `c1e96a2` (dokumentasi akhir `87425f0`) |
+| Deployment | Production **Ready** (deploy terakhir 13 Nov) |
+| Commit kode | `c1e96a2` (P3); dokumentasi terakhir `c037472` |
+| Region aplikasi | `hnd1` (Tokyo), sama dengan database `ap-northeast-1` |
 | Migrasi database | **8/8** diterapkan |
-| RLS | **19 tabel** aktif, **0 policy publik** |
+| Tabel `public` | **19**, semuanya RLS aktif |
+| Policy RLS publik | **0** |
 | CHECK constraint | **7** terpasang |
 | Index baru P3 | **5** terpasang |
 | Verifikasi email + CAPTCHA | **Aktif** (`EMAIL_VERIFICATION_ENABLED=true`) |
+| Env pembayaran | `PAYMENT_PROVIDER`, `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION` terpasang |
 | Tim orphan | `Anim Team` **dihapus** (backup di temp) |
-| Test | **150 unit / 139 integration / 13 E2E** |
+| Test | **150 unit** (diverifikasi ulang 16 Nov), 139 integration, 13 E2E (7 Nov) |
 | Log produksi terakhir | **0 error, 0 respons 5xx** |
 | CSP | **Report-Only** (belum enforced) |
+| Halaman publik | `/login`, `/register`, `/produk`, `/verify-email`, legal → **200** |
+| Webhook Midtrans | `GET /api/billing/webhook/midtrans` → **200** |
 
 ## Checklist monitoring
 
@@ -107,6 +112,10 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-10 | Midtrans | Checklist Business Supporting Document | Selesai | `MIDTRANS-BUSINESS-DOCS.md` untuk 4 metode pembayaran |
 | 2026-11-10 | Midtrans | Status proyek kampus & template surat | Selesai | Jalur entitas kampus/perorangan + template surat institusi |
 | 2026-11-13 | Docs | Pemetaan user & role | Selesai | `USER-ROLE-MAPPING.md`: role, plan, tim, kepemilikan data, enforcement |
+| 2026-11-14 | Docs | Tech stack format skripsi | Selesai | `TECH-STACK-SKRIPSI.md` + `.docx`: arsitektur, 7 tabel, justifikasi, metrik 15.071 baris kode |
+| 2026-11-16 | Docs | Sinkronisasi dokumen teknis | Selesai | Region `hnd1`, env pembayaran, runbook rotasi admin, snapshot user 16 Nov, status freemium; unit 150 lulus |
+| 2026-11-16 | Docs | SOP aktivasi Premium manual | Selesai | Jalur B utama (konfirmasi `Payment`) + Jalur A cadangan; bukti transaksi 14 Nov |
+| 2026-11-16 | Ops | Verifikasi produksi | Selesai | 5 halaman 200, webhook 200, 8 migrasi, 19/19 RLS, 7 CHECK, 5 index, header keamanan lengkap |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -298,7 +307,70 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - `docs/README.md` menjadi pintu masuk dokumentasi.
 - Artefak Midtrans berisi akun dummy tetap di luar repo.
 
-## Template entri tahap berikutnya
+## Detail Fase Dokumentasi — 14 & 16 November 2026
+
+**Perubahan**
+
+- Tambah `docs/TECH-STACK-SKRIPSI.md` dan `docs/Tech-Stack-SOBAT-ADI-Skripsi.docx`:
+  arsitektur sistem, 7 tabel teknologi, justifikasi pemilihan, pemetaan ke 10
+  kebutuhan fungsional, metrik implementasi, dan batasan penelitian.
+- `docs/DEPLOY-VERCEL.md`:
+  - koreksi region: `vercel.json` memakai **`hnd1`** (Tokyo) dan database berada
+    di `ap-northeast-1`, bukan `sin1`;
+  - tabel env production dilengkapi variabel pembayaran, URL publik, kontak, dan
+    `LOG_LEVEL`;
+  - checklist verifikasi ditambah `/produk`, halaman legal, `/api/billing/config`
+    (401), webhook (200), dan `403` non-admin;
+  - tambah bagian riwayat verifikasi.
+- `docs/OPERATIONS-RUNBOOK.md`:
+  - status kredensial admin diperjelas (password demo, hash di database yang
+    berlaku, `.env.supabase` hanya untuk seeding);
+  - tambah prosedur **rotasi password admin** (bcrypt cost 12 + verifikasi login);
+  - tambah bagian **pemeriksaan cepat produksi** beserta hasil normalnya;
+  - **SOP aktivasi Premium manual**: Jalur B (konfirmasi transaksi) sebagai alur
+    utama, Jalur A (aktivasi langsung) sebagai cadangan, plus aturan
+    pembatalan/refund dan penyimpanan bukti.
+- `docs/USER-ROLE-MAPPING.md`:
+  - snapshot produksi diperbarui ke 16 November 2026;
+  - dipisahkan **plan tersimpan** vs **plan efektif** (15 user masih
+    `plan=premium` tetapi sudah kedaluwarsa dan efektif Free);
+  - tambah query untuk memperbarui snapshot.
+- `docs/FREEMIUM.md`:
+  - status pembayaran diperbarui: kredensial Midtrans sudah terpasang, kanal
+    masih menunggu review;
+  - klaim "belum ada verifikasi email" dihapus karena sudah aktif sejak 7 Nov;
+  - langkah uji registrasi/trial disesuaikan dengan alur verifikasi email.
+- `docs/PAYMENT-SETUP.md`: status produksi diperbarui ke 16 November 2026
+  (variabel Midtrans terpasang, kanal masih review) dan ditambah ringkasan dua
+  jalur aktivasi manual.
+- `docs/DATABASE-SECURITY.md`: verifikasi RLS diperbarui ke 16 November 2026.
+- `docs/RENCANA-IMPLEMENTASI.md`: diberi penanda **arsip** agar status lama
+  ("menunggu URL Supabase") tidak disalahartikan sebagai kondisi sekarang.
+
+**Verifikasi**
+
+- `bun run test:unit` → **150 lulus** (10 berkas, ±0,4 detik).
+- Produksi: `/login`, `/register`, `/produk`, `/verify-email`,
+  `/legal/syarat-ketentuan` → **200**.
+- Header produksi: CSP `Report-Only`, HSTS `max-age=63072000`, `nosniff`,
+  `X-Frame-Options: DENY`, `Permissions-Policy` terkirim.
+- Database produksi: 8 migrasi selesai, 19 tabel `public` seluruhnya RLS aktif,
+  0 policy, 7 CHECK, 5 index P3.
+- Env production (nama saja): 21 variabel, termasuk email/CAPTCHA, Upstash,
+  Midtrans, dan AI. Xendit serta variabel opsional belum diisi.
+- `GET /api/billing/webhook/midtrans` → **200**; `GET /api/billing/config`
+  tanpa sesi → **401**.
+
+**Sisa risiko**
+
+- Password `admin@ut.ac.id` masih lemah dan hanya layak demo.
+- Integrasi (139) dan E2E (13) belum dijalankan ulang pada 16 November karena
+  container database uji dimatikan; kode aplikasi tidak berubah sejak `c1e96a2`.
+- CSP masih `Report-Only`.
+- Status channel Midtrans belum berubah sejak business review; aktivasi Premium
+  masih manual.
+
+
 
 Salin template ini ke bagian paling bawah **Log tahapan** dan isi:
 

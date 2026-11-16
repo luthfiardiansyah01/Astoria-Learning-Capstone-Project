@@ -14,8 +14,18 @@ Admin saat ini:
 
 | Email | Status | Catatan |
 |---|---|---|
-| `admin@ut.ac.id` | Aktif | Domain aktif, dipakai untuk operasi harian. Password kuat ada di `.env.supabase` (tidak di-track git). |
+| `admin@ut.ac.id` | Aktif | Domain aktif, dipakai untuk operasi harian. Hash bcrypt (cost 12) di database; `SEED_ADMIN_PASSWORD` di `.env.supabase` (tidak di-track git). |
 | `admin@sobat-adi.id` | Legacy | Domain tidak aktif. Jangan dihapus sebelum login admin aktif diverifikasi. |
+
+Catatan kredensial (per 16 November 2026):
+
+- Password `admin@ut.ac.id` saat ini **singkat dan hanya layak untuk demo**.
+  Rotasi sebelum aplikasi dipakai publik atau dinilai oleh penguji luar.
+- `.env.supabase` menyimpan `SEED_ADMIN_PASSWORD` dalam bentuk teks biasa. File
+  itu hanya untuk seeding lokal dan tidak boleh diunggah, dikirim lewat chat,
+  atau ditempel ke dokumen Word.
+- Yang berlaku saat login adalah **hash di database**, bukan isi
+  `.env.supabase`. Jika keduanya berbeda, login memakai hash lama.
 
 Aturan:
 
@@ -27,6 +37,51 @@ Aturan:
 5. Jangan pernah mencetak password/URL database ke terminal. Riwayat PowerShell
    yang memuat `DATABASE_URL` atau host database sudah dibersihkan; ulangi
    pemeriksaan bila ada insiden.
+
+### 1.1 Rotasi password admin
+
+Tidak ada endpoint publik untuk mengganti password admin; lakukan lewat skrip
+lokal dengan `bcrypt` cost 12 agar sama dengan hash yang dibuat saat seeding.
+
+Sebelum menjalankan, pastikan `DATABASE_URL` menunjuk database yang ingin
+diubah: `.env` untuk database yang dipakai aplikasi lokal, `.env.supabase` untuk
+produksi. Skrip di bawah memakai `PrismaClient` biasa, jadi variabel itu harus
+sudah termuat (Bun memuat `.env` otomatis dari folder proyek).
+
+1. Siapkan password baru (minimal 16 karakter, campur huruf besar/kecil, angka,
+   simbol). Jangan tulis di chat.
+2. Jalankan skrip sementara di folder proyek:
+
+   ```ts
+   // scripts/_tmp-admin-reset.ts
+   import bcrypt from "bcryptjs";
+   import { PrismaClient } from "@prisma/client";
+
+   const email = "admin@ut.ac.id";
+   const password = process.env.NEW_ADMIN_PASSWORD!;
+   const passwordHash = await bcrypt.hash(password, 12);
+   const db = new PrismaClient();
+
+   try {
+     const result = await db.user.updateMany({
+       where: { email, role: "admin" },
+       data: { passwordHash },
+     });
+     if (result.count !== 1) throw new Error("admin tidak ditemukan/tidak unik");
+     console.log("diperbarui:", result.count);
+   } finally {
+     await db.$disconnect();
+   }
+   ```
+
+3. Set `NEW_ADMIN_PASSWORD` hanya di sesi terminal, jalankan
+   `bun scripts/_tmp-admin-reset.ts`, lalu hapus skrip dan variabel tersebut.
+   Jika terminal menyimpan riwayat perintah, jalankan `Clear-History` setelahnya.
+4. Verifikasi login produksi: `POST /api/auth/callback/credentials` → **200**
+   dan `/api/auth/session` mengembalikan `role=admin`.
+5. Perbarui `SEED_ADMIN_PASSWORD` di `.env.supabase` agar seeding berikutnya
+   tidak mengembalikan password lama.
+6. Catat tanggal rotasi di `MONITORING-LOG.md` (tanpa menulis password).
 
 ## 2. Rate limit produksi
 
@@ -95,20 +150,104 @@ Riwayat rotasi:
   `DIRECT_URL` diperbarui di Vercel Production. Koneksi baru diverifikasi
   sebelum token akses dihapus.
 
-## 4. Pembayaran manual (saat channel gateway belum tersedia)
+## 4. Aktivasi Premium manual (SOP)
 
-Midtrans production sudah terkonfigurasi, tetapi channel pembayaran bergantung
-pada persetujuan business review Midtrans. Selama channel belum tersedia:
+Midtrans production sudah terkonfigurasi, tetapi kanal pembayaran masih menunggu
+**business review**. Akibatnya Snap bisa gagal membuat transaksi. Sampai kanal
+disetujui, aktivasi Premium dilakukan manual dengan **dua jalur**:
 
-1. Pengguna membuat pesanan dari dialog paket (status `pending`).
-2. Pengguna melakukan transfer manual sesuai instruksi admin.
-3. Admin membuka panel pembayaran, mencocokkan **order ID dan nominal**, lalu
-   menandai `paid`.
-4. Sistem mengaktifkan/memperpanjang Premium dan mengirim notifikasi.
-5. Untuk pembatalan: gunakan aksi batalkan. Untuk pengembalian dana: catat
-   status `refunded`; Premium tidak dicabut otomatis, cabut manual bila perlu.
+- **Jalur B (utama)** — konfirmasi transaksi yang tercatat. Ada jejak pembayaran
+  dan masuk statistik pendapatan. Pakai ini untuk pembayaran nyata.
+- **Jalur A (cadangan)** — aktivasi langsung dari panel pengguna. Tidak ada baris
+  `Payment`, jadi tidak masuk statistik. Pakai untuk kompensasi, demo, atau uji
+  internal.
 
-Jangan menandai `paid` tanpa bukti transfer yang cocok nominalnya.
+### 4.1 Jalur B — konfirmasi transaksi (utama)
+
+Jalur ini memerlukan **gateway terkonfigurasi** (provider bukan `none`), karena
+baris `Payment` dibuat oleh `POST /api/billing/checkout`. Bila tidak ada
+kredensial sama sekali, checkout mengembalikan `503` tanpa membuat baris, dan
+satu-satunya pilihan adalah Jalur A.
+
+**Yang dilakukan pengguna**
+
+1. Buka dialog **Paket** lalu klik **Upgrade Sekarang**.
+2. Sistem membuat baris `Payment` dengan `orderId` berformat
+   `SOBAT-YYYYMMDDHHMMSS-XXXXXXXX`, nominal **Rp19.000**, `durationDays` 30,
+   status `pending`.
+3. Dua kemungkinan:
+   - Snap berhasil → pengguna melanjutkan pembayaran di halaman Midtrans;
+   - Snap gagal (kanal belum disetujui) → pengguna melihat pesan error dan
+     transaksi berubah menjadi **`failed`**, tetapi barisnya tetap tersimpan.
+4. Pengguna transfer **Rp19.000** ke rekening yang diberikan admin dan menuliskan
+   **`orderId` pada berita transfer**.
+5. Pengguna mengirim bukti transfer + `orderId` ke admin
+   (`admin1@moedatrace.com`).
+
+**Yang dilakukan admin**
+
+1. Buka **Admin → tab "Paket & Pembayaran" → Pembayaran terbaru**.
+2. Cocokkan empat hal sebelum menekan apa pun:
+   - `orderId` sama dengan yang ditulis pengguna;
+   - nominal **tepat Rp19.000**;
+   - nama/email pengguna sesuai;
+   - waktu transfer masuk akal terhadap `createdAt`.
+3. Bila cocok, klik ikon centang **Tandai lunas**
+   (`PATCH /api/admin/payments/{paymentId}` dengan `{ "status": "paid" }`).
+4. Verifikasi hasilnya:
+   - status berubah `paid`, `paidAt` terisi;
+   - `expiresAt` = `max(sekarang, masa aktif lama) + payment.durationDays`
+     (default 30 hari);
+   - pengguna menerima notifikasi "Premium aktif sampai …".
+5. Bila **tidak** cocok atau bukti tidak ada: **jangan** menandai lunas. Bila
+   pengguna membatalkan, gunakan **Batalkan pesanan**.
+
+**Aturan teknis**
+
+- Konfirmasi bersifat **idempoten**: klik dua kali atau webhook duplikat tidak
+  menambah masa aktif dua kali.
+- Nominal tidak dapat diubah admin saat konfirmasi; yang tersimpan di `Payment`
+  yang dipakai.
+- Perpanjangan **menumpuk** dari sisa masa aktif, bukan menimpa.
+- Durasi mengikuti `Payment.durationDays` (default 30 hari), bukan pilihan
+  30/90/365 di panel pengguna.
+- Akun admin tidak bisa diaktifkan/diubah dari panel; role admin selalu Premium.
+
+### 4.2 Jalur A — aktivasi langsung (cadangan)
+
+1. Buka **Admin → "Paket & Pembayaran"** → cari pengguna.
+2. Pilih `Premium` dan durasi `30 / 90 / 365 hari`.
+3. Klik **Premium** (atau **Perpanjang** bila sudah Premium).
+4. Sistem mengisi `planExpiresAt` dari `max(sekarang, masa aktif lama) + durasi`
+   dan mengirim notifikasi.
+
+Gunakan hanya bila tidak ada transaksi yang bisa dikonfirmasi. Catat alasannya
+di `MONITORING-LOG.md` agar statistik pendapatan tidak disalahartikan.
+
+### 4.3 Pembatalan, refund, dan pencabutan
+
+| Aksi | Syarat | Efek |
+|---|---|---|
+| `paid` | status bukan `paid`/`refunded` | Premium diperpanjang + notifikasi |
+| `cancelled` | belum `paid` | Dibatalkan; gateway ikut dibatalkan bila memungkinkan |
+| `refunded` | **harus** sudah `paid` | Dicatat untuk audit; **Premium tidak dicabut otomatis** |
+| `failed` / `expired` | kapan saja | Hanya status; paket tidak berubah |
+
+Catatan:
+
+- Refund **belum ada tombolnya di panel**; saat ini hanya lewat
+  `PATCH /api/admin/payments/{paymentId}` dengan `{ "status": "refunded" }`.
+- Untuk mencabut Premium setelah refund, ubah paket ke Free lewat Jalur A.
+- Pesanan yang sudah `paid` tidak bisa dibatalkan, hanya di-refund.
+
+### 4.4 Bukti dan audit
+
+- Simpan bukti transfer di folder lokal (mis. `%TEMP%\opencode\bukti-transfer\`),
+  **jangan** di-commit ke repository.
+- Jangan pernah menandai `paid` tanpa bukti yang nominalnya cocok.
+- Bukti nyata bahwa alur ini berjalan: transaksi
+  `SOBAT-20261114171653-167536CC` (Rp19.000) dikonfirmasi 14 November 2026 dan
+  mengaktifkan Premium sampai 14 Desember 2026.
 
 ## 5. Checklist go-live Midtrans
 
@@ -132,3 +271,24 @@ Jangan menandai `paid` tanpa bukti transfer yang cocok nominalnya.
 - CSP masih `Report-Only`; pantau laporan sebelum mengubahnya menjadi enforced.
 - `Payment.userId` memakai `ON DELETE RESTRICT`; arsipkan user dengan riwayat
   pembayaran sebelum menghapus.
+
+## 7. Pemeriksaan cepat produksi
+
+Jalankan berurutan saat mencurigai gangguan. Semua perintah hanya membaca data.
+
+| Tujuan | Perintah | Hasil normal |
+|---|---|---|
+| Halaman publik hidup | `curl.exe -s -o NUL -w "%{http_code}" https://<domain>/login` | `200` |
+| Halaman produk (reviewer Midtrans) | `curl.exe -s -o NUL -w "%{http_code}" https://<domain>/produk` | `200` |
+| Webhook pembayaran | `curl.exe -s -o NUL -w "%{http_code}" https://<domain>/api/billing/webhook/midtrans` | `200` |
+| Konfigurasi billing tidak bocor | `curl.exe -s -o NUL -w "%{http_code}" https://<domain>/api/billing/config` | `401` tanpa sesi |
+| Header keamanan | `curl.exe -s -D - -o NUL https://<domain>/produk` | ada CSP `Report-Only`, HSTS, `nosniff`, `DENY` |
+| Status migrasi | `bun run db:prod:status` | 8 migrasi, tidak ada yang pending |
+| Uji unit cepat | `bun run test:unit` | 150 lulus, ±1 detik |
+| Uji integrasi | `docker compose up -d db-test` lalu `bun run test:integration` | 139 lulus |
+| Log runtime | `vercel logs --environment production --since 30m --non-interactive` | 0 error, 0 respons 5xx |
+
+Catatan pengujian integrasi: database uji berjalan di port **5434** dan memakai
+penyimpanan sementara (`tmpfs`), jadi datanya hilang setiap container dimatikan.
+E2E memerlukan build + server (`bun run start:e2e` di port 3100) dan database
+uji yang sama.

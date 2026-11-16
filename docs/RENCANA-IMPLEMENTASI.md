@@ -1,4 +1,9 @@
-# SOBAT ADI — Rencana Implementasi (diperbarui)
+# SOBAT ADI — Rencana Implementasi (arsip)
+
+> **Dokumen arsip (Oktober 2026).** Isi di bawah adalah rencana awal dan catatan
+> keputusan saat itu; beberapa status sudah tidak berlaku (mis. "menunggu URL
+> Supabase"). Status terkini ada di [`MONITORING-LOG.md`](./MONITORING-LOG.md),
+> dan panduan operasional ada di [`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md).
 
 Menggantikan rencana awal "Astoria Collab". Poin 1-3 sudah dikerjakan; dokumen ini mencakup keadaan sekarang dan **Poin 4: kesiapan produksi + deploy ke Vercel**.
 

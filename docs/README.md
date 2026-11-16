@@ -11,7 +11,8 @@ operasional.
 - **RLS:** 19 tabel `public`, 0 policy publik
 - **Verifikasi email + CAPTCHA:** aktif
 - **Pembayaran:** Midtrans production terpasang; channel menunggu business review
-- **Test terakhir:** 150 unit, 139 integration, 13 E2E
+- **Test terakhir:** 150 unit (16 Nov 2026), 139 integration dan 13 E2E (7 Nov 2026)
+- **Verifikasi produksi terakhir:** 16 November 2026 (5 halaman 200, header keamanan lengkap)
 
 ## Urutan baca
 
@@ -19,7 +20,7 @@ operasional.
 |---|---|
 | Status, riwayat, dan checklist monitoring | [`MONITORING-LOG.md`](./MONITORING-LOG.md) |
 | Pemetaan user, role, plan, dan akses | [`USER-ROLE-MAPPING.md`](./USER-ROLE-MAPPING.md) |
-| Prosedur darurat & operasi rutin | [`OPERATIONS-RUNBOOK.md`](./OPERATIONS-RUNBOOK.md) |
+| Prosedur darurat, operasi rutin, SOP Premium manual | [`OPERATIONS-RUNBOOK.md`](./OPERATIONS-RUNBOOK.md) |
 | Deploy, env Vercel, migrasi | [`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md) |
 | Paket Free/Premium, trial, kuota | [`FREEMIUM.md`](./FREEMIUM.md) |
 | Pembayaran Midtrans/Xendit & manual | [`PAYMENT-SETUP.md`](./PAYMENT-SETUP.md) |
@@ -30,7 +31,8 @@ operasional.
 | RLS & keamanan database | [`DATABASE-SECURITY.md`](./DATABASE-SECURITY.md) |
 | Checklist uji pengguna/SUS | [`CHECKLIST-UJI-PENGGUNA-SUS.md`](./CHECKLIST-UJI-PENGGUNA-SUS.md) |
 | Verifikasi UML/ERD | [`VERIFIKASI-UML-ERD.md`](./VERIFIKASI-UML-ERD.md) |
-| Rencana implementasi | [`RENCANA-IMPLEMENTASI.md`](./RENCANA-IMPLEMENTASI.md) |
+| Tech stack dalam format akademik (draf bab skripsi) | [`TECH-STACK-SKRIPSI.md`](./TECH-STACK-SKRIPSI.md) |
+| Rencana implementasi (arsip Oktober 2026) | [`RENCANA-IMPLEMENTASI.md`](./RENCANA-IMPLEMENTASI.md) |
 | Rencana peningkatan kualitas | [`RENCANA-IMPLEMENTASI-KUALITAS.md`](./RENCANA-IMPLEMENTASI-KUALITAS.md) |
 | Proposal pilot kampus | [`PROPOSAL-PILOT-KAMPUS-SOBAT-ADI.md`](./PROPOSAL-PILOT-KAMPUS-SOBAT-ADI.md) |
 
@@ -41,6 +43,7 @@ Sumber Markdown ada di [`legal/`](./legal/), halaman publiknya:
 - `/legal/syarat-ketentuan`
 - `/legal/kebijakan-produk`
 - `/legal/kebijakan-pengembalian-dana`
+- `/legal/kebijakan-privasi`
 
 ## Dokumen Word
 
@@ -49,6 +52,7 @@ Sumber Markdown ada di [`legal/`](./legal/), halaman publiknya:
 - `Panduan-Uji-Pengguna-SUS.docx`
 - `Proposal-Pilot-Kampus-SOBAT-ADI.docx`
 - `Ringkasan-Sesi-SOBAT-ADI.docx`
+- `Tech-Stack-SOBAT-ADI-Skripsi.docx`
 
 ## Artefak rahasia / lokal
 

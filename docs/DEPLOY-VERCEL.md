@@ -9,11 +9,18 @@ Dokumen ini menjelaskan cara menaikkan SOBAT ADI ke produksi memakai Vercel (apl
 | Bagian | Layanan | Catatan |
 |---|---|---|
 | Aplikasi Next.js | Vercel | Paket Hobby, `maxDuration = 60` detik untuk rute AI |
-| Database | Supabase PostgreSQL | Satu proyek dipakai sebagai produksi |
+| Region aplikasi | `hnd1` (Tokyo) | Ditetapkan di `vercel.json` (`"regions": ["hnd1"]`), satu wilayah dengan database |
+| Database | Supabase PostgreSQL | Satu proyek dipakai sebagai produksi; region `ap-northeast-1` (Tokyo) |
 | Rate limit | Upstash Redis (REST) | Wajib di produksi; `RATE_LIMIT_FAIL_CLOSED=true` |
 | Model AI | OpenRouter (OpenAI-compatible) | Butuh `AI_API_KEY` |
 | Email verifikasi | Resend | `RESEND_API_KEY` + `EMAIL_FROM` |
 | CAPTCHA | Cloudflare Turnstile | Site key publik + secret key server |
+| Pembayaran | Midtrans Snap (utama), Xendit (cadangan) | Opsional; kosongkan untuk aktivasi Premium manual |
+
+Region sengaja disamakan dengan database: Supabase proyek ini berada di
+`ap-northeast-1`, sehingga `hnd1` (Tokyo) memberi latensi terendah. Jangan
+mengubah region lewat dashboard tanpa mengubah `vercel.json`, karena nilai di
+file itu yang dipakai saat deploy.
 
 Alur koneksi database:
 
@@ -28,7 +35,7 @@ Keduanya wajib diisi. Tanpa `DIRECT_URL`, `prisma migrate deploy` akan gagal.
 
 1. Akun Vercel yang terhubung ke repository GitHub proyek ini.
 2. Proyek Supabase produksi (sudah ada) beserta connection string-nya.
-3. Database Upstash Redis (region terdekat, mis. `ap-southeast-1`).
+3. Database Upstash Redis (region terdekat dengan aplikasi, mis. `ap-northeast-1`).
 4. API key OpenRouter yang masih aktif.
 5. Nilai `NEXTAUTH_SECRET` baru khusus produksi (jangan pakai nilai dari `.env` lokal).
 
@@ -57,11 +64,43 @@ Buka **Project → Settings → Environment Variables**, lalu isi untuk environm
 | `EMAIL_FROM` | ya jika verifikasi email aktif | `SOBAT ADI <no-reply@moedatrace.com>` | Domain harus terverifikasi di Resend |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | ya jika CAPTCHA aktif | Dashboard Turnstile | Site key publik |
 | `TURNSTILE_SECRET_KEY` | ya jika CAPTCHA aktif | Dashboard Turnstile | Rahasia server |
+| `PAYMENT_PROVIDER` | tidak | `midtrans` atau `xendit` | Kosong = deteksi otomatis dari kredensial yang ada |
+| `MIDTRANS_SERVER_KEY` | tidak | Dashboard Midtrans | `Mid-server-…` untuk produksi |
+| `MIDTRANS_CLIENT_KEY` | tidak | Dashboard Midtrans | Dipakai Snap di sisi klien |
+| `MIDTRANS_IS_PRODUCTION` | tidak | `true` | Kosong/`false` = sandbox |
+| `MIDTRANS_SNAP_URL` | tidak | — | Hanya untuk override endpoint |
+| `XENDIT_SECRET_KEY` | tidak | Dashboard Xendit | Dipakai bila Xendit yang aktif |
+| `XENDIT_CALLBACK_TOKEN` | tidak | Dashboard Xendit | Verifikasi webhook |
+| `XENDIT_INVOICE_URL` | tidak | — | Hanya untuk override endpoint |
+| `PAYMENT_PREMIUM_PRICE_IDR` | tidak | default `19000` | Harga langganan |
+| `PAYMENT_PREMIUM_DAYS` | tidak | default `30` | Durasi Premium per transaksi |
+| `NEXT_PUBLIC_APP_URL` | tidak | `https://domain-produksi` | Dipakai link email/callback; bila kosong memakai `VERCEL_PROJECT_PRODUCTION_URL` |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | tidak | default `admin1@moedatrace.com` | Kontak publik di footer, halaman legal, dialog paket |
+| `LOG_LEVEL` | tidak | `info` (default) | `silent`/`debug`/`info`/`warn`/`error` |
 
 Catatan:
 - `SEED_ADMIN_*` **tidak** perlu diisi di Vercel. Itu hanya untuk menjalankan `seed:prod` sekali dari mesin lokal.
+- `SEED_FREE_*` juga hanya untuk `seed:free` di lokal, jangan diisi di Vercel.
+- `VERCEL_ENV`, `VERCEL_URL`, `VERCEL_PROJECT_PRODUCTION_URL`, dan `NODE_ENV` diisi otomatis oleh platform; tidak perlu ditambahkan manual.
 - Jangan menaruh `.env` atau `.env.supabase` di repository. Sudah masuk `.gitignore`.
 - Untuk Preview Deployment, `NEXTAUTH_URL` harus disesuaikan dengan domain preview, atau preview dibiarkan memakai database terpisah.
+
+Status env produksi per 16 November 2026 (nama variabel saja, tanpa nilai):
+
+```text
+NEXTAUTH_URL, NEXTAUTH_SECRET
+DATABASE_URL, DIRECT_URL
+AI_BASE_URL, AI_API_KEY, AI_MODEL, AI_FALLBACK_MODELS, AI_EMBED_MODEL
+UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, RATE_LIMIT_FAIL_CLOSED
+EMAIL_VERIFICATION_ENABLED, RESEND_API_KEY, EMAIL_FROM
+NEXT_PUBLIC_TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY
+PAYMENT_PROVIDER, MIDTRANS_SERVER_KEY, MIDTRANS_CLIENT_KEY, MIDTRANS_IS_PRODUCTION
+```
+
+Variabel pembayaran dan fitur di atas sudah terpasang di Production. Yang belum
+diisi di Vercel dan memakai nilai default: `NEXT_PUBLIC_APP_URL`,
+`NEXT_PUBLIC_CONTACT_EMAIL`, `PAYMENT_PREMIUM_PRICE_IDR`,
+`PAYMENT_PREMIUM_DAYS`, `LOG_LEVEL`, dan kredensial Xendit.
 
 ---
 
@@ -78,7 +117,7 @@ Catatan:
    - Framework preset: Next.js (terdeteksi otomatis).
    - Install command: biarkan default. `bun.lock` ada, jadi Vercel memakai Bun dan menjalankan `postinstall: prisma generate`.
    - **Build command sudah diatur lewat `vercel.json`** menjadi `bun run build:prod`, jadi tidak perlu diubah manual di dashboard.
-   - Region: pilih yang dekat dengan Supabase (mis. `Singapore (sin1)`), karena database berada di `ap-northeast-1`.
+   - Region: **`hnd1` (Tokyo)**, sudah ditetapkan di `vercel.json`; database Supabase berada di `ap-northeast-1` sehingga satu wilayah. Jangan mengganti region hanya dari dashboard.
 
 3. **Isi environment variables** (bagian 3), lalu deploy.
 
@@ -126,6 +165,12 @@ Jalankan berurutan terhadap domain produksi:
     `X-Frame-Options: DENY`.
 14. Cek dashboard Upstash: key `sobadi:rl:login-ip:*` dan `sobadi:rl:login:*`
     bertambah.
+15. `GET /produk` → **200** dan menampilkan harga Rp19.000/30 hari (dipakai
+    reviewer Midtrans).
+16. `GET /legal/syarat-ketentuan`, `/legal/kebijakan-produk`,
+    `/legal/kebijakan-pengembalian-dana` → **200**.
+17. `GET /api/billing/config` tanpa login → **401** (bukan membocorkan
+    konfigurasi pembayaran); `GET /api/billing/webhook/midtrans` → **200**.
 
 Untuk pengujian cepat sebagian besar alur di atas, `scripts/smoke.ps1` bisa diarahkan ke domain produksi dengan mengubah variabel `$Base` di bagian atas skrip (hati-hati: skrip ini membuat user dan tim uji, jadi bersihkan setelahnya).
 
@@ -162,4 +207,15 @@ Jika `DIRECT_URL` kosong saat Production, build sengaja **gagal lebih awal** den
 - Rotasi API key OpenRouter dan token Upstash secara berkala.
 - Bila sebuah rahasia pernah ter-commit, mengubah nilainya di Vercel **tidak** menghapusnya dari riwayat Git; rotasi nilai tersebut adalah wajib.
 - CSP saat ini dikirim sebagai **`Content-Security-Policy-Report-Only`**. Setelah laporan pelanggaran bersih, ubah menjadi header enforced.
-- Per 8 November 2026: **8 migrasi**, **19 tabel RLS**, **7 CHECK constraint**, dan **5 index baru P3** sudah diterapkan di produksi.
+- Per 16 November 2026, diverifikasi ulang terhadap produksi: **8 migrasi**,
+  **19/19 tabel `public` dengan RLS**, **0 policy publik**, **7 CHECK constraint**,
+  dan **5 index P3**; header HSTS, `nosniff`, `X-Frame-Options: DENY`, dan
+  `Permissions-Policy` terkirim; `/login`, `/register`, `/produk`,
+  `/verify-email`, dan halaman legal merespons **200**.
+
+## 9. Riwayat verifikasi
+
+| Tanggal | Yang diperiksa | Hasil |
+|---|---|---|
+| 2026-11-08 | Env email/CAPTCHA, migrasi, RLS, CSP | 8 migrasi, 19 RLS, CSP report-only |
+| 2026-11-16 | Region, env pembayaran, halaman publik, header | `hnd1`; 21 env produksi; 5 halaman 200; webhook 200 |

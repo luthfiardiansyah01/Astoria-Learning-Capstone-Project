@@ -46,16 +46,20 @@ sehingga tidak memotong kuota.
 
 ## Yang perlu diketahui sebelum publik
 
-1. **Kredensial gateway belum diisi** — checkout otomatis nonaktif; aktivasi
-   Premium masih manual lewat admin. Isi env dan daftarkan webhook sesuai
-   `docs/PAYMENT-SETUP.md`.
+1. **Kanal pembayaran Midtrans masih menunggu business review.** Kredensial
+   production sudah terpasang (`PAYMENT_PROVIDER`, server/client key,
+   `MIDTRANS_IS_PRODUCTION=true`), jadi checkout aktif secara teknis. Metode
+   bayar (QRIS, VA, e-wallet) belum tentu tersedia sebelum review disetujui;
+   sampai saat itu aktivasi Premium manual lewat admin tetap jalur utama.
+   Lihat `docs/PAYMENT-SETUP.md`.
 2. **Batas ukuran PDF/teks adalah validasi UI.** Server tidak menerima berkas
    asli (hanya teks hasil ekstraksi), sehingga batas keras yang berlaku di server
    adalah jumlah karakter dokumen. Permintaan API manual tetap dibatasi 8.000 /
    20.000 karakter.
-3. **Belum ada verifikasi email.** Trial “sekali per akun” bisa disalahgunakan
-   dengan mendaftar banyak akun. Pertimbangkan verifikasi email sebelum promosi
-   besar.
+3. **Verifikasi email sudah aktif** (`EMAIL_VERIFICATION_ENABLED=true`) bersama
+   CAPTCHA Turnstile. Trial hanya diberikan setelah email terverifikasi, dan
+   `trialUsedAt` mencegah trial kedua per akun. Risiko yang tersisa: satu orang
+   masih dapat membuat beberapa alamat email, jadi pantau pola pendaftaran.
 4. **Refund tidak otomatis mencabut Premium.** Status pembayaran menjadi
    `refunded`, tetapi masa aktif tetap berjalan sampai `planExpiresAt`.
 5. **Transaksi pending lama** ditandai `expired` saat pengguna memulai checkout
@@ -82,8 +86,10 @@ Uji manual minimum sebelum promosi:
 - Akun Free: tim kedua, proyek ketiga, tugas ke-11, anggota ke-4 → `403`.
 - Akun Free: dokumen 9.000 karakter → `413`.
 - Akun Premium: proyek ke-3, tugas ke-11, anggota ke-4 → berhasil.
-- Registrasi baru: otomatis Premium (trial 7 hari, `trialUsedAt` terisi).
-- Trial manual untuk akun lama: aktif 7 hari; percobaan kedua → `403`.
+- Registrasi baru: akun Free dan **belum terverifikasi**; AI dan klaim trial
+  manual → `403 email_unverified`.
+- Verifikasi email: trial 7 hari aktif, `trialUsedAt` terisi; percobaan trial
+  kedua → `403`.
 - Kuota AI harian: reset tepat 00.00 WIB.
 - Webhook tanpa signature/token → `401`.
 - Admin: aktifkan/perpanjang paket, konfirmasi pembayaran pending.

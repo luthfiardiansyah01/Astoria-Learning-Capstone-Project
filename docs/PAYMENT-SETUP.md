@@ -1,18 +1,33 @@
 # Panduan Pembayaran Premium (Midtrans / Xendit)
 
-## Status produksi (8 November 2026)
+## Status produksi (16 November 2026)
 
 - Provider aktif: **Midtrans production** (`MIDTRANS_IS_PRODUCTION=true`).
-- `GET /api/billing/config` melaporkan `configured=true`.
+- Variabel `PAYMENT_PROVIDER`, `MIDTRANS_SERVER_KEY`, dan `MIDTRANS_CLIENT_KEY`
+  sudah terpasang di Vercel Production.
+- `GET /api/billing/config` (perlu sesi) melaporkan `configured=true`.
 - **Channel pembayaran belum tersedia** karena akun masih dalam proses
-  **business review** Midtrans.
+  **business review** Midtrans. Status ini belum berubah sejak 8 November 2026.
 - Selama channel belum aktif, admin tetap dapat mengaktifkan Premium manual di
   **Admin → Paket & Pembayaran**.
 - Setelah review disetujui, uji satu transaksi kecil end-to-end dan refund.
 
-Integrasi pembayaran sudah tersedia. Bila kredensial belum diisi, tombol upgrade
-menampilkan status belum dikonfigurasi dan pengguna diarahkan ke admin
-(`admin1@moedatrace.com`).
+Integrasi pembayaran sudah tersedia. Bila tidak ada kredensial sama sekali,
+tombol upgrade menampilkan status belum dikonfigurasi dan pengguna diarahkan ke
+admin (`admin1@moedatrace.com`).
+
+### Aktivasi Premium manual
+
+SOP lengkap ada di [`OPERATIONS-RUNBOOK.md`](./OPERATIONS-RUNBOOK.md) bagian 4.
+Ringkasnya:
+
+| Jalur | Kapan dipakai | Cara | Jejak pembayaran |
+|---|---|---|---|
+| **B (utama)** | Pembayaran nyata, termasuk saat kanal Midtrans belum disetujui | Pengguna membuat pesanan → transfer dengan `orderId` di berita → admin **Tandai lunas** | Ada (`Payment`), masuk statistik |
+| **A (cadangan)** | Kompensasi, demo, uji internal | Admin → Paket & Pembayaran → pilih Premium 30/90/365 | Tidak ada |
+
+Durasi Jalur B mengikuti `Payment.durationDays` (default 30); Jalur A memakai
+pilihan 30/90/365 hari. Perpanjangan selalu menumpuk dari sisa masa aktif.
 
 ## Variabel environment
 

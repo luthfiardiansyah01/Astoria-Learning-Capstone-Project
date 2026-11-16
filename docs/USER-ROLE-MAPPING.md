@@ -1,23 +1,37 @@
 # Pemetaan User & Role — SOBAT ADI
 
 Dokumen ini memetakan jenis pengguna, role, paket, dan hak aksesnya di aplikasi.
-Terakhir diperbarui: 13 November 2026.
+Terakhir diperbarui: 16 November 2026 (snapshot database produksi).
 
 ## Ringkasan data produksi
 
+Snapshot 16 November 2026. Angka bergerak setiap ada pendaftaran, trial, atau
+pembayaran; perbarui dengan query di bagian akhir dokumen ini.
+
 | Kategori | Jumlah |
 |---|---:|
-| Total user | 23 |
-| Role `mahasiswa` | 21 |
+| Total user | 26 |
+| Role `mahasiswa` | 24 |
 | Role `admin` | 2 |
-| Plan `premium` (aktif/trial) | 19 |
-| Plan `free` | 4 |
-| Email terverifikasi | 23 |
-| TeamMember | 5 |
-| Team owner | 4 |
-| Team member biasa | 1 |
+| Email terverifikasi | 24 |
+| Email belum terverifikasi | 2 |
+| Plan tersimpan `premium` | 19 |
+| Plan tersimpan `free` | 7 |
+| **Premium efektif** (belum kedaluwarsa) | 4 |
+| **Free efektif** | 20 |
+| **Admin efektif** (selalu Premium) | 2 |
+| Tim | 5 |
+| Anggota tim (owner) | 5 |
+| Anggota tim (member) | 4 |
+| Undangan `pending` | 4 |
+| Undangan `accepted` | 3 |
+| Pembayaran `paid` / `pending` / `cancelled` | 1 / 1 / 1 |
 
-Catatan: angka dapat berubah saat ada pendaftaran, trial, atau pembayaran baru.
+> **Penting:** `User.plan` adalah nilai *tersimpan*, bukan paket yang berlaku.
+> Ada 15 user dengan `plan = premium` yang `planExpiresAt`-nya sudah lewat;
+> `effectivePlan()` mengembalikan **free** untuk mereka. Karena itu jangan
+> menyimpulkan jumlah pengguna Premium dari kolom `plan` saja. Aplikasi tidak
+> menurunkan nilai kolom saat kedaluwarsa — status dihitung saat dibaca.
 
 ## 1. Role utama
 
@@ -137,9 +151,41 @@ Catatan:
 | `free.seed@moedatrace.com` | mahasiswa | Free | Uji Plan Free |
 | `review.midtrans@moedatrace.com` | mahasiswa | Free | Akun dummy review Midtrans (password hanya di PDF lokal) |
 
+Catatan: kedua akun admin memiliki `plan = free` di database, tetapi
+`effectivePlan()` selalu mengembalikan Premium untuk role `admin`. Ini contoh
+benar dari pemisahan "nilai tersimpan" vs "paket efektif".
+
 ## 8. Catatan keamanan
 
 - Jangan menulis password/token di dokumen yang di-commit.
 - Akun `review.midtrans@moedatrace.com` harus dinonaktifkan setelah review Midtrans.
 - Admin legacy `admin@sobat-adi.id` sebaiknya dinonaktifkan setelah admin aktif dipastikan.
 - Semua route API tetap memeriksa sesi/role/kepemilikan di server, bukan hanya UI.
+- Password `admin@ut.ac.id` saat ini hanya layak demo; rotasi sebelum aplikasi
+  dipakai publik. Lihat `OPERATIONS-RUNBOOK.md` bagian 1.1.
+
+## 9. Cara memperbarui snapshot
+
+Jalankan dari folder proyek (membaca `.env.supabase`, hanya query baca):
+
+```sql
+-- distribusi paket efektif
+SELECT
+  CASE WHEN role = 'admin' THEN 'admin'
+       WHEN plan = 'premium'
+            AND ("planExpiresAt" IS NULL OR "planExpiresAt" > now())
+       THEN 'premium'
+       ELSE 'free' END AS effective,
+  count(*)::int AS jumlah
+FROM "User" GROUP BY 1 ORDER BY 1;
+
+-- ringkasan lain
+SELECT count(*)::int AS users FROM "User";
+SELECT count(*)::int AS verified FROM "User" WHERE "emailVerifiedAt" IS NOT NULL;
+SELECT role, count(*)::int FROM "TeamMember" GROUP BY role;
+SELECT status, count(*)::int FROM "TeamInvite" GROUP BY status;
+SELECT status, count(*)::int FROM "Payment" GROUP BY status;
+```
+
+Aturan: tulis **tanggal snapshot** setiap kali memperbarui, dan jangan pernah
+menyalin email, hash password, atau ID user ke dokumen ini — cukup agregat.
