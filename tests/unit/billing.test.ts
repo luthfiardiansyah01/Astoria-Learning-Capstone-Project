@@ -7,6 +7,7 @@ import {
   cancelProviderPayment,
   midtransStatus,
   newOrderId,
+  paymentSandbox,
   premiumExpiryFrom,
   verifyMidtransSignature,
   verifyXenditCallback,
@@ -116,6 +117,20 @@ describe("billingConfig", () => {
     expect(billingConfig().webhookUrls.midtrans).toBe(
       "https://sobat.example.com/api/billing/webhook/midtrans"
     );
+  });
+
+  it("menandai sandbox bila Midtrans tidak berproduksi", () => {
+    process.env.MIDTRANS_SERVER_KEY = "SB-Mid-server-test";
+    delete process.env.MIDTRANS_IS_PRODUCTION;
+    expect(paymentSandbox()).toBe(true);
+    expect(billingConfig().sandbox).toBe(true);
+  });
+
+  it("menandai production bila MIDTRANS_IS_PRODUCTION aktif", () => {
+    process.env.MIDTRANS_SERVER_KEY = "Mid-server-test";
+    process.env.MIDTRANS_IS_PRODUCTION = "true";
+    expect(paymentSandbox()).toBe(false);
+    expect(billingConfig().sandbox).toBe(false);
   });
 });
 

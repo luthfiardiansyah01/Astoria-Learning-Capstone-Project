@@ -133,7 +133,7 @@ describe("billing API", () => {
     const body = (await res.json()) as Record<string, unknown>;
     expect(res.status).toBe(200);
     expect(Object.keys(body).sort()).toEqual(
-      ["configured", "currency", "durationDays", "price", "provider"].sort()
+      ["configured", "currency", "durationDays", "price", "provider", "sandbox"].sort()
     );
     expect(body.configured).toBe(false);
   });
