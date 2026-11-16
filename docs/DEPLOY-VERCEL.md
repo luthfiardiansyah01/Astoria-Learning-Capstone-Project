@@ -74,6 +74,10 @@ Buka **Project → Settings → Environment Variables**, lalu isi untuk environm
 | `XENDIT_INVOICE_URL` | tidak | — | Hanya untuk override endpoint |
 | `PAYMENT_PREMIUM_PRICE_IDR` | tidak | default `19000` | Harga langganan |
 | `PAYMENT_PREMIUM_DAYS` | tidak | default `30` | Durasi Premium per transaksi |
+| `PAYMENT_MANUAL_ONLY` | tidak | `false` (default) | `true` = checkout transfer manual, tanpa memanggil gateway |
+| `PAYMENT_BANK_NAME` | tidak | mis. `BCA` | Ditampilkan di instruksi transfer |
+| `PAYMENT_BANK_ACCOUNT` | tidak | nomor rekening | Ditampilkan ke pengguna |
+| `PAYMENT_BANK_HOLDER` | tidak | nama pemilik | Ditampilkan ke pengguna |
 | `NEXT_PUBLIC_APP_URL` | tidak | `https://domain-produksi` | Dipakai link email/callback; bila kosong memakai `VERCEL_PROJECT_PRODUCTION_URL` |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | tidak | default `admin1@moedatrace.com` | Kontak publik di footer, halaman legal, dialog paket |
 | `LOG_LEVEL` | tidak | `info` (default) | `silent`/`debug`/`info`/`warn`/`error` |

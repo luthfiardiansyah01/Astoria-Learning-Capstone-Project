@@ -43,6 +43,9 @@ sehingga tidak memotong kuota.
   nominal dicocokkan, dan aktivasi bersifat idempoten.
 - **Pembayaran manual**: admin dapat mengaktifkan Premium 30/90/365 hari atau
   menandai transaksi pending sebagai lunas.
+- **Mode transfer manual** (`PAYMENT_MANUAL_ONLY=true`): checkout tidak memanggil
+  gateway. Pesanan tetap tercatat sebagai `Payment` pending berisi `orderId`, dan
+  admin mengonfirmasi setelah bukti transfer diterima.
 
 ## Yang perlu diketahui sebelum publik
 

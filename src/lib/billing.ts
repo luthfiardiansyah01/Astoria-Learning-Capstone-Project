@@ -54,6 +54,10 @@ export interface BillingConfig {
   configured: boolean;
   /** True bila kredensial aktif adalah kredensial uji (tidak memproses uang nyata). */
   sandbox: boolean;
+  /** True bila checkout memakai transfer manual, bukan gateway. */
+  manualOnly: boolean;
+  /** Rekening tujuan transfer manual (null bila belum diisi). */
+  manual: ManualTransferInfo;
   price: number;
   durationDays: number;
   currency: "IDR";
@@ -73,6 +77,30 @@ export function paymentSandbox() {
   return false;
 }
 
+/** True bila checkout dialihkan ke transfer manual (tanpa memanggil gateway). */
+export function manualOnly() {
+  return envFlag(process.env.PAYMENT_MANUAL_ONLY);
+}
+
+export interface ManualTransferInfo {
+  bank: string | null;
+  accountNumber: string | null;
+  accountHolder: string | null;
+}
+
+/** Rekening tujuan transfer manual. Kosong bila belum diisi di environment. */
+export function manualTransferInfo(): ManualTransferInfo {
+  const pick = (value?: string) => {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : null;
+  };
+  return {
+    bank: pick(process.env.PAYMENT_BANK_NAME),
+    accountNumber: pick(process.env.PAYMENT_BANK_ACCOUNT),
+    accountHolder: pick(process.env.PAYMENT_BANK_HOLDER),
+  };
+}
+
 export function billingConfig(): BillingConfig {
   const provider = billingProvider();
 
@@ -90,6 +118,8 @@ export function billingConfig(): BillingConfig {
     provider,
     configured: provider === "midtrans" || provider === "xendit",
     sandbox: paymentSandbox(),
+    manualOnly: manualOnly(),
+    manual: manualTransferInfo(),
     price: PREMIUM_PRICE_IDR,
     durationDays: PREMIUM_DURATION_DAYS,
     currency: "IDR",

@@ -29,6 +29,41 @@ Ringkasnya:
 Durasi Jalur B mengikuti `Payment.durationDays` (default 30); Jalur A memakai
 pilihan 30/90/365 hari. Perpanjangan selalu menumpuk dari sisa masa aktif.
 
+## Mode transfer manual (tanpa gateway)
+
+Berguna saat kanal Midtrans belum disetujui tetapi Anda ingin menerima uang
+nyata. Checkout **tidak memanggil gateway**; sistem hanya membuat pesanan
+`pending` berisi `orderId` agar pembayaran tetap tercatat.
+
+Aktifkan dengan:
+
+```text
+PAYMENT_MANUAL_ONLY=true
+PAYMENT_BANK_NAME=BCA
+PAYMENT_BANK_ACCOUNT=1234567890
+PAYMENT_BANK_HOLDER=Nama Pemilik Rekening
+```
+
+Perilaku:
+
+1. Pengguna klik **Buat Pesanan Transfer** → dibuat `Payment` dengan
+   `provider="manual"`, status `pending`, nominal dan durasi normal.
+2. Dialog menampilkan nominal, `orderId`, rekening tujuan, dan instruksi menulis
+   `orderId` pada berita transfer.
+3. Klik berikutnya dalam 24 jam memakai pesanan yang sama (`reused`), sehingga
+   tidak ada tagihan ganda.
+4. Admin membuka **Admin → Paket & Pembayaran**, mencocokkan bukti, lalu
+   **Tandai lunas** (Jalur B). Premium aktif dan notifikasi terkirim.
+5. Setelah Midtrans disetujui, set `PAYMENT_MANUAL_ONLY=false` untuk kembali ke
+   checkout otomatis.
+
+Catatan:
+
+- Rekening di atas **ditampilkan ke pengguna**; jangan isi dengan data yang
+  bersifat rahasia. Gunakan rekening khusus usaha bila ada.
+- Konfirmasi tetap manual: jangan menandai lunas tanpa bukti yang cocok.
+- Pesanan manual yang dibatalkan tidak memanggil gateway apa pun.
+
 ## Mode sandbox (demo, sidang, atau skripsi)
 
 Sandbox memungkinkan alur pembayaran diuji **tanpa uang nyata** dan **tanpa

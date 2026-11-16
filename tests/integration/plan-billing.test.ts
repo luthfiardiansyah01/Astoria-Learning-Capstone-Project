@@ -133,7 +133,16 @@ describe("billing API", () => {
     const body = (await res.json()) as Record<string, unknown>;
     expect(res.status).toBe(200);
     expect(Object.keys(body).sort()).toEqual(
-      ["configured", "currency", "durationDays", "price", "provider", "sandbox"].sort()
+      [
+        "configured",
+        "currency",
+        "durationDays",
+        "manual",
+        "manualOnly",
+        "price",
+        "provider",
+        "sandbox",
+      ].sort()
     );
     expect(body.configured).toBe(false);
   });
@@ -152,6 +161,38 @@ describe("billing API", () => {
     setAuthUser(admin);
     const res = await checkoutRoute.POST();
     expect(res.status).toBe(400);
+  });
+
+  it("membuat pesanan transfer manual tanpa memanggil gateway", async () => {
+    process.env.PAYMENT_MANUAL_ONLY = "true";
+    try {
+      const user = await createUser();
+      setAuthUser(user);
+
+      const res = await checkoutRoute.POST();
+      const body = (await res.json()) as {
+        manual?: boolean;
+        orderId?: string;
+        checkoutUrl?: string;
+        reused?: boolean;
+      };
+      expect(res.status).toBe(200);
+      expect(body.manual).toBe(true);
+      expect(body.checkoutUrl).toBeUndefined();
+      expect(body.orderId).toMatch(/^SOBAT-/);
+
+      const row = await db.payment.findUnique({ where: { orderId: body.orderId! } });
+      expect(row?.provider).toBe("manual");
+      expect(row?.status).toBe("pending");
+
+      const again = await checkoutRoute.POST();
+      const repeated = (await again.json()) as { orderId?: string; reused?: boolean };
+      expect(repeated.reused).toBe(true);
+      expect(repeated.orderId).toBe(body.orderId);
+      expect(await db.payment.count({ where: { userId: user.id } })).toBe(1);
+    } finally {
+      delete process.env.PAYMENT_MANUAL_ONLY;
+    }
   });
 
   it("mengembalikan riwayat pembayaran kosong", async () => {

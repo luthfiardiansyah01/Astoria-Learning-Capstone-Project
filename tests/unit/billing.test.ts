@@ -16,6 +16,10 @@ import {
 
 const ENV_KEYS = [
   "PAYMENT_PROVIDER",
+  "PAYMENT_MANUAL_ONLY",
+  "PAYMENT_BANK_NAME",
+  "PAYMENT_BANK_ACCOUNT",
+  "PAYMENT_BANK_HOLDER",
   "MIDTRANS_SERVER_KEY",
   "MIDTRANS_CLIENT_KEY",
   "MIDTRANS_IS_PRODUCTION",
@@ -131,6 +135,20 @@ describe("billingConfig", () => {
     process.env.MIDTRANS_IS_PRODUCTION = "true";
     expect(paymentSandbox()).toBe(false);
     expect(billingConfig().sandbox).toBe(false);
+  });
+
+  it("mendeteksi mode transfer manual beserta rekening tujuan", () => {
+    process.env.PAYMENT_MANUAL_ONLY = "true";
+    process.env.PAYMENT_BANK_NAME = "BCA";
+    process.env.PAYMENT_BANK_ACCOUNT = "1234567890";
+    process.env.PAYMENT_BANK_HOLDER = "Budi";
+    const config = billingConfig();
+    expect(config.manualOnly).toBe(true);
+    expect(config.manual).toEqual({
+      bank: "BCA",
+      accountNumber: "1234567890",
+      accountHolder: "Budi",
+    });
   });
 });
 

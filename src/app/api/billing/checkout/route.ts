@@ -14,6 +14,8 @@ import {
   billingConfig,
   billingProvider,
   createCheckout,
+  manualOnly,
+  manualTransferInfo,
   newOrderId,
 } from "@/lib/billing";
 
@@ -32,7 +34,8 @@ export async function POST() {
   }
 
   const provider = billingProvider();
-  if (provider === "none") {
+  const manual = manualOnly();
+  if (!manual && provider === "none") {
     return NextResponse.json(
       {
         error:
@@ -50,16 +53,18 @@ export async function POST() {
   const limited = await rateLimit("billing-checkout", user.id, 5, 3600, { failClosed: true });
   if (!limited.ok) return tooManyRequests(limited);
 
-  // Bersihkan transaksi pending yang sudah melewati masa berlaku gateway, lalu
-  // pakai ulang invoice yang masih aktif agar klik ganda tidak membuat tagihan baru
-  // (invoice Midtrans/Xendit berlaku 24 jam).
+  // Bersihkan transaksi pending yang sudah melewati masa berlaku, lalu pakai
+  // ulang pesanan yang masih aktif agar klik ganda tidak membuat tagihan baru
+  // (invoice Midtrans/Xendit dan instruksi transfer berlaku 24 jam).
   const now = new Date();
   const invoiceTtlMs = 24 * 60 * 60 * 1000;
+  const staleBefore = new Date(now.getTime() - invoiceTtlMs);
   await db.payment.updateMany({
     where: {
       userId: user.id,
       status: "pending",
-      createdAt: { lt: new Date(now.getTime() - invoiceTtlMs) },
+      createdAt: { lt: staleBefore },
+      ...(manual ? { provider: "manual" } : {}),
     },
     data: { status: "expired" },
   });
@@ -68,20 +73,21 @@ export async function POST() {
     where: {
       userId: user.id,
       status: "pending",
-      provider,
-      checkoutUrl: { not: null },
-      createdAt: { gte: new Date(now.getTime() - invoiceTtlMs) },
+      createdAt: { gte: staleBefore },
+      ...(manual ? { provider: "manual" } : { provider, checkoutUrl: { not: null } }),
     },
     orderBy: { createdAt: "desc" },
   });
 
-  if (existing?.checkoutUrl) {
+  if (existing) {
     return NextResponse.json({
       orderId: existing.orderId,
-      provider,
-      checkoutUrl: existing.checkoutUrl,
+      provider: existing.provider,
+      manual,
+      checkoutUrl: existing.checkoutUrl ?? undefined,
       amount: existing.amount,
       durationDays: existing.durationDays,
+      instructions: manual ? manualTransferInfo() : undefined,
       reused: true,
     });
   }
@@ -89,13 +95,24 @@ export async function POST() {
   const payment = await db.payment.create({
     data: {
       userId: user.id,
-      provider,
+      provider: manual ? "manual" : provider,
       orderId,
       amount,
       durationDays: PREMIUM_DURATION_DAYS,
       status: "pending",
     },
   });
+
+  if (manual) {
+    return NextResponse.json({
+      orderId,
+      provider: "manual",
+      manual: true,
+      amount,
+      durationDays: PREMIUM_DURATION_DAYS,
+      instructions: manualTransferInfo(),
+    });
+  }
 
   try {
     const checkout = await createCheckout({
@@ -153,6 +170,8 @@ export async function GET() {
     plan: effectivePlan(auth.user),
     provider,
     configured,
+    manualOnly: manualOnly(),
+    manual: manualTransferInfo(),
     price,
     durationDays,
   });

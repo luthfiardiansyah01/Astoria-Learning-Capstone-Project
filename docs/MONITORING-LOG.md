@@ -118,6 +118,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-16 | Ops | Verifikasi produksi | Selesai | 5 halaman 200, webhook 200, 8 migrasi, 19/19 RLS, 7 CHECK, 5 index, header keamanan lengkap |
 | 2026-11-16 | Deploy | Halaman privasi & info penyelenggara live | Selesai | Commit `c7050c2`/`adc2d9d`; `/legal/kebijakan-privasi` 200; `/produk` memuat info penyelenggara + tautan privasi |
 | 2026-11-16 | Ops | Indikator mode sandbox | Selesai | `sandbox` di `/api/billing/config`, badge di dialog paket & panel admin, skrip `billing-status.ts` |
+| 2026-11-16 | Ops | Mode transfer manual | Selesai | `PAYMENT_MANUAL_ONLY`; pesanan `provider=manual` tanpa gateway, instruksi rekening, reuse 24 jam; tes integrasi |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -354,6 +355,11 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - **Mode sandbox**: `billingConfig()` mengekspos status `sandbox`, dialog paket
   dan panel admin menampilkan penanda, dan `scripts/billing-status.ts` membantu
   memastikan environment tidak memproses uang nyata.
+- **Mode transfer manual**: `PAYMENT_MANUAL_ONLY=true` membuat checkout tanpa
+  memanggil gateway. Pesanan tetap tercatat (`provider=manual`, status
+  `pending`), dialog menampilkan nominal, `orderId`, dan rekening tujuan, lalu
+  admin mengonfirmasi lewat panel. Pesanan dipakai ulang dalam 24 jam agar tidak
+  ada tagihan ganda.
 
 **Verifikasi**
 

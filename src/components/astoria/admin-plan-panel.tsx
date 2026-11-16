@@ -34,6 +34,7 @@ interface BillingConfigData {
   provider: "midtrans" | "xendit" | "none";
   configured: boolean;
   sandbox?: boolean;
+  manualOnly?: boolean;
   price: number;
   durationDays: number;
   requiredEnv: { key: string; set: boolean; hint: string }[];
@@ -252,6 +253,11 @@ export function AdminPlanPanel() {
           {config?.configured ? (
             <p className="mt-1.5 text-muted-foreground">
               Harga {rupiah(config.price)} / {config.durationDays} hari.{" "}
+              {config.manualOnly && (
+                <span className="font-medium text-primary">
+                  Mode transfer manual (checkout tidak memanggil gateway).{" "}
+                </span>
+              )}
               {config.sandbox && (
                 <span className="font-medium text-amber-700 dark:text-amber-400">
                   Mode sandbox (uji, tanpa uang nyata).{" "}
@@ -259,6 +265,11 @@ export function AdminPlanPanel() {
               )}
               Webhook:{" "}
               <code className="break-all">{config.provider === "midtrans" ? config.webhookUrls.midtrans : config.webhookUrls.xendit}</code>
+            </p>
+          ) : config?.manualOnly ? (
+            <p className="mt-1.5 text-muted-foreground">
+              Mode transfer manual aktif. Pengguna membuat pesanan transfer, lalu admin
+              mengonfirmasi pembayaran dari daftar di bawah.
             </p>
           ) : (
             <div className="mt-1.5 space-y-1.5 text-muted-foreground">

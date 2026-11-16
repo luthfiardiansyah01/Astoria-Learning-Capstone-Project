@@ -28,6 +28,8 @@ interface BillingConfigData {
   provider: "midtrans" | "xendit" | "none";
   configured: boolean;
   sandbox?: boolean;
+  manualOnly?: boolean;
+  manual?: { bank: string | null; accountNumber: string | null; accountHolder: string | null };
   price: number;
   durationDays: number;
 }
@@ -59,6 +61,13 @@ function rupiah(value: number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
 }
 
+function providerText(provider: string) {
+  if (provider === "manual") return "transfer manual";
+  if (provider === "midtrans") return "Midtrans";
+  if (provider === "xendit") return "Xendit";
+  return provider;
+}
+
 const STATUS_LABEL: Record<PaymentRow["status"], string> = {
   pending: "Menunggu",
   paid: "Lunas",
@@ -80,6 +89,11 @@ const STATUS_CLASS: Record<PaymentRow["status"], string> = {
 export function PlanBadge({ className = "" }: { className?: string }) {
   const [open, setOpen] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
+  const [manualOrder, setManualOrder] = useState<{
+    orderId: string;
+    amount: number;
+    durationDays: number;
+  } | null>(null);
   const queryClient = useQueryClient();
 
   const { data } = useQuery<PlanData>({
@@ -160,13 +174,33 @@ export function PlanBadge({ className = "" }: { className?: string }) {
   const checkoutMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch("/api/billing/checkout", { method: "POST" });
-      const body = await res.json();
+      const body = (await res.json()) as {
+        error?: string;
+        checkoutUrl?: string;
+        manual?: boolean;
+        orderId?: string;
+        amount?: number;
+        durationDays?: number;
+      };
       if (!res.ok) throw new Error(body.error || "Gagal membuat transaksi.");
+      if (body.manual) return body;
       if (!body.checkoutUrl) throw new Error("Gateway tidak mengembalikan URL pembayaran.");
-      return body as { checkoutUrl: string };
+      return body;
     },
-    onSuccess: ({ checkoutUrl }) => {
-      window.location.href = checkoutUrl;
+    onSuccess: (body) => {
+      if (body.checkoutUrl) {
+        window.location.href = body.checkoutUrl;
+        return;
+      }
+      if (body.orderId) {
+        setManualOrder({
+          orderId: body.orderId,
+          amount: body.amount ?? billing?.price ?? 19_000,
+          durationDays: body.durationDays ?? billing?.durationDays ?? 30,
+        });
+        refreshPlan();
+        toast.success("Pesanan transfer dibuat. Kirim bukti ke admin.");
+      }
     },
     onError: (e: Error) => {
       setBillingError(e.message);
@@ -200,13 +234,16 @@ export function PlanBadge({ className = "" }: { className?: string }) {
   const plan = data?.plan ?? "free";
   const premium = plan === "premium";
   const configured = billing?.configured ?? false;
+  const manualEnabled = billing?.manualOnly ?? false;
   const price = billing?.price ?? 19_000;
   const durationDays = billing?.durationDays ?? 30;
   const providerLabel =
     billing?.provider === "midtrans" ? "Midtrans" : billing?.provider === "xendit" ? "Xendit" : null;
   const payments = paymentData?.payments ?? [];
   const pendingPayment = payments.find(
-    (p) => p.status === "pending" && p.checkoutUrl && p.provider === billing?.provider
+    (p) =>
+      p.status === "pending" &&
+      (p.checkoutUrl ? p.provider === billing?.provider : p.provider === "manual")
   );
 
   return (
@@ -215,6 +252,7 @@ export function PlanBadge({ className = "" }: { className?: string }) {
         type="button"
         onClick={() => {
           setBillingError(null);
+          setManualOrder(null);
           setOpen(true);
         }}
         title="Lihat paket Free/Premium"
@@ -271,7 +309,16 @@ export function PlanBadge({ className = "" }: { className?: string }) {
           </div>
 
           <div className="rounded-lg border bg-muted/40 px-3 py-2 text-xs">
-            {configured ? (
+            {manualEnabled ? (
+              <p className="flex items-start gap-1.5 text-muted-foreground">
+                <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                <span>
+                  <strong className="text-foreground">Pembayaran via transfer manual.</strong> Buat
+                  pesanan, transfer sesuai nominal, lalu kirim bukti ke admin. Premium aktif setelah
+                  pembayaran dikonfirmasi.
+                </span>
+              </p>
+            ) : configured ? (
               <p className="flex items-center gap-1.5 text-muted-foreground">
                 <Check className="h-3.5 w-3.5 text-emerald-600" />
                 Pembayaran otomatis via <strong>{providerLabel}</strong> aktif.
@@ -285,7 +332,7 @@ export function PlanBadge({ className = "" }: { className?: string }) {
               </p>
             )}
             {billingError && <p className="mt-1.5 text-destructive">{billingError}</p>}
-            {billing?.sandbox && (
+            {billing?.sandbox && !manualEnabled && (
               <p className="mt-1.5 flex items-start gap-1.5 text-amber-700 dark:text-amber-400">
                 <FlaskConical className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 Mode sandbox: pembayaran hanya simulasi, tidak ada uang nyata yang diproses.
@@ -295,6 +342,46 @@ export function PlanBadge({ className = "" }: { className?: string }) {
               <p className="mt-1.5 text-muted-foreground">Masa trial sudah pernah digunakan.</p>
             )}
           </div>
+
+          {manualEnabled && (
+            <div className="rounded-lg border border-dashed px-3 py-2 text-xs">
+              <p className="font-semibold text-foreground">Instruksi transfer</p>
+              <div className="mt-1.5 space-y-1 text-muted-foreground">
+                <p>
+                  Nominal:{" "}
+                  <strong>{rupiah(manualOrder?.amount ?? pendingPayment?.amount ?? price)}</strong>
+                </p>
+                <p>
+                  Order ID:{" "}
+                  <code className="break-all">
+                    {manualOrder?.orderId ?? pendingPayment?.orderId ?? "buat pesanan dulu"}
+                  </code>
+                </p>
+                {billing?.manual?.bank || billing?.manual?.accountNumber ? (
+                  <p>
+                    Rekening: <strong>{billing.manual.bank ?? "-"}</strong>{" "}
+                    {billing.manual.accountNumber ?? ""}
+                    {billing.manual.accountHolder ? ` a.n. ${billing.manual.accountHolder}` : ""}
+                  </p>
+                ) : (
+                  <p>
+                    Nomor rekening belum diatur. Hubungi{" "}
+                    <a href={`mailto:${CONTACT_EMAIL}`} className="underline">
+                      {CONTACT_EMAIL}
+                    </a>
+                    .
+                  </p>
+                )}
+                <p>
+                  Tulis Order ID pada berita transfer, lalu kirim bukti ke{" "}
+                  <a href={`mailto:${CONTACT_EMAIL}`} className="underline">
+                    {CONTACT_EMAIL}
+                  </a>
+                  .
+                </p>
+              </div>
+            </div>
+          )}
 
           <p className="text-[11px] text-muted-foreground">
             Semua akun baru otomatis mendapat <strong>trial Premium 7 hari</strong>. Setelah
@@ -335,7 +422,7 @@ export function PlanBadge({ className = "" }: { className?: string }) {
                     <div className="min-w-0">
                       <p className="truncate font-medium">{rupiah(p.amount)} · {p.durationDays} hari</p>
                       <p className="text-muted-foreground">
-                        {formatDate(p.createdAt)} · {p.provider}
+                        {formatDate(p.createdAt)} · {providerText(p.provider)}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -384,13 +471,23 @@ export function PlanBadge({ className = "" }: { className?: string }) {
               </Button>
             )}
 
-            {configured ? (
+            {configured || manualEnabled ? (
               <Button
                 onClick={() => checkoutMutation.mutate()}
-                disabled={checkoutMutation.isPending || trialMutation.isPending}
+                disabled={
+                  checkoutMutation.isPending ||
+                  trialMutation.isPending ||
+                  (manualEnabled && Boolean(manualOrder || pendingPayment))
+                }
               >
                 {checkoutMutation.isPending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-                {premium ? `Perpanjang ${billing?.durationDays ?? 30} hari` : "Upgrade Sekarang"}
+                {manualEnabled
+                  ? manualOrder || pendingPayment
+                    ? "Pesanan transfer sudah dibuat"
+                    : "Buat Pesanan Transfer"
+                  : premium
+                    ? `Perpanjang ${billing?.durationDays ?? 30} hari`
+                    : "Upgrade Sekarang"}
               </Button>
             ) : (
               <Button asChild>
@@ -400,15 +497,15 @@ export function PlanBadge({ className = "" }: { className?: string }) {
               </Button>
             )}
 
-            {configured && pendingPayment && (
+            {configured && pendingPayment?.checkoutUrl && (
               <Button variant="outline" asChild>
-                <a href={pendingPayment.checkoutUrl ?? "#"}>
+                <a href={pendingPayment.checkoutUrl}>
                   <ExternalLink className="mr-1.5 h-4 w-4" /> Lanjutkan pembayaran
                 </a>
               </Button>
             )}
 
-            {configured && pendingPayment && (
+            {(configured || manualEnabled) && pendingPayment && (
               <Button
                 variant="ghost"
                 className="text-destructive hover:text-destructive"
