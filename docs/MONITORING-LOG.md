@@ -7,7 +7,7 @@ verifikasi, dan sisa risiko tidak hilang.
 - **Produksi:** https://astoria-learning-capstone-project.vercel.app
 - **Repo:** `luthfiardiansyah01/Astoria-Learning-Capstone-Project`
 - **Runbook terkait:** `docs/OPERATIONS-RUNBOOK.md`
-- **Terakhir diperbarui:** 16 November 2026, setelah verifikasi produksi & sinkronisasi dokumen
+- **Terakhir diperbarui:** 16 November 2026, setelah verifikasi produksi, sinkronisasi dokumen, dan keputusan menahan konfigurasi metode pembayaran
 
 ## Status ringkas
 
@@ -32,6 +32,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Index baru P3 | **5** terpasang |
 | Verifikasi email + CAPTCHA | **Aktif** (`EMAIL_VERIFICATION_ENABLED=true`) |
 | Env pembayaran | `PAYMENT_PROVIDER`, `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION` terpasang |
+| Metode pembayaran | **Ditahan** (16 Nov 2026): kanal Midtrans belum disetujui, rekening manual belum diisi, `PAYMENT_MANUAL_ONLY=false` |
 | Tim orphan | `Anim Team` **dihapus** (backup di temp) |
 | Test | **150 unit** (diverifikasi ulang 16 Nov), 139 integration, 13 E2E (7 Nov) |
 | Log produksi terakhir | **0 error, 0 respons 5xx** |
@@ -119,6 +120,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-16 | Deploy | Halaman privasi & info penyelenggara live | Selesai | Commit `c7050c2`/`adc2d9d`; `/legal/kebijakan-privasi` 200; `/produk` memuat info penyelenggara + tautan privasi |
 | 2026-11-16 | Ops | Indikator mode sandbox | Selesai | `sandbox` di `/api/billing/config`, badge di dialog paket & panel admin, skrip `billing-status.ts` |
 | 2026-11-16 | Ops | Mode transfer manual | Selesai | `PAYMENT_MANUAL_ONLY`; pesanan `provider=manual` tanpa gateway, instruksi rekening, reuse 24 jam; tes integrasi |
+| 2026-11-16 | Payment | Konfigurasi metode pembayaran **ditahan** | Ditunda | Midtrans production terpasang, kanal belum disetujui; rekening manual belum diisi; fitur transfer manual tersedia tetapi tidak diaktifkan |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -360,6 +362,10 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   `pending`), dialog menampilkan nominal, `orderId`, dan rekening tujuan, lalu
   admin mengonfirmasi lewat panel. Pesanan dipakai ulang dalam 24 jam agar tidak
   ada tagihan ganda.
+- **Keputusan 16 November 2026: metode pembayaran ditahan.** Tidak ada
+  konfigurasi rekening baru dan `PAYMENT_MANUAL_ONLY` tetap `false` di produksi.
+  Fitur transfer manual sudah ada dan teruji, tetapi belum diaktifkan sampai
+  entitas/rekening diputuskan.
 
 **Verifikasi**
 
@@ -387,8 +393,11 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - CSP masih `Report-Only`.
 - Status channel Midtrans belum berubah sejak business review; aktivasi Premium
   masih manual.
+- **Metode pembayaran ditahan** (16 Nov 2026): belum ada rekening tujuan dan
+  `PAYMENT_MANUAL_ONLY=false`, sehingga pembayaran otomatis bergantung pada
+  persetujuan Midtrans dan pembayaran nyata belum bisa diproses lewat aplikasi.
 
-
+## Template entri tahap berikutnya
 
 Salin template ini ke bagian paling bawah **Log tahapan** dan isi:
 

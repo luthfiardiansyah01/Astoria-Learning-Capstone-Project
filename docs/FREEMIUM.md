@@ -45,7 +45,8 @@ sehingga tidak memotong kuota.
   menandai transaksi pending sebagai lunas.
 - **Mode transfer manual** (`PAYMENT_MANUAL_ONLY=true`): checkout tidak memanggil
   gateway. Pesanan tetap tercatat sebagai `Payment` pending berisi `orderId`, dan
-  admin mengonfirmasi setelah bukti transfer diterima.
+  admin mengonfirmasi setelah bukti transfer diterima. Fitur ini **belum
+  diaktifkan di produksi** (ditahan per 16 November 2026).
 
 ## Yang perlu diketahui sebelum publik
 

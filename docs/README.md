@@ -10,7 +10,7 @@ operasional.
 - **Migrasi database:** 8
 - **RLS:** 19 tabel `public`, 0 policy publik
 - **Verifikasi email + CAPTCHA:** aktif
-- **Pembayaran:** Midtrans production terpasang; channel menunggu business review
+- **Pembayaran:** **ditahan** (16 Nov 2026) — Midtrans production terpasang, kanal belum disetujui, rekening manual belum diisi; aktivasi manual oleh admin tetap tersedia
 - **Test terakhir:** 150 unit (16 Nov 2026), 139 integration dan 13 E2E (7 Nov 2026)
 - **Verifikasi produksi terakhir:** 16 November 2026 (5 halaman 200, header keamanan lengkap)
 

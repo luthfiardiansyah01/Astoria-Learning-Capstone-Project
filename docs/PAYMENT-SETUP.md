@@ -1,15 +1,28 @@
 # Panduan Pembayaran Premium (Midtrans / Xendit)
 
+**Versi dokumen:** 1.1 · diperbarui 16 November 2026
+
+> **Status: DITAHAN (hold) per 16 November 2026.**
+> Konfigurasi metode pembayaran dan rekening tujuan **tidak dilanjutkan** untuk
+> sementara. Produksi tetap memakai Midtrans production yang sudah terpasang,
+> `PAYMENT_MANUAL_ONLY` tetap `false`, dan tidak ada rekening baru yang diisi.
+> Aktivasi Premium manual lewat admin tetap tersedia sebagai jalur operasional.
+> Lanjutkan bagian *Mode transfer manual* hanya setelah entitas dan rekening
+> diputuskan.
+
 ## Status produksi (16 November 2026)
 
 - Provider aktif: **Midtrans production** (`MIDTRANS_IS_PRODUCTION=true`).
 - Variabel `PAYMENT_PROVIDER`, `MIDTRANS_SERVER_KEY`, dan `MIDTRANS_CLIENT_KEY`
   sudah terpasang di Vercel Production.
-- `GET /api/billing/config` (perlu sesi) melaporkan `configured=true`.
+- `GET /api/billing/config` (perlu sesi) melaporkan `configured=true`,
+  `sandbox=false`, `manualOnly=false`.
 - **Channel pembayaran belum tersedia** karena akun masih dalam proses
   **business review** Midtrans. Status ini belum berubah sejak 8 November 2026.
 - Selama channel belum aktif, admin tetap dapat mengaktifkan Premium manual di
   **Admin → Paket & Pembayaran**.
+- **Rekening transfer manual belum diisi**; fitur `PAYMENT_MANUAL_ONLY` sudah
+  ada dan teruji, tetapi sengaja belum diaktifkan.
 - Setelah review disetujui, uji satu transaksi kecil end-to-end dan refund.
 
 Integrasi pembayaran sudah tersedia. Bila tidak ada kredensial sama sekali,
