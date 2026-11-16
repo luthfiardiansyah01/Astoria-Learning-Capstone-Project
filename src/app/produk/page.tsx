@@ -11,6 +11,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "SOBAT ADI Premium — Paket, Harga, dan Cara Berlangganan",
@@ -206,21 +207,54 @@ export default function ProdukPage() {
       </section>
 
       <footer className="border-t bg-muted/30">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>SOBAT ADI — platform belajar bertenaga AI untuk mahasiswa PJJ Universitas Terbuka.</p>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/legal/syarat-ketentuan" className="hover:text-foreground">
-              Syarat & Ketentuan
-            </Link>
-            <Link href="/legal/kebijakan-produk" className="hover:text-foreground">
-              Kebijakan Produk
-            </Link>
-            <Link href="/legal/kebijakan-pengembalian-dana" className="hover:text-foreground">
-              Pengembalian Dana
-            </Link>
-            <a href="mailto:admin1@moedatrace.com" className="inline-flex items-center gap-1 hover:text-foreground">
-              <Mail className="h-3.5 w-3.5" /> Kontak
-            </a>
+        <div className="mx-auto max-w-6xl px-4 py-8">
+          <div className="rounded-xl border bg-background/60 p-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground">
+              Informasi Penyelenggara
+            </h2>
+            <dl className="mt-2 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+              <div>
+                <dt className="inline font-medium text-foreground">Nama layanan: </dt>
+                <dd className="inline">SOBAT ADI</dd>
+              </div>
+              <div>
+                <dt className="inline font-medium text-foreground">Jenis layanan: </dt>
+                <dd className="inline">langganan digital, tanpa pengiriman barang</dd>
+              </div>
+              <div>
+                <dt className="inline font-medium text-foreground">Kontak: </dt>
+                <dd className="inline">
+                  <a href={`mailto:${CONTACT_EMAIL}`} className="underline hover:text-foreground">
+                    {CONTACT_EMAIL}
+                  </a>
+                </dd>
+              </div>
+              <div>
+                <dt className="inline font-medium text-foreground">Mata uang: </dt>
+                <dd className="inline">IDR (Rupiah)</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+            <p>SOBAT ADI — platform belajar bertenaga AI untuk mahasiswa PJJ Universitas Terbuka.</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/legal/syarat-ketentuan" className="hover:text-foreground">
+                Syarat & Ketentuan
+              </Link>
+              <Link href="/legal/kebijakan-produk" className="hover:text-foreground">
+                Kebijakan Produk
+              </Link>
+              <Link href="/legal/kebijakan-pengembalian-dana" className="hover:text-foreground">
+                Pengembalian Dana
+              </Link>
+              <Link href="/legal/kebijakan-privasi" className="hover:text-foreground">
+                Kebijakan Privasi
+              </Link>
+              <a href={`mailto:${CONTACT_EMAIL}`} className="inline-flex items-center gap-1 hover:text-foreground">
+                <Mail className="h-3.5 w-3.5" /> Kontak
+              </a>
+            </div>
           </div>
         </div>
       </footer>

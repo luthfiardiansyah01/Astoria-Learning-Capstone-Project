@@ -5,8 +5,9 @@ import { CONTACT_EMAIL } from "@/lib/contact";
 
 const LEGAL_LINKS = [
   { href: "/legal/syarat-ketentuan", label: "Syarat & Ketentuan" },
-  { href: "/legal/kebijakan-pengembalian-dana", label: "Pengembalian Dana" },
   { href: "/legal/kebijakan-produk", label: "Kebijakan Produk" },
+  { href: "/legal/kebijakan-pengembalian-dana", label: "Pengembalian Dana" },
+  { href: "/legal/kebijakan-privasi", label: "Kebijakan Privasi" },
 ];
 
 export function LegalSection({
@@ -31,10 +32,14 @@ export function LegalList({ children }: { children: ReactNode }) {
 export function LegalPage({
   title,
   description,
+  version = "1.0",
+  effectiveDate = "4 November 2026",
   children,
 }: {
   title: string;
   description: string;
+  version?: string;
+  effectiveDate?: string;
   children: ReactNode;
 }) {
   return (
@@ -69,7 +74,7 @@ export function LegalPage({
           <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{description}</p>
           <p className="mt-2 text-xs text-muted-foreground">
-            Versi 1.0 · Berlaku 4 November 2026
+            Versi {version} · Berlaku {effectiveDate}
           </p>
         </div>
 

@@ -348,6 +348,9 @@ export default function AstoriaPage() {
             <Link href="/legal/kebijakan-produk" className="hover:text-foreground hover:underline">
               Kebijakan Produk
             </Link>
+            <Link href="/legal/kebijakan-privasi" className="hover:text-foreground hover:underline">
+              Kebijakan Privasi
+            </Link>
             <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-foreground hover:underline">
               Kontak
             </a>

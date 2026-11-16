@@ -26,8 +26,34 @@ Halaman ini menampilkan:
 - fitur Premium,
 - cara berlangganan,
 - metode pembayaran yang didukung,
+- pernyataan produk digital tanpa pengiriman barang,
 - kebijakan pembatalan/pengembalian dana,
-- tautan legal dan kontak.
+- blok **Informasi Penyelenggara** (nama layanan, jenis layanan, kontak, mata uang),
+- tautan legal: Syarat & Ketentuan, Kebijakan Produk, Pengembalian Dana,
+  **Kebijakan Privasi**,
+- kontak publik `admin1@moedatrace.com`.
+
+### Yang sudah dilengkapi (16 November 2026)
+
+| Item | Status |
+|---|---|
+| Kebijakan Privasi | ✅ `/legal/kebijakan-privasi` |
+| Blok informasi penyelenggara di footer | ✅ nama layanan, jenis, kontak, mata uang |
+| Kontak email di footer & halaman legal | ✅ |
+| Tautan legal lengkap (4 dokumen) | ✅ |
+| Halaman produk publik tanpa login | ✅ |
+
+### Yang masih perlu dilengkapi sebelum unggah ulang
+
+| Item | Dampak pada review | Tindakan |
+|---|---|---|
+| **Identitas badan usaha** (nama PT/CV/UD atau perorangan, alamat) | Tinggi — reviewer mencocokkan dengan dokumen legal | Isi setelah jalur entitas diputuskan |
+| **Nomor telepon/WhatsApp** | Sedang — banyak reviewer meminta kontak yang dapat dihubungi | Tambahkan nomor aktif |
+| **Domain sendiri** | Sedang — subdomain `*.vercel.app` sering dianggap belum layak merchant | Arahkan domain kustom ke Vercel |
+| **NPWP/NIB dan rekening** | Tinggi — syarat aggregator | Lihat bagian dokumen legal di bawah |
+
+Setelah item di atas selesai, unggah ulang melalui tautan **"this link"** pada
+email koreksi Midtrans (10 November 2026) untuk keempat metode.
 
 ## Business Supporting Document
 

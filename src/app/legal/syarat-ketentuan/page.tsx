@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LegalList, LegalPage, LegalSection } from "@/components/legal/legal-page";
 import { CONTACT_EMAIL } from "@/lib/contact";
 
@@ -112,6 +113,10 @@ export default function TermsPage() {
           <a href={`mailto:${CONTACT_EMAIL}`} className="underline hover:text-foreground">
             {CONTACT_EMAIL}
           </a>
+          . Rincian jenis data, pemroses, masa simpan, dan hak Anda ada di{" "}
+          <Link href="/legal/kebijakan-privasi" className="underline hover:text-foreground">
+            Kebijakan Privasi
+          </Link>
           .
         </p>
       </LegalSection>
