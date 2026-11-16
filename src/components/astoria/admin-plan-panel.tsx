@@ -33,6 +33,7 @@ import { toast } from "sonner";
 interface BillingConfigData {
   provider: "midtrans" | "xendit" | "none";
   configured: boolean;
+  sandbox?: boolean;
   price: number;
   durationDays: number;
   requiredEnv: { key: string; set: boolean; hint: string }[];
@@ -250,7 +251,13 @@ export function AdminPlanPanel() {
 
           {config?.configured ? (
             <p className="mt-1.5 text-muted-foreground">
-              Harga {rupiah(config.price)} / {config.durationDays} hari. Webhook:{" "}
+              Harga {rupiah(config.price)} / {config.durationDays} hari.{" "}
+              {config.sandbox && (
+                <span className="font-medium text-amber-700 dark:text-amber-400">
+                  Mode sandbox (uji, tanpa uang nyata).{" "}
+                </span>
+              )}
+              Webhook:{" "}
               <code className="break-all">{config.provider === "midtrans" ? config.webhookUrls.midtrans : config.webhookUrls.xendit}</code>
             </p>
           ) : (

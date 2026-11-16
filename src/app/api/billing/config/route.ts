@@ -9,6 +9,6 @@ export async function GET() {
   const auth = await requireUser();
   if (auth.res) return auth.res;
 
-  const { provider, configured, price, durationDays, currency } = billingConfig();
-  return NextResponse.json({ provider, configured, price, durationDays, currency });
+  const { provider, configured, sandbox, price, durationDays, currency } = billingConfig();
+  return NextResponse.json({ provider, configured, sandbox, price, durationDays, currency });
 }

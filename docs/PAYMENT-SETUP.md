@@ -29,6 +29,62 @@ Ringkasnya:
 Durasi Jalur B mengikuti `Payment.durationDays` (default 30); Jalur A memakai
 pilihan 30/90/365 hari. Perpanjangan selalu menumpuk dari sisa masa aktif.
 
+## Mode sandbox (demo, sidang, atau skripsi)
+
+Sandbox memungkinkan alur pembayaran diuji **tanpa uang nyata** dan **tanpa
+business review**. Kode sudah mendukung: `MIDTRANS_IS_PRODUCTION=false`
+mengarahkan Snap ke `app.sandbox.midtrans.com`.
+
+### Langkah
+
+1. Buka Dashboard Midtrans, pilih environment **Sandbox** (bukan Production).
+2. Ambil **Server Key** (`SB-Mid-server-...`) dan **Client Key**
+   (`SB-Mid-client-...`) dari *Settings → Access Keys*.
+3. Set environment pada lingkungan yang dipakai demo:
+
+   ```text
+   PAYMENT_PROVIDER=midtrans
+   MIDTRANS_SERVER_KEY=SB-Mid-server-xxxxxxxx
+   MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxxxxxx
+   MIDTRANS_IS_PRODUCTION=false
+   ```
+
+4. Tempat menaruhnya:
+   - **Lokal**: `.env` (untuk demo dari laptop).
+   - **Vercel Preview**: Environment Variables → environment **Preview** saja,
+     agar Production tetap memakai kredensial produksi.
+   - **Jangan** mengganti Production ke sandbox bila URL itu dipakai pengguna
+     nyata atau sedang direview Midtrans.
+5. Redeploy (Preview) atau jalankan ulang dev server.
+6. Verifikasi:
+
+   ```bash
+   bun scripts/billing-status.ts
+   ```
+
+   Harus menampilkan `"mode": "sandbox"`. Di aplikasi, dialog Paket menampilkan
+   badge **"Mode sandbox: pembayaran hanya simulasi"**.
+
+### Menguji alur pembayaran
+
+1. Login → dialog Paket → **Upgrade Sekarang**.
+2. Halaman Snap sandbox terbuka. Pilih metode dan selesaikan pembayaran
+   simulasi (mis. QRIS) lewat <https://simulator.sandbox.midtrans.com/>.
+3. Webhook `settlement` masuk → status `paid` → Premium aktif.
+4. Ulangi notifikasi yang sama dari Simulator dashboard → masa aktif **tidak**
+   bertambah (idempotensi).
+5. Kirim `deny`/`expire` → status berubah tanpa mengaktifkan Premium.
+6. Untuk refund: `PATCH /api/admin/payments/{paymentId}` dengan
+   `{"status":"refunded"}` (harus dari status `paid`).
+
+### Peringatan
+
+- Transaksi sandbox tetap **menulis ke database yang dipakai environment itu**.
+  Bila Preview memakai database produksi, baris `Payment` uji akan muncul di
+  data produksi. Gunakan database terpisah, atau hapus baris uji setelah demo.
+- Kunci sandbox tetap rahasia; jangan di-commit.
+- Sandbox tidak memengaruhi penilaian Midtrans atas pengajuan production Anda.
+
 ## Variabel environment
 
 | Variabel | Wajib | Keterangan |

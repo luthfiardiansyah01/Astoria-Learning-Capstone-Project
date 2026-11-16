@@ -52,6 +52,8 @@ export function billingProvider(): BillingProvider {
 export interface BillingConfig {
   provider: BillingProvider;
   configured: boolean;
+  /** True bila kredensial aktif adalah kredensial uji (tidak memproses uang nyata). */
+  sandbox: boolean;
   price: number;
   durationDays: number;
   currency: "IDR";
@@ -59,6 +61,16 @@ export interface BillingConfig {
   requiredEnv: { key: string; set: boolean; hint: string }[];
   /** URL webhook yang harus didaftarkan di dashboard provider. */
   webhookUrls: { midtrans: string; xendit: string };
+}
+
+/** True bila provider aktif memakai mode uji (sandbox/test), bukan uang nyata. */
+export function paymentSandbox() {
+  const provider = billingProvider();
+  if (provider === "midtrans") return !midtransIsProduction();
+  if (provider === "xendit") {
+    return (process.env.XENDIT_SECRET_KEY ?? "").startsWith("xnd_development_");
+  }
+  return false;
 }
 
 export function billingConfig(): BillingConfig {
@@ -77,6 +89,7 @@ export function billingConfig(): BillingConfig {
   return {
     provider,
     configured: provider === "midtrans" || provider === "xendit",
+    sandbox: paymentSandbox(),
     price: PREMIUM_PRICE_IDR,
     durationDays: PREMIUM_DURATION_DAYS,
     currency: "IDR",

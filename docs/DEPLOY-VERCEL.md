@@ -81,6 +81,7 @@ Buka **Project → Settings → Environment Variables**, lalu isi untuk environm
 Catatan:
 - `SEED_ADMIN_*` **tidak** perlu diisi di Vercel. Itu hanya untuk menjalankan `seed:prod` sekali dari mesin lokal.
 - `SEED_FREE_*` juga hanya untuk `seed:free` di lokal, jangan diisi di Vercel.
+- Untuk demo/sidang tanpa uang nyata, gunakan kredensial **sandbox** (`SB-Mid-...`) dengan `MIDTRANS_IS_PRODUCTION=false` pada environment **Preview**. Langkah lengkap: `PAYMENT-SETUP.md` bagian *Mode sandbox*.
 - `VERCEL_ENV`, `VERCEL_URL`, `VERCEL_PROJECT_PRODUCTION_URL`, dan `NODE_ENV` diisi otomatis oleh platform; tidak perlu ditambahkan manual.
 - Jangan menaruh `.env` atau `.env.supabase` di repository. Sudah masuk `.gitignore`.
 - Untuk Preview Deployment, `NEXTAUTH_URL` harus disesuaikan dengan domain preview, atau preview dibiarkan memakai database terpisah.

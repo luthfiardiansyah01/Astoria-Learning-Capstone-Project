@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Crown, Sparkles, Check, Loader2, ExternalLink, ReceiptText } from "lucide-react";
+import { Crown, Sparkles, Check, Loader2, ExternalLink, ReceiptText, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,6 +27,7 @@ interface PlanData {
 interface BillingConfigData {
   provider: "midtrans" | "xendit" | "none";
   configured: boolean;
+  sandbox?: boolean;
   price: number;
   durationDays: number;
 }
@@ -284,6 +285,12 @@ export function PlanBadge({ className = "" }: { className?: string }) {
               </p>
             )}
             {billingError && <p className="mt-1.5 text-destructive">{billingError}</p>}
+            {billing?.sandbox && (
+              <p className="mt-1.5 flex items-start gap-1.5 text-amber-700 dark:text-amber-400">
+                <FlaskConical className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                Mode sandbox: pembayaran hanya simulasi, tidak ada uang nyata yang diproses.
+              </p>
+            )}
             {data?.trialUsedAt && !premium && (
               <p className="mt-1.5 text-muted-foreground">Masa trial sudah pernah digunakan.</p>
             )}

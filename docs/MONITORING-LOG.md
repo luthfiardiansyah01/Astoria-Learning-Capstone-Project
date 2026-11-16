@@ -117,6 +117,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-16 | Docs | SOP aktivasi Premium manual | Selesai | Jalur B utama (konfirmasi `Payment`) + Jalur A cadangan; bukti transaksi 14 Nov |
 | 2026-11-16 | Ops | Verifikasi produksi | Selesai | 5 halaman 200, webhook 200, 8 migrasi, 19/19 RLS, 7 CHECK, 5 index, header keamanan lengkap |
 | 2026-11-16 | Deploy | Halaman privasi & info penyelenggara live | Selesai | Commit `c7050c2`/`adc2d9d`; `/legal/kebijakan-privasi` 200; `/produk` memuat info penyelenggara + tautan privasi |
+| 2026-11-16 | Ops | Indikator mode sandbox | Selesai | `sandbox` di `/api/billing/config`, badge di dialog paket & panel admin, skrip `billing-status.ts` |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -350,6 +351,9 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - **Website publik**: halaman `/legal/kebijakan-privasi` (13 bagian), blok
   **Informasi Penyelenggara** di `/produk`, dan tautan privasi di footer
   aplikasi serta seluruh halaman legal.
+- **Mode sandbox**: `billingConfig()` mengekspos status `sandbox`, dialog paket
+  dan panel admin menampilkan penanda, dan `scripts/billing-status.ts` membantu
+  memastikan environment tidak memproses uang nyata.
 
 **Verifikasi**
 
