@@ -15,13 +15,25 @@ if (process.env.NODE_ENV === "production") {
   process.exit(1);
 }
 
+// Pengaman tambahan: NODE_ENV sering kosong saat skrip dijalankan manual.
+// Tolak database non-lokal agar seed demo tidak masuk ke Supabase produksi.
+const databaseUrl = process.env.DATABASE_URL ?? "";
+const isLocalDatabase = /(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\//.test(databaseUrl);
+if (!isLocalDatabase && process.env.ALLOW_REMOTE_SEED !== "true") {
+  console.error(
+    "Menolak seed: DATABASE_URL bukan database lokal. " +
+      "Set ALLOW_REMOTE_SEED=true hanya bila Anda benar-benar menginginkannya."
+  );
+  process.exit(1);
+}
+
 const db = new PrismaClient();
 
 const DEV_PASSWORD = "astoria123";
 
 async function main() {
   // Pengguna demo — juga jadi akun yang bisa login (email + password dev)
-  const passwordHash = await bcrypt.hash(DEV_PASSWORD, 10);
+  const passwordHash = await bcrypt.hash(DEV_PASSWORD, 12);
 
   const student =
     (await db.user.findUnique({ where: { id: "demo-student-ut" } })) ??

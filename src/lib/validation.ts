@@ -2,6 +2,7 @@
 // Skema zod + pembaca body. Pesan galat berbahasa Indonesia.
 
 import { z } from "zod";
+import { bodyLimitForPath, readLimitedText } from "./body-limit";
 import { MAX_DOC_LENGTH } from "./rag";
 
 const wajib = (label: string, max: number) =>
@@ -138,9 +139,21 @@ type ReadResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 /** Baca + validasi body JSON. Mengembalikan pesan Indonesia pada kegagalan pertama. */
 export async function readBody<S extends z.ZodTypeAny>(req: Request, schema: S): Promise<ReadResult<z.infer<S>>> {
+  let pathname = "/api";
+  try {
+    pathname = new URL(req.url).pathname;
+  } catch {
+    // URL relatif (mis. pada pengujian): pakai batas default.
+  }
+
+  const body = await readLimitedText(req, bodyLimitForPath(pathname));
+  if (!body.ok) {
+    return { ok: false, error: "Ukuran permintaan terlalu besar." };
+  }
+
   let raw: unknown;
   try {
-    raw = await req.json();
+    raw = JSON.parse(body.text);
   } catch {
     return { ok: false, error: "Format permintaan tidak valid." };
   }

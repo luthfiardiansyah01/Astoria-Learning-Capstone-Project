@@ -10,8 +10,8 @@ operasional.
 - **Migrasi database:** 8
 - **RLS:** 19 tabel `public`, 0 policy publik
 - **Verifikasi email + CAPTCHA:** aktif
-- **Pembayaran:** **ditahan** (16 Nov 2026) — Midtrans production terpasang, kanal belum disetujui, rekening manual belum diisi; aktivasi manual oleh admin tetap tersedia
-- **Test terakhir:** 150 unit (16 Nov 2026), 139 integration dan 13 E2E (7 Nov 2026)
+- **Pembayaran:** **ditahan** (16 Nov 2026) â€” Midtrans production terpasang, kanal belum disetujui, rekening manual belum diisi; aktivasi manual oleh admin tetap tersedia
+- **Test terakhir:** 158 unit, 141 integration, dan 13 E2E (18 Nov 2026)
 - **Verifikasi produksi terakhir:** 16 November 2026 (5 halaman 200, header keamanan lengkap)
 
 ## Urutan baca
@@ -71,3 +71,4 @@ nonaktifkan akun dummy dan hapus artefaknya.
 1. Setiap perubahan fase/perilaku besar wajib menambah entri di `MONITORING-LOG.md`.
 2. Jangan menulis password, token, API key, atau isi `.env` di dokumen yang di-commit.
 3. Perbarui `README.md` ini bila menambah/menghapus dokumen.
+

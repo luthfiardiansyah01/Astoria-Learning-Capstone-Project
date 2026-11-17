@@ -1,13 +1,13 @@
 # Log Monitoring & Tahapan SOBAT ADI
 
-Dokumen ini adalah catatan operasional berjalan. Setiap tahap (P0, P1, P2, …)
+Dokumen ini adalah catatan operasional berjalan. Setiap tahap (P0, P1, P2, â€¦)
 wajib menambahkan entri di bagian **Log Tahapan** agar keputusan, bukti
 verifikasi, dan sisa risiko tidak hilang.
 
 - **Produksi:** https://astoria-learning-capstone-project.vercel.app
 - **Repo:** `luthfiardiansyah01/Astoria-Learning-Capstone-Project`
 - **Runbook terkait:** `docs/OPERATIONS-RUNBOOK.md`
-- **Terakhir diperbarui:** 16 November 2026, setelah verifikasi produksi, sinkronisasi dokumen, dan keputusan menahan konfigurasi metode pembayaran
+- **Terakhir diperbarui:** 18 November 2026, setelah perbaikan stabilitas dan keamanan dependensi
 
 ## Status ringkas
 
@@ -34,11 +34,13 @@ verifikasi, dan sisa risiko tidak hilang.
 | Env pembayaran | `PAYMENT_PROVIDER`, `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION` terpasang |
 | Metode pembayaran | **Ditahan** (16 Nov 2026): kanal Midtrans belum disetujui, rekening manual belum diisi, `PAYMENT_MANUAL_ONLY=false` |
 | Tim orphan | `Anim Team` **dihapus** (backup di temp) |
-| Test | **150 unit** (diverifikasi ulang 16 Nov), 139 integration, 13 E2E (7 Nov) |
+| Test | **158 unit** (18 Nov), **141 integration** (18 Nov), 13 E2E (18 Nov) |
+| Dependensi kritis | Next **16.4.6**, sharp **0.35.5**; override lodash 4.18.1, postcss 8.5.33, nanoid 3.3.20, source-map-js 1.2.2 |
+| Advisory runtime | **0** pada paket runtime utama; sisa temuan hanya rantai perkakas dev/build |
 | Log produksi terakhir | **0 error, 0 respons 5xx** |
 | CSP | **Report-Only** (belum enforced) |
-| Halaman publik | `/login`, `/register`, `/produk`, `/verify-email`, legal → **200** |
-| Webhook Midtrans | `GET /api/billing/webhook/midtrans` → **200** |
+| Halaman publik | `/login`, `/register`, `/produk`, `/verify-email`, legal â†’ **200** |
+| Webhook Midtrans | `GET /api/billing/webhook/midtrans` â†’ **200** |
 
 ## Checklist monitoring
 
@@ -58,10 +60,10 @@ verifikasi, dan sisa risiko tidak hilang.
 
 | Item | Cara cek | Tindakan |
 |---|---|---|
-| Channel Midtrans | Dashboard Midtrans → business review/channel | Bila aktif, uji transaksi kecil end-to-end |
-| Pembayaran pending | Admin → pembayaran | Cocokkan order ID + nominal; jangan tandai `paid` tanpa bukti |
+| Channel Midtrans | Dashboard Midtrans â†’ business review/channel | Bila aktif, uji transaksi kecil end-to-end |
+| Pembayaran pending | Admin â†’ pembayaran | Cocokkan order ID + nominal; jangan tandai `paid` tanpa bukti |
 | Admin legacy | Login/daftar admin | Hapus/nonaktifkan `admin@sobat-adi.id` setelah admin aktif aman |
-| Backup Supabase | Dashboard → Database → Backups | Pastikan backup terbaru tersedia |
+| Backup Supabase | Dashboard â†’ Database â†’ Backups | Pastikan backup terbaru tersedia |
 | Dependency/security | `bun audit` atau Dependabot | Perbarui patch kritis |
 
 ### Bulanan
@@ -69,7 +71,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Item | Cara cek | Tindakan |
 |---|---|---|
 | Secret hygiene | `git grep` pola token; cek history | Rotasi token yang pernah terekspos |
-| Supabase linter/RLS | Dashboard → Advisors | Tutup temuan baru |
+| Supabase linter/RLS | Dashboard â†’ Advisors | Tutup temuan baru |
 | Kredensial admin | Password manager | Rotasi berkala; pastikan dua admin aktif |
 | Akses Vercel/Supabase | Daftar member | Cabut akses yang tidak lagi diperlukan |
 
@@ -121,8 +123,9 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-16 | Ops | Indikator mode sandbox | Selesai | `sandbox` di `/api/billing/config`, badge di dialog paket & panel admin, skrip `billing-status.ts` |
 | 2026-11-16 | Ops | Mode transfer manual | Selesai | `PAYMENT_MANUAL_ONLY`; pesanan `provider=manual` tanpa gateway, instruksi rekening, reuse 24 jam; tes integrasi |
 | 2026-11-16 | Payment | Konfigurasi metode pembayaran **ditahan** | Ditunda | Midtrans production terpasang, kanal belum disetujui; rekening manual belum diisi; fitur transfer manual tersedia tetapi tidak diaktifkan |
+| 2026-11-18 | Fix | Stabilitas & keamanan deploy | Selesai | Next 16.4.6, sharp 0.35.5, override dependensi rentan; batas body chunked; bcrypt 12; guard seed; tautan legal |
 
-## Detail Fase P0 — 7 November 2026
+## Detail Fase P0 â€” 7 November 2026
 
 **Perubahan**
 - Rotasi password database melalui Supabase Management API.
@@ -147,7 +150,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Channel pembayaran Midtrans belum aktif; alur manual tetap tersedia.
 - Layanan eksternal di luar repo yang masih memakai password DB lama perlu diperbarui.
 
-## Detail Fase P1 — 7 November 2026
+## Detail Fase P1 â€” 7 November 2026
 
 **Perubahan**
 - Middleware batas body: 1 MB untuk API umum, 256 KB untuk webhook.
@@ -171,7 +174,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - CI `733a6a7` sukses; deployment Production Ready.
 
 **Sisa risiko (saat P1 awal)**
-- Verifikasi email dan CAPTCHA saat itu belum aktif; kemudian diaktifkan —
+- Verifikasi email dan CAPTCHA saat itu belum aktif; kemudian diaktifkan â€”
   lihat bagian **Detail entri P1 lanjutan**.
 - Batas anggota tim saat itu masih hitung-lalu-buat; kemudian dibuat atomik di P2.
 - Admin legacy `admin@sobat-adi.id` masih aktif.
@@ -181,7 +184,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Sediakan `RESEND_API_KEY`/SMTP dan kunci Turnstile untuk P1 lanjutan.
 - Atomickan batas anggota tim dan pertimbangkan undangan via email.
 
-## Detail Fase P1 — Verifikasi Email & CAPTCHA (7 November 2026)
+## Detail Fase P1 â€” Verifikasi Email & CAPTCHA (7 November 2026)
 
 **Perubahan**
 - Tambah `User.emailVerifiedAt` dan model `EmailVerificationToken` (hash SHA-256,
@@ -197,7 +200,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 **Verifikasi**
 - Unit 150 / integration 131 / E2E 12 lulus.
 - Migrasi `20261107020000_email_verification` diterapkan ke test DB.
-- Alur test: registrasi → token → verifikasi → trial 7 hari; akun belum
+- Alur test: registrasi â†’ token â†’ verifikasi â†’ trial 7 hari; akun belum
   verifikasi ditolak saat klaim trial dan AI.
 
 **Status produksi**
@@ -217,7 +220,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Resend dan Turnstile adalah dependensi eksternal; outage dapat menunda
   registrasi/verifikasi.
 
-## Detail Fase P2 — 7 November 2026
+## Detail Fase P2 â€” 7 November 2026
 
 **Perubahan**
 - Semua cek batas paket (tim, proyek, tugas, anggota) memakai transaksi +
@@ -258,7 +261,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   agar tidak memotong kuota.
 - Komponen UI lama dan dependency tak terpakai sudah dibersihkan di P3.
 
-## Detail Fase P3 — 7 November 2026
+## Detail Fase P3 â€” 7 November 2026
 
 **Perubahan**
 - Migrasi `20261107030000_p3_constraints_indexes`:
@@ -291,7 +294,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   melalui proses arsip/soft-delete.
 - Backup tim orphan hanya di temp; hapus setelah yakin tidak diperlukan.
 
-## Detail Fase Dokumentasi — 8 November 2026
+## Detail Fase Dokumentasi â€” 8 November 2026
 
 **Perubahan**
 - Tambah `docs/README.md` sebagai indeks seluruh dokumentasi.
@@ -312,7 +315,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - `docs/README.md` menjadi pintu masuk dokumentasi.
 - Artefak Midtrans berisi akun dummy tetap di luar repo.
 
-## Detail Fase Dokumentasi — 14 & 16 November 2026
+## Detail Fase Dokumentasi â€” 14 & 16 November 2026
 
 **Perubahan**
 
@@ -369,17 +372,17 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 
 **Verifikasi**
 
-- `bun run test:unit` → **150 lulus** (10 berkas, ±0,4 detik).
+- `bun run test:unit` â†’ **150 lulus** (10 berkas, Â±0,4 detik).
 - Produksi: `/login`, `/register`, `/produk`, `/verify-email`,
-  `/legal/syarat-ketentuan` → **200**.
+  `/legal/syarat-ketentuan` â†’ **200**.
 - Header produksi: CSP `Report-Only`, HSTS `max-age=63072000`, `nosniff`,
   `X-Frame-Options: DENY`, `Permissions-Policy` terkirim.
 - Database produksi: 8 migrasi selesai, 19 tabel `public` seluruhnya RLS aktif,
   0 policy, 7 CHECK, 5 index P3.
 - Env production (nama saja): 21 variabel, termasuk email/CAPTCHA, Upstash,
   Midtrans, dan AI. Xendit serta variabel opsional belum diisi.
-- `GET /api/billing/webhook/midtrans` → **200**; `GET /api/billing/config`
-  tanpa sesi → **401**.
+- `GET /api/billing/webhook/midtrans` â†’ **200**; `GET /api/billing/config`
+  tanpa sesi â†’ **401**.
 - Build lokal (`bun run build`) lulus; halaman `/legal/kebijakan-privasi`
   ter-prerender statis.
 - Deployment produksi **Ready** (59 detik): `/legal/kebijakan-privasi` **200**,
@@ -397,12 +400,56 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   `PAYMENT_MANUAL_ONLY=false`, sehingga pembayaran otomatis bergantung pada
   persetujuan Midtrans dan pembayaran nyata belum bisa diproses lewat aplikasi.
 
+## Detail Perbaikan Stabilitas â€” 18 November 2026
+
+**Perubahan**
+
+- **Upgrade dependensi keamanan**:
+  - `next` 16.4.3 â†’ **16.4.6** dan `eslint-config-next` mengikuti. Sebelumnya
+    `bun run build` berhenti dengan `SecurityFatalError` karena versi lama masuk
+    daftar kerentanan.
+  - `sharp` 0.34.3 â†’ **0.35.5**.
+  - Override: `lodash` 4.18.1, `postcss` 8.5.33, `nanoid` 3.3.20,
+    `source-map-js` 1.2.2.
+  - `prisma` dipindah ke `devDependencies` (CLI tidak dibutuhkan saat runtime).
+- **Batas ukuran body diperketat**: middleware hanya memeriksa header
+  `Content-Length`, sehingga request chunked tanpa header bisa melewati batas.
+  Ditambahkan `readLimitedText()` yang membaca stream dan berhenti saat melewati
+  batas. `readBody()` dan kedua webhook memakainya; webhook mengembalikan
+  **413**.
+- **Konsistensi hash password**: registrasi memakai bcrypt cost **12** (sebelumnya
+  10), seed demo ikut disamakan.
+- **Pengaman seed**: `seed.ts` dan `seed-free-user.ts` menolak `DATABASE_URL`
+  non-lokal kecuali `ALLOW_REMOTE_SEED=true`, agar akun demo tidak masuk produksi.
+- **Tautan legal**: tombol kembali di halaman legal menuju `/produk` (sebelumnya
+  `/` yang mengarah ke login bagi pengunjung).
+- Komentar skema `Payment.status` dilengkapi nilai `cancelled`.
+
+**Verifikasi**
+
+- `tsc --noEmit`, `eslint .`, dan `bun run build` â†’ **0 error**.
+- Unit **155**, integration **141**, E2E **13** â€” semuanya lulus.
+- Build dengan Next 16.4.6 selesai tanpa `SecurityFatalError`.
+- `bun audit`: tidak ada advisory pada paket runtime utama
+  (`next`, `sharp`, `lodash`, `postcss`, `nanoid`, `source-map-js`).
+
+**Sisa risiko**
+
+- 31 advisory tersisa berada di rantai perkakas dev/build
+  (`eslint-config-next`, `prisma`, `vitest`); tidak ikut runtime produksi.
+- Peringatan Turbopack: akses filesystem dinamis di `src/lib/ai.ts` membuat
+  seluruh proyek ikut ditelusuri. Tidak menggagalkan build, tetapi memperbesar
+  output; dijadwalkan pada fase performa.
+- Belum ada alur lupa/reset password (kekurangan fitur, bukan bug).
+
+
+
 ## Template entri tahap berikutnya
 
 Salin template ini ke bagian paling bawah **Log tahapan** dan isi:
 
 ```markdown
-### YYYY-MM-DD — P1 — <judul>
+### YYYY-MM-DD â€” P1 â€” <judul>
 
 **Perubahan**
 - ...
@@ -442,3 +489,4 @@ curl.exe -s -o NUL -w "%{http_code}" https://astoria-learning-capstone-project.v
 4. Redaksi email pengguna bila perlu.
 5. Jika ada rollback, catat penyebab dan hasilnya.
 6. Perbarui **Status ringkas** setiap kali fase berubah.
+

@@ -58,10 +58,10 @@ export function LegalPage({
             </span>
           </Link>
           <Link
-            href="/"
+            href="/produk"
             className="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Kembali
+            <ArrowLeft className="h-3.5 w-3.5" /> Halaman Produk
           </Link>
         </div>
       </header>

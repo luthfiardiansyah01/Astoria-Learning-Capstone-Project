@@ -215,4 +215,17 @@ describe("billing API", () => {
     );
     expect(res.status).toBe(401);
   });
+
+  it("menolak webhook Midtrans yang melebihi 256 KB", async () => {
+    const res = await midtransWebhook.POST(
+      jsonRequest("/api/billing/webhook/midtrans", "POST", {
+        order_id: "SOBAT-BIG",
+        status_code: "200",
+        gross_amount: "19000.00",
+        signature_key: "salah",
+        padding: "a".repeat(300_000),
+      })
+    );
+    expect(res.status).toBe(413);
+  });
 });

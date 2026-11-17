@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updatePaymentStatus, verifyXenditCallback, xenditStatus } from "@/lib/billing";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { BODY_LIMIT_WEBHOOK, readLimitedText } from "@/lib/body-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +25,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Callback token tidak valid." }, { status: 401 });
   }
 
+  const body = await readLimitedText(req, BODY_LIMIT_WEBHOOK);
+  if (!body.ok) {
+    return NextResponse.json({ error: "Ukuran permintaan terlalu besar." }, { status: 413 });
+  }
+
   let payload: XenditPayload;
   try {
-    payload = (await req.json()) as XenditPayload;
+    payload = JSON.parse(body.text) as XenditPayload;
   } catch {
     return NextResponse.json({ error: "Payload bukan JSON valid." }, { status: 400 });
   }

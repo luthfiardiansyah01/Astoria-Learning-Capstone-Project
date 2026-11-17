@@ -49,7 +49,7 @@ model Payment {
   orderId      String    @unique
   amount       Int
   currency     String    @default("IDR")
-  status       String    @default("pending") // pending | paid | failed | expired | refunded
+  status       String    @default("pending") // pending | paid | failed | expired | refunded | cancelled
   plan         String    @default("premium")
   durationDays Int       @default(30)
   providerRef  String?

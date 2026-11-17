@@ -19,6 +19,16 @@ if (password.length < 8) {
   throw new Error("SEED_FREE_PASSWORD minimal 8 karakter.");
 }
 
+// Tolak database non-lokal kecuali disengaja, agar akun uji tidak masuk produksi.
+const databaseUrl = process.env.DATABASE_URL ?? "";
+const isLocalDatabase = /(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\//.test(databaseUrl);
+if (!isLocalDatabase && process.env.ALLOW_REMOTE_SEED !== "true") {
+  throw new Error(
+    "Menolak seed: DATABASE_URL bukan database lokal. " +
+      "Set ALLOW_REMOTE_SEED=true hanya bila memang disengaja."
+  );
+}
+
 try {
   const passwordHash = await bcrypt.hash(password, 12);
 

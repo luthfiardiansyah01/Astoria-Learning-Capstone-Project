@@ -8,6 +8,7 @@ import {
   verifyMidtransSignature,
 } from "@/lib/billing";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { BODY_LIMIT_WEBHOOK, readLimitedText } from "@/lib/body-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,11 @@ export async function POST(req: NextRequest) {
   const limited = await rateLimit("webhook-midtrans", clientIp(req.headers), 120, 60);
   if (!limited.ok) return tooManyRequests(limited);
 
-  const raw = await req.text();
+  const body = await readLimitedText(req, BODY_LIMIT_WEBHOOK);
+  if (!body.ok) {
+    return NextResponse.json({ error: "Ukuran permintaan terlalu besar." }, { status: 413 });
+  }
+  const raw = body.text;
 
   let payload: MidtransPayload;
   try {
