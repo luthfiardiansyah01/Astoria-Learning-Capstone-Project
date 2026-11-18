@@ -124,6 +124,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-16 | Ops | Mode transfer manual | Selesai | `PAYMENT_MANUAL_ONLY`; pesanan `provider=manual` tanpa gateway, instruksi rekening, reuse 24 jam; tes integrasi |
 | 2026-11-16 | Payment | Konfigurasi metode pembayaran **ditahan** | Ditunda | Midtrans production terpasang, kanal belum disetujui; rekening manual belum diisi; fitur transfer manual tersedia tetapi tidak diaktifkan |
 | 2026-11-18 | Fix | Stabilitas & keamanan deploy | Selesai | Next 16.4.6, sharp 0.35.5, override dependensi rentan; batas body chunked; bcrypt 12; guard seed; tautan legal |
+| 2026-11-18 | Perf | Baseline performa terukur | Selesai | `PERFORMANCE-BASELINE.md` + 4 skrip di `scripts/perf/`; 3 hotspot: documents 1,01 MB/198 ms, collab analytics 89 ms, server 31,6 MB |
 
 ## Detail Fase P0 â€” 7 November 2026
 

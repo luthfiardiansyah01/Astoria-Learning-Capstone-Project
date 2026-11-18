@@ -32,6 +32,7 @@ operasional.
 | Checklist uji pengguna/SUS | [`CHECKLIST-UJI-PENGGUNA-SUS.md`](./CHECKLIST-UJI-PENGGUNA-SUS.md) |
 | Verifikasi UML/ERD | [`VERIFIKASI-UML-ERD.md`](./VERIFIKASI-UML-ERD.md) |
 | Tech stack dalam format akademik (draf bab skripsi) | [`TECH-STACK-SKRIPSI.md`](./TECH-STACK-SKRIPSI.md) |
+| Baseline performa & rencana optimasi | [`PERFORMANCE-BASELINE.md`](./PERFORMANCE-BASELINE.md) |
 | Rencana implementasi (arsip Oktober 2026) | [`RENCANA-IMPLEMENTASI.md`](./RENCANA-IMPLEMENTASI.md) |
 | Rencana peningkatan kualitas | [`RENCANA-IMPLEMENTASI-KUALITAS.md`](./RENCANA-IMPLEMENTASI-KUALITAS.md) |
 | Proposal pilot kampus | [`PROPOSAL-PILOT-KAMPUS-SOBAT-ADI.md`](./PROPOSAL-PILOT-KAMPUS-SOBAT-ADI.md) |
