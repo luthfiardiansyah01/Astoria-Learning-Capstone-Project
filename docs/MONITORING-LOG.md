@@ -34,7 +34,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Env pembayaran | `PAYMENT_PROVIDER`, `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION` terpasang |
 | Metode pembayaran | **Ditahan** (16 Nov 2026): kanal Midtrans belum disetujui, rekening manual belum diisi, `PAYMENT_MANUAL_ONLY=false` |
 | Tim orphan | `Anim Team` **dihapus** (backup di temp) |
-| Test | **158 unit** (18 Nov), **141 integration** (18 Nov), 13 E2E (18 Nov) |
+| Test | **158 unit** (18 Nov), **158 integration** (18 Nov), 13 E2E (18 Nov) |
 | Dependensi kritis | Next **16.4.6**, sharp **0.35.5**; override lodash 4.18.1, postcss 8.5.33, nanoid 3.3.20, source-map-js 1.2.2 |
 | Advisory runtime | **0** pada paket runtime utama; sisa temuan hanya rantai perkakas dev/build |
 | Log produksi terakhir | **0 error, 0 respons 5xx** |
@@ -566,7 +566,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 
 **Verifikasi**
 
-- Unit **158**, integration **153**, E2E **13** lulus.
+- Unit **158**, integration **158**, E2E **13** lulus.
 - Project detail (1.000 tugas) 176 KB → **44,6 KB**, p50 16 ms.
 - Load test `/produk` (concurrency 20, 10 detik): **667 RPS**, p95 **44 ms**,
   0 error.

@@ -11,7 +11,7 @@ operasional.
 - **RLS:** 19 tabel `public`, 0 policy publik
 - **Verifikasi email + CAPTCHA:** aktif
 - **Pembayaran:** **ditahan** (16 Nov 2026) — Midtrans production terpasang, kanal belum disetujui, rekening manual belum diisi; aktivasi manual oleh admin tetap tersedia
-- **Test terakhir:** 158 unit, 153 integration, dan 13 E2E (18 Nov 2026)
+- **Test terakhir:** 158 unit, 158 integration, dan 13 E2E (18 Nov 2026)
 - **Akun & keamanan:** reset password, ganti password, ekspor & hapus akun aktif
 - **CSP:** **enforced** sejak 18 November 2026
 - **Verifikasi produksi terakhir:** 16 November 2026 (5 halaman 200, header keamanan lengkap)
