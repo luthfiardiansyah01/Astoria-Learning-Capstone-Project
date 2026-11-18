@@ -7,7 +7,7 @@ operasional.
 
 - **Produksi:** https://astoria-learning-capstone-project.vercel.app
 - **Fase selesai:** P0, P1, P2, P3
-- **Migrasi database:** 8
+- **Migrasi database:** 13
 - **RLS:** 19 tabel `public`, 0 policy publik
 - **Verifikasi email + CAPTCHA:** aktif
 - **Pembayaran:** **ditahan** (16 Nov 2026) — Midtrans production terpasang, kanal belum disetujui, rekening manual belum diisi; aktivasi manual oleh admin tetap tersedia

@@ -5,7 +5,7 @@
 Sejak migrasi `20261105000000_enable_row_level_security`, **semua tabel di schema
 `public` memiliki RLS aktif** dan tidak memiliki policy publik.
 Per 18 November 2026 (diverifikasi ulang ke database produksi) ada **22 tabel**
-dan **12 migrasi** yang diterapkan, dengan **0 policy** di schema `public`.
+dan **13 migrasi** yang diterapkan, dengan **0 policy** di schema `public`.
 
 Tabel yang dicakup:
 

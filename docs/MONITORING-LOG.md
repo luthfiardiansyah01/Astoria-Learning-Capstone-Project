@@ -25,7 +25,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Deployment | Production **Ready** (deploy terakhir 13 Nov) |
 | Commit kode | `c1e96a2` (P3); dokumentasi terakhir `c037472` |
 | Region aplikasi | `hnd1` (Tokyo), sama dengan database `ap-northeast-1` |
-| Migrasi database | **8/8** diterapkan |
+| Migrasi database | **13/13** diterapkan |
 | Tabel `public` | **22**, semuanya RLS aktif |
 | Policy RLS publik | **0** |
 | CHECK constraint | **7** terpasang |
