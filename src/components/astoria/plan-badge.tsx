@@ -94,6 +94,7 @@ export function PlanBadge({ className = "" }: { className?: string }) {
     amount: number;
     durationDays: number;
   } | null>(null);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const queryClient = useQueryClient();
 
   const { data } = useQuery<PlanData>({
@@ -173,7 +174,11 @@ export function PlanBadge({ className = "" }: { className?: string }) {
 
   const checkoutMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ acceptTerms: true }),
+      });
       const body = (await res.json()) as {
         error?: string;
         checkoutUrl?: string;
@@ -253,6 +258,7 @@ export function PlanBadge({ className = "" }: { className?: string }) {
         onClick={() => {
           setBillingError(null);
           setManualOrder(null);
+          setAcceptTerms(false);
           setOpen(true);
         }}
         title="Lihat paket Free/Premium"
@@ -389,24 +395,35 @@ export function PlanBadge({ className = "" }: { className?: string }) {
             tetap dibatasi dan direset setiap <strong>00.00 WIB</strong>.
           </p>
 
-          <p className="text-[10px] leading-relaxed text-muted-foreground">
-            Dengan melanjutkan pembayaran, Anda menyetujui{" "}
-            <a href="/legal/syarat-ketentuan" className="underline hover:text-foreground">
-              Syarat & Ketentuan
-            </a>
-            ,{" "}
-            <a
-              href="/legal/kebijakan-pengembalian-dana"
-              className="underline hover:text-foreground"
-            >
-              Kebijakan Pengembalian Dana
-            </a>
-            , dan{" "}
-            <a href="/legal/kebijakan-produk" className="underline hover:text-foreground">
-              Kebijakan Produk
-            </a>
-            .
-          </p>
+          {(configured || manualEnabled) && (
+            <label className="flex items-start gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-[10px] leading-relaxed text-muted-foreground">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-3.5 w-3.5"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                data-testid="accept-terms"
+              />
+              <span>
+                Saya menyetujui{" "}
+                <a href="/legal/syarat-ketentuan" className="underline hover:text-foreground">
+                  Syarat & Ketentuan
+                </a>
+                ,{" "}
+                <a
+                  href="/legal/kebijakan-pengembalian-dana"
+                  className="underline hover:text-foreground"
+                >
+                  Kebijakan Pengembalian Dana
+                </a>
+                , dan{" "}
+                <a href="/legal/kebijakan-produk" className="underline hover:text-foreground">
+                  Kebijakan Produk
+                </a>
+                .
+              </span>
+            </label>
+          )}
 
           {payments.length > 0 && (
             <div className="space-y-2">
@@ -477,6 +494,7 @@ export function PlanBadge({ className = "" }: { className?: string }) {
                 disabled={
                   checkoutMutation.isPending ||
                   trialMutation.isPending ||
+                  !acceptTerms ||
                   (manualEnabled && Boolean(manualOrder || pendingPayment))
                 }
               >

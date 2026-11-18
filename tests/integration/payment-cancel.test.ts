@@ -149,7 +149,10 @@ describe("admin membatalkan pesanan", () => {
     setAuthUser(admin);
 
     const res = await adminPaymentRoute.PATCH(
-      jsonRequest(`/api/admin/payments/${payment.id}`, "PATCH", { status: "refunded" }),
+      jsonRequest(`/api/admin/payments/${payment.id}`, "PATCH", {
+        status: "refunded",
+        reason: "Permintaan pengguna",
+      }),
       params({ paymentId: payment.id })
     );
     const body = (await res.json()) as { payment: { status: string } };

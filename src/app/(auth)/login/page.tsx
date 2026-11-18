@@ -17,6 +17,11 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <LoginForm />
+          <p className="text-center text-sm">
+            <Link href="/forgot-password" className="text-primary underline hover:text-primary/80">
+              Lupa password?
+            </Link>
+          </p>
           <p className="text-sm text-muted-foreground text-center">
             Belum punya akun?{" "}
             <Link href="/register" className="underline">

@@ -10,9 +10,7 @@ const securityHeaders = [
   },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   {
-    // Report-only dulu agar tidak memutus Next.js/Turnstile; setelah laporan
-    // bersih, header ini bisa dijadikan Content-Security-Policy penuh.
-    key: "Content-Security-Policy-Report-Only",
+    key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.challenges.cloudflare.com",

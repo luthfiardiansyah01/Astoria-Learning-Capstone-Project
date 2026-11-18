@@ -38,7 +38,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Dependensi kritis | Next **16.4.6**, sharp **0.35.5**; override lodash 4.18.1, postcss 8.5.33, nanoid 3.3.20, source-map-js 1.2.2 |
 | Advisory runtime | **0** pada paket runtime utama; sisa temuan hanya rantai perkakas dev/build |
 | Log produksi terakhir | **0 error, 0 respons 5xx** |
-| CSP | **Report-Only** (belum enforced) |
+| CSP | **Enforced** sejak 18 November 2026 |
 | Halaman publik | `/login`, `/register`, `/produk`, `/verify-email`, legal → **200** |
 | Webhook Midtrans | `GET /api/billing/webhook/midtrans` → **200** |
 
@@ -127,6 +127,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-18 | Perf | Baseline performa terukur | Selesai | `PERFORMANCE-BASELINE.md` + 4 skrip di `scripts/perf/`; 3 hotspot: documents 1,01 MB/198 ms, collab analytics 89 ms, server 31,6 MB |
 | 2026-11-18 | Perf | Perf-1 optimasi dokumen & analitik | Selesai | `/api/documents` 198→11 ms (1,01 MB→10 KB); admin analytics 44→10 ms; traced files 391→12 |
 | 2026-11-18 | Perf | Perf-2 analitik kolaborasi & payload proyek | Selesai | Collab analytics 6 ms warm (p95 9); project detail 390→176 KB; cache header statis |
+| 2026-11-18 | P4 | Kesiapan publik | Selesai | Reset password, ekspor/hapus akun, kuitansi email, refund+alasan, consent S&K, CSP enforced, rotasi kredensial admin |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -507,6 +508,45 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Payload proyek masih 176 KB untuk 1.000 tugas aktif; target <120 KB tidak
   realistis tanpa pagination per kolom (dijadwalkan P3).
 - Cache header mengandalkan CDN Vercel; perilaku lokal tidak mewakili.
+
+## Detail P4 — Kesiapan Publik (18 November 2026)
+
+**Perubahan**
+
+- **Reset password**: model `PasswordResetToken` (hash SHA-256, berlaku 1 jam,
+  sekali pakai), endpoint `/api/auth/forgot-password` (respons generik agar tidak
+  membocorkan email) dan `/api/auth/reset-password`, halaman
+  `/forgot-password` & `/reset-password`, tautan dari halaman login.
+- **Ganti password**: `/api/profile/password` memverifikasi password lama dan
+  memakai bcrypt cost 12; halaman `/akun`.
+- **Ekspor & hapus akun**: `/api/profile/export` (JSON) dan `DELETE /api/profile`.
+  Penghapusan diblokir untuk akun admin dan akun dengan riwayat pembayaran
+  (dijelaskan ke pengguna untuk diajukan ke admin).
+- **Kuitansi email**: dikirim otomatis setelah pembayaran lunas (best-effort;
+  kegagalan email tidak membatalkan aktivasi).
+- **Refund**: tombol di panel admin, alasan wajib, tersimpan di `rawPayload`.
+- **Persetujuan S&K**: checkbox wajib sebelum checkout; waktu disimpan di
+  `Payment.consentAt` (migrasi `20261118010000_p4_password_reset_consent`).
+- **CSP**: header diubah dari `Report-Only` menjadi `Content-Security-Policy`
+  penuh.
+- **Kredensial admin**: dirotasi ke password kuat (hash bcrypt 12); nilai tidak
+  ditulis di dokumen.
+
+**Verifikasi**
+
+- Unit **158**, integration **153**, E2E **13** lulus.
+- Migrasi P4 diterapkan ke database uji dan produksi.
+- Checkout tanpa `acceptTerms` → **400**.
+- Reset token dipakai dua kali → **400**; ganti password lama salah → **400**.
+- Hapus akun dengan pembayaran → **409** `has_payments`.
+- Refund tanpa alasan → **400**.
+
+**Sisa risiko**
+
+- Sesi JWT yang sudah aktif tidak otomatis logout setelah ganti/reset password
+  (perlu rotasi `NEXTAUTH_SECRET` bila dicurigai bocor).
+- Email kuitansi bergantung pada Resend; kegagalan dicatat di log.
+- Penghapusan akun dengan riwayat pembayaran masih manual oleh admin.
 
 ## Template entri tahap berikutnya
 

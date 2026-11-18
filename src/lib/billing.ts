@@ -9,6 +9,8 @@ import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { createNotification } from "./collab-notify";
 import { appUrl } from "./app-url";
+import { sendEmail } from "./email";
+import { receiptEmail } from "./receipt";
 
 export { appUrl };
 
@@ -430,6 +432,28 @@ export async function settlePayment(input: {
       body: `Pembayaran diterima. Premium aktif sampai ${result.expiresAt.toLocaleDateString("id-ID")}.`,
       link: "/",
     }).catch(() => null);
+
+    // Kuitansi email bersifat best-effort: kegagalan kirim tidak membatalkan
+    // aktivasi Premium yang sudah tersimpan.
+    const payer = await db.user
+      .findUnique({
+        where: { id: result.payment.userId },
+        select: { email: true, name: true },
+      })
+      .catch(() => null);
+    if (payer?.email) {
+      await sendEmail({
+        to: payer.email,
+        ...receiptEmail({
+          name: payer.name,
+          orderId: result.payment.orderId,
+          amount: result.payment.amount,
+          paidAt: result.payment.paidAt ?? new Date(),
+          expiresAt: result.expiresAt,
+          provider: result.payment.provider,
+        }),
+      }).catch(() => null);
+    }
   }
 
   return result;

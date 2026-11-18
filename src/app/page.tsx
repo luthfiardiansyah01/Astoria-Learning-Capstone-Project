@@ -19,6 +19,7 @@ import {
   Sparkles,
   Users,
   LogOut,
+  Settings,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -279,6 +280,17 @@ export default function AstoriaPage() {
               </div>
 
               <span className="mx-0.5 hidden h-5 w-px bg-border md:block" aria-hidden />
+
+              <Link
+                href="/akun"
+                data-testid="account-link"
+                className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="Akun dan keamanan"
+                title="Akun & keamanan"
+              >
+                <Settings className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Akun</span>
+              </Link>
 
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}

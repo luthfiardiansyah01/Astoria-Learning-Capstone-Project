@@ -34,12 +34,22 @@ export async function PATCH(
       { status: 400 }
     );
   }
+  if (parsed.data.status === "refunded" && !parsed.data.reason) {
+    return NextResponse.json(
+      { error: "Alasan refund wajib diisi." },
+      { status: 400 }
+    );
+  }
 
   if (parsed.data.status === "paid") {
     const result = await settlePayment({
       orderId: payment.orderId,
       status: "paid",
-      rawPayload: { manualConfirmation: true, confirmedBy: auth.user.id },
+      rawPayload: {
+        manualConfirmation: true,
+        confirmedBy: auth.user.id,
+        reason: parsed.data.reason ?? null,
+      },
     });
     if ("ok" in result && !result.ok) {
       return NextResponse.json({ error: result.reason }, { status: 400 });
@@ -60,6 +70,7 @@ export async function PATCH(
       rawPayload: {
         manualUpdate: true,
         updatedBy: auth.user.id,
+        reason: parsed.data.reason ?? null,
         gatewayCancelled: gateway?.cancelled ?? null,
         warning: gateway?.warning ?? null,
       },

@@ -26,7 +26,7 @@ produksi + deploy". Itu **sudah selesai** dan bukan "P4" dalam roadmap ini.
 | **P3** | Hardening skema: index, CHECK, cleanup, CSP report-only | ✅ Selesai | `c1e96a2` |
 | **Perf-1** | Dokumen & analitik: pagination, index, agregasi SQL, tracing | ✅ Selesai | `195b359` |
 | **Perf-2** | Analitik kolaborasi, payload proyek, cache statis | ✅ Selesai | `ae36f89` |
-| **P4** | Kesiapan publik | ⏳ Belum | — |
+| **P4** | Kesiapan publik | ✅ Selesai (18 Nov 2026) | `MONITORING-LOG.md` entri 18 Nov |
 | **P5** | Skala & produk lanjutan | ⏳ Belum | — |
 
 ## 3. Fase yang sudah selesai
@@ -61,23 +61,25 @@ halaman statis. Hasil: 6 ms (hangat), 390 KB → 176 KB.
 
 ## 4. P4 — Kesiapan publik
 
-Target: aplikasi aman dipakai pengguna umum dan uang nyata.
+**Status: ✅ Selesai — 18 November 2026.**
 
-| # | Item | Prioritas | Kriteria selesai |
+| # | Item | Prioritas | Implementasi |
 |---|---|---|---|
-| 1 | Rotasi kredensial admin | 🔴 Wajib | Login produksi dengan kredensial baru; `SEED_ADMIN_PASSWORD` diperbarui |
-| 2 | Lupa/reset password | 🔴 Wajib | Token sekali pakai via email; uji kedaluwarsa dan pemakaian ulang |
-| 3 | Hapus akun + ekspor data | 🔴 Wajib | Sesuai janji Kebijakan Privasi; konfirmasi + audit |
-| 4 | Kuitansi email saat lunas | 🟠 Penting | Email berisi orderId, nominal, tanggal, masa aktif |
-| 5 | Refund + alasan di panel admin | 🟠 Penting | Hanya dari status `paid`; tercatat di audit |
-| 6 | Checkbox persetujuan S&K | 🟠 Penting | Waktu persetujuan tersimpan |
-| 7 | CSP enforced + monitoring error | 🟠 Penting | Tidak ada pelanggaran kritis; error terpantau |
-| 8 | Ganti password dari profil | 🟡 Disarankan | bcrypt cost 12; validasi password lama |
+| 1 | Rotasi kredensial admin | 🔴 Wajib | Password baru kuat; hash bcrypt 12; `SEED_ADMIN_PASSWORD` diperbarui |
+| 2 | Lupa/reset password | 🔴 Wajib | `/forgot-password`, `/reset-password`, token hash 1 jam sekali pakai |
+| 3 | Hapus akun + ekspor data | 🔴 Wajib | `/akun`: unduh JSON; hapus akun (diblokir bila ada riwayat pembayaran) |
+| 4 | Kuitansi email saat lunas | 🟠 Penting | Dikirim otomatis setelah `settlePayment` berhasil |
+| 5 | Refund + alasan di panel admin | 🟠 Penting | Tombol refund; alasan wajib; tersimpan di `rawPayload` |
+| 6 | Checkbox persetujuan S&K | 🟠 Penting | Wajib sebelum checkout; waktu disimpan di `Payment.consentAt` |
+| 7 | CSP enforced + monitoring error | 🟠 Penting | Header `Content-Security-Policy` penuh; logger + Vercel logs |
+| 8 | Ganti password dari profil | 🟡 Disarankan | `/akun`: verifikasi password lama, hash bcrypt 12 |
 
-> **Catatan kredensial admin:** password yang dipakai saat ini adalah **data uji
-> coba**, bukan kredensial produksi. Nilainya tidak ditulis di dokumen ini;
-> simpan di password manager dan `.env.supabase` (tidak di-track). Rotasi
-> sebelum aplikasi dipublikasikan — prosedur di
+Verifikasi P4: unit 158, integrasi 153, E2E 13 lulus; migrasi
+`20261118010000_p4_password_reset_consent` diterapkan; CSP enforced.
+
+> **Catatan kredensial admin:** password uji coba lama sudah **dirotasi pada
+> 18 November 2026**. Nilai baru tidak ditulis di dokumen ini; simpan di password
+> manager dan `.env.supabase` (tidak di-track). Prosedur rotasi ada di
 > [`OPERATIONS-RUNBOOK.md`](./OPERATIONS-RUNBOOK.md) bagian 1.1.
 
 ## 5. P5 — Skala & produk

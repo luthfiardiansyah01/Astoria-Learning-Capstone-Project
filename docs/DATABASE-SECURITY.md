@@ -4,15 +4,15 @@
 
 Sejak migrasi `20261105000000_enable_row_level_security`, **semua tabel di schema
 `public` memiliki RLS aktif** dan tidak memiliki policy publik.
-Per 16 November 2026 (diverifikasi ulang ke database produksi) ada **19 tabel**
-dan **8 migrasi** yang diterapkan, dengan **0 policy** di schema `public`.
+Per 18 November 2026 (diverifikasi ulang ke database produksi) ada **20 tabel**
+dan **10 migrasi** yang diterapkan, dengan **0 policy** di schema `public`.
 
 Tabel yang dicakup:
 
 `_prisma_migrations`, `User`, `Team`, `TeamBadge`, `Notification`, `TeamMember`,
 `Project`, `Task`, `Document`, `TaskChatMessage`, `ActivityEvent`, `Chunk`,
 `ChatMessage`, `QuizQuestion`, `QuizAttempt`, `Badge`, `Payment`, `TeamInvite`,
-`EmailVerificationToken`.
+`EmailVerificationToken`, `PasswordResetToken`.
 
 Migrasi P3 `20261107030000_p3_constraints_indexes` juga menambahkan:
 
@@ -21,6 +21,9 @@ Migrasi P3 `20261107030000_p3_constraints_indexes` juga menambahkan:
 - CHECK constraint untuk role/plan/status,
 - FK `Payment.userId` dengan `ON DELETE RESTRICT` agar riwayat pembayaran
   tidak hilang saat user dihapus.
+- Migrasi P4 `20261118010000_p4_password_reset_consent` menambahkan tabel
+  `PasswordResetToken` (RLS aktif) dan kolom `Payment.consentAt` untuk bukti
+  persetujuan Syarat & Ketentuan.
 
 ## Kenapa aman untuk aplikasi
 

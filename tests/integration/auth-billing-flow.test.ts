@@ -254,7 +254,7 @@ describe("checkout Midtrans", () => {
     }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const res = await checkoutRoute.POST();
+    const res = await checkoutRoute.POST(jsonRequest("/api/billing/checkout", "POST", { acceptTerms: true }));
     const body = (await res.json()) as { checkoutUrl: string; orderId: string; provider: string };
     expect(res.status).toBe(200);
     expect(body.provider).toBe("midtrans");
@@ -265,7 +265,7 @@ describe("checkout Midtrans", () => {
     expect(payment.checkoutUrl).toBe("https://pay.example/redirect");
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    const second = await checkoutRoute.POST();
+    const second = await checkoutRoute.POST(jsonRequest("/api/billing/checkout", "POST", { acceptTerms: true }));
     const secondBody = (await second.json()) as { reused?: boolean; orderId: string };
     expect(secondBody.orderId).toBe(body.orderId);
     expect(secondBody.reused).toBe(true);

@@ -133,6 +133,48 @@ export const adminPaymentUpdateSchema = z.object({
   status: z.enum(["paid", "failed", "expired", "cancelled", "refunded"], {
     message: "Status pembayaran tidak valid.",
   }),
+  reason: z
+    .string()
+    .trim()
+    .max(500, "Alasan terlalu panjang (maks 500 karakter).")
+    .optional(),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string({ message: "Email wajib diisi." })
+    .trim()
+    .toLowerCase()
+    .max(200, "Email terlalu panjang.")
+    .email("Format email tidak valid."),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().trim().min(10, "Token tidak valid.").max(300, "Token tidak valid."),
+  password: z
+    .string()
+    .min(8, "Password minimal 8 karakter.")
+    .max(200, "Password terlalu panjang (maks 200 karakter)."),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Password saat ini wajib diisi.").max(200),
+  newPassword: z
+    .string()
+    .min(8, "Password baru minimal 8 karakter.")
+    .max(200, "Password terlalu panjang (maks 200 karakter)."),
+});
+
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1, "Password wajib diisi untuk konfirmasi.").max(200),
+});
+
+export const checkoutSchema = z.object({
+  acceptTerms: z
+    .boolean({ message: "Persetujuan Syarat & Ketentuan wajib diisi." })
+    .refine((value) => value === true, {
+      message: "Setujui Syarat & Ketentuan sebelum melanjutkan pembayaran.",
+    }),
 });
 
 type ReadResult<T> = { ok: true; data: T } | { ok: false; error: string };

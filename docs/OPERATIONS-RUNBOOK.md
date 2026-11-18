@@ -236,8 +236,10 @@ di `MONITORING-LOG.md` agar statistik pendapatan tidak disalahartikan.
 
 Catatan:
 
-- Refund **belum ada tombolnya di panel**; saat ini hanya lewat
-  `PATCH /api/admin/payments/{paymentId}` dengan `{ "status": "refunded" }`.
+- Refund dilakukan lewat tombol **Catat refund** di panel pembayaran. Alasan
+  **wajib diisi** dan disimpan di `rawPayload` untuk audit.
+- Alternatif API: `PATCH /api/admin/payments/{paymentId}` dengan
+  `{ "status": "refunded", "reason": "..." }`.
 - Untuk mencabut Premium setelah refund, ubah paket ke Free lewat Jalur A.
 - Pesanan yang sudah `paid` tidak bisa dibatalkan, hanya di-refund.
 

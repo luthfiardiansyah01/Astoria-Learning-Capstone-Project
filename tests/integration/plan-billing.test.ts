@@ -150,7 +150,7 @@ describe("billing API", () => {
   it("mengembalikan 503 saat gateway belum dikonfigurasi", async () => {
     const user = await createUser();
     setAuthUser(user);
-    const res = await checkoutRoute.POST();
+    const res = await checkoutRoute.POST(jsonRequest("/api/billing/checkout", "POST", { acceptTerms: true }));
     const body = (await res.json()) as { code: string };
     expect(res.status).toBe(503);
     expect(body.code).toBe("billing_not_configured");
@@ -159,7 +159,16 @@ describe("billing API", () => {
   it("menolak checkout untuk admin", async () => {
     const admin = await createUser({ role: "admin" });
     setAuthUser(admin);
-    const res = await checkoutRoute.POST();
+    const res = await checkoutRoute.POST(jsonRequest("/api/billing/checkout", "POST", { acceptTerms: true }));
+    expect(res.status).toBe(400);
+  });
+
+  it("menolak checkout tanpa persetujuan Syarat & Ketentuan", async () => {
+    const user = await createUser();
+    setAuthUser(user);
+    const res = await checkoutRoute.POST(
+      jsonRequest("/api/billing/checkout", "POST", { acceptTerms: false })
+    );
     expect(res.status).toBe(400);
   });
 
@@ -169,7 +178,7 @@ describe("billing API", () => {
       const user = await createUser();
       setAuthUser(user);
 
-      const res = await checkoutRoute.POST();
+      const res = await checkoutRoute.POST(jsonRequest("/api/billing/checkout", "POST", { acceptTerms: true }));
       const body = (await res.json()) as {
         manual?: boolean;
         orderId?: string;
@@ -185,7 +194,7 @@ describe("billing API", () => {
       expect(row?.provider).toBe("manual");
       expect(row?.status).toBe("pending");
 
-      const again = await checkoutRoute.POST();
+      const again = await checkoutRoute.POST(jsonRequest("/api/billing/checkout", "POST", { acceptTerms: true }));
       const repeated = (await again.json()) as { orderId?: string; reused?: boolean };
       expect(repeated.reused).toBe(true);
       expect(repeated.orderId).toBe(body.orderId);

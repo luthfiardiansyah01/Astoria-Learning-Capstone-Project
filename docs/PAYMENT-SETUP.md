@@ -23,6 +23,9 @@
   **Admin → Paket & Pembayaran**.
 - **Rekening transfer manual belum diisi**; fitur `PAYMENT_MANUAL_ONLY` sudah
   ada dan teruji, tetapi sengaja belum diaktifkan.
+- **Sejak 18 November 2026**: checkout mewajibkan persetujuan S&K (waktu
+  disimpan di `Payment.consentAt`), kuitansi dikirim via email setelah lunas, dan
+  refund wajib disertai alasan.
 - Setelah review disetujui, uji satu transaksi kecil end-to-end dan refund.
 
 Integrasi pembayaran sudah tersedia. Bila tidak ada kredensial sama sekali,

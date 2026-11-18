@@ -1,12 +1,13 @@
 import { logger } from "@/lib/logger";
 // POST /api/billing/checkout — buat transaksi Premium di Midtrans/Xendit.
 // Bila kredensial belum diisi, mengembalikan 503 + code "billing_not_configured".
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";
 import { effectivePlan } from "@/lib/plans";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
+import { checkoutSchema, readBody } from "@/lib/validation";
 import {
   BillingNotConfiguredError,
   PREMIUM_DURATION_DAYS,
@@ -21,7 +22,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   const auth = await requireUser();
   if (auth.res) return auth.res;
   const user = auth.user;
@@ -32,6 +33,12 @@ export async function POST() {
       { status: 400 }
     );
   }
+
+  const parsedBody = await readBody(req, checkoutSchema);
+  if (!parsedBody.ok) {
+    return NextResponse.json({ error: parsedBody.error }, { status: 400 });
+  }
+  const consentAt = new Date();
 
   const provider = billingProvider();
   const manual = manualOnly();
@@ -100,6 +107,7 @@ export async function POST() {
       amount,
       durationDays: PREMIUM_DURATION_DAYS,
       status: "pending",
+      consentAt,
     },
   });
 

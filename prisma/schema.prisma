@@ -30,6 +30,7 @@ model User {
   quizAttempts     QuizAttempt[]
   badges           Badge[]
   teamMemberships  TeamMember[]
+  passwordResetTokens PasswordResetToken[]
   teamInvitesReceived TeamInvite[]  @relation("TeamInviteInvitee")
   teamInvitesSent     TeamInvite[]  @relation("TeamInviteInviter")
   verificationTokens  EmailVerificationToken[]
@@ -55,6 +56,7 @@ model Payment {
   providerRef  String?
   checkoutUrl  String?
   rawPayload   Json?
+  consentAt    DateTime? // waktu pengguna menyetujui S&K sebelum checkout
   paidAt       DateTime?
   expiresAt    DateTime?
   createdAt    DateTime  @default(now())
@@ -128,6 +130,19 @@ model TeamMember {
 
 // Token verifikasi email sekali pakai.
 model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// Token reset password: hash SHA-256, berlaku 1 jam, sekali pakai.
+model PasswordResetToken {
   id        String    @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)

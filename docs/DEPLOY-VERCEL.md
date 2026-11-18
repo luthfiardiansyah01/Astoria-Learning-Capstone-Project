@@ -166,7 +166,7 @@ Jalankan berurutan terhadap domain produksi:
 11. Register 6 kali dari IP yang sama → permintaan ke-6 **429** dengan header
     `Retry-After`; login dari satu IP juga dibatasi.
 12. Kirim body >1 MB ke API umum → **413**; webhook >256 KB → **413**.
-13. Cek header `Content-Security-Policy-Report-Only`, HSTS, `nosniff`,
+13. Cek header `Content-Security-Policy`, HSTS, `nosniff`,
     `X-Frame-Options: DENY`.
 14. Cek dashboard Upstash: key `sobadi:rl:login-ip:*` dan `sobadi:rl:login:*`
     bertambah.
@@ -211,7 +211,9 @@ Jika `DIRECT_URL` kosong saat Production, build sengaja **gagal lebih awal** den
 - Rotasi `NEXTAUTH_SECRET` akan membuat semua sesi lama logout — lakukan bila curiga bocor.
 - Rotasi API key OpenRouter dan token Upstash secara berkala.
 - Bila sebuah rahasia pernah ter-commit, mengubah nilainya di Vercel **tidak** menghapusnya dari riwayat Git; rotasi nilai tersebut adalah wajib.
-- CSP saat ini dikirim sebagai **`Content-Security-Policy-Report-Only`**. Setelah laporan pelanggaran bersih, ubah menjadi header enforced.
+- CSP kini dikirim sebagai **`Content-Security-Policy`** (enforced). Jika ada
+  fitur baru yang memuat skrip/frame eksternal, tambahkan domainnya ke
+  `next.config.ts` sebelum deploy.
 - Per 16 November 2026, diverifikasi ulang terhadap produksi: **8 migrasi**,
   **19/19 tabel `public` dengan RLS**, **0 policy publik**, **7 CHECK constraint**,
   dan **5 index P3**; header HSTS, `nosniff`, `X-Frame-Options: DENY`, dan
@@ -223,4 +225,6 @@ Jika `DIRECT_URL` kosong saat Production, build sengaja **gagal lebih awal** den
 | Tanggal | Yang diperiksa | Hasil |
 |---|---|---|
 | 2026-11-08 | Env email/CAPTCHA, migrasi, RLS, CSP | 8 migrasi, 19 RLS, CSP report-only |
+| 2026-11-18 | CSP enforced + P4 | 10 migrasi, 20 tabel RLS, CSP enforced |
 | 2026-11-16 | Region, env pembayaran, halaman publik, header | `hnd1`; 21 env produksi; 5 halaman 200; webhook 200 |
+

@@ -175,11 +175,15 @@ export function AdminPlanPanel() {
   });
 
   const paymentMutation = useMutation({
-    mutationFn: async (input: { paymentId: string; status: "paid" | "failed" | "cancelled" }) => {
+    mutationFn: async (input: {
+      paymentId: string;
+      status: "paid" | "failed" | "cancelled" | "refunded";
+      reason?: string;
+    }) => {
       const res = await fetch(`/api/admin/payments/${input.paymentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: input.status }),
+        body: JSON.stringify({ status: input.status, reason: input.reason }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error || "Gagal memperbarui pembayaran.");
@@ -188,7 +192,13 @@ export function AdminPlanPanel() {
     onSuccess: (_body, input) => {
       queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-      toast.success(input.status === "paid" ? "Pembayaran dikonfirmasi lunas." : "Pembayaran dibatalkan.");
+      const message =
+        input.status === "paid"
+          ? "Pembayaran dikonfirmasi lunas."
+          : input.status === "refunded"
+            ? "Refund dicatat."
+            : "Pembayaran dibatalkan.";
+      toast.success(message);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -531,6 +541,33 @@ export function AdminPlanPanel() {
                           <XCircle className="h-4 w-4" />
                         </Button>
                       </>
+                    )}
+                    {p.status === "paid" && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-blue-600"
+                        disabled={busy}
+                        title="Catat refund"
+                        aria-label="Catat refund"
+                        onClick={() => {
+                          const reason = window.prompt(
+                            "Alasan refund (wajib diisi, tercatat untuk audit):"
+                          );
+                          if (reason === null) return;
+                          if (!reason.trim()) {
+                            toast.error("Alasan refund wajib diisi.");
+                            return;
+                          }
+                          paymentMutation.mutate({
+                            paymentId: p.id,
+                            status: "refunded",
+                            reason: reason.trim(),
+                          });
+                        }}
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
                     )}
                   </div>
                 </div>
