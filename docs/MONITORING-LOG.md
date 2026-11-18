@@ -125,8 +125,8 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-16 | Payment | Konfigurasi metode pembayaran **ditahan** | Ditunda | Midtrans production terpasang, kanal belum disetujui; rekening manual belum diisi; fitur transfer manual tersedia tetapi tidak diaktifkan |
 | 2026-11-18 | Fix | Stabilitas & keamanan deploy | Selesai | Next 16.4.6, sharp 0.35.5, override dependensi rentan; batas body chunked; bcrypt 12; guard seed; tautan legal |
 | 2026-11-18 | Perf | Baseline performa terukur | Selesai | `PERFORMANCE-BASELINE.md` + 4 skrip di `scripts/perf/`; 3 hotspot: documents 1,01 MB/198 ms, collab analytics 89 ms, server 31,6 MB |
-| 2026-11-18 | Perf | P1 optimasi dokumen & analitik | Selesai | `/api/documents` 198→11 ms (1,01 MB→10 KB); admin analytics 44→10 ms; traced files 391→12 |
-| 2026-11-18 | Perf | P2 analitik kolaborasi & payload proyek | Selesai | Collab analytics 6 ms warm (p95 9); project detail 390→176 KB; cache header statis |
+| 2026-11-18 | Perf | Perf-1 optimasi dokumen & analitik | Selesai | `/api/documents` 198→11 ms (1,01 MB→10 KB); admin analytics 44→10 ms; traced files 391→12 |
+| 2026-11-18 | Perf | Perf-2 analitik kolaborasi & payload proyek | Selesai | Collab analytics 6 ms warm (p95 9); project detail 390→176 KB; cache header statis |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -447,7 +447,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 
 
 
-## Detail Optimasi P1 — 18 November 2026
+## Detail Optimasi Perf-1 — 18 November 2026
 
 **Perubahan**
 
@@ -474,14 +474,14 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Manifes `api/chat`: file non-`node_modules` **391 → 12**; `.z-ai-config`
   tidak lagi ikut tertracing.
 
-**Sisa untuk P2**
+**Sisa untuk Perf-3**
 
 - `/api/collab/analytics` masih 61 ms (p95 75 ms) karena memuat seluruh
   tim/proyek/tugas/aktivitas.
 - Project detail masih mengirim ±390 KB untuk 1.000 tugas.
 - Belum ada cache header khusus untuk halaman statis.
 
-## Detail Optimasi P2 — 18 November 2026
+## Detail Optimasi Perf-2 — 18 November 2026
 
 **Perubahan**
 

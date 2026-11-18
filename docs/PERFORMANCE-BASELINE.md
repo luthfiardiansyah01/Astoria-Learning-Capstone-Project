@@ -138,7 +138,7 @@ Angka ini sudah termasuk jaringan, jadi wajar lebih tinggi dari lokal.
 
 Diurutkan berdasarkan rasio dampak/risiko.
 
-### P1 — dampak besar, risiko rendah
+### Perf-1 — dampak besar, risiko rendah
 
 | # | Perbaikan | Target terukur |
 |---|---|---|
@@ -147,7 +147,7 @@ Diurutkan berdasarkan rasio dampak/risiko.
 | 3 | `/api/admin/analytics`: `groupBy` status, hitung total di SQL, top-3 populer lewat query terbatas | 44 ms → **< 15 ms**, tidak lagi memuat semua dokumen |
 | 4 | Hapus pembacaan file dinamis di `ai.ts` (env saja) | file non-`node_modules` di manifes → **0**; executable tetap < 10 MB |
 
-### P2 — dampak sedang
+### Perf-2 — dampak sedang
 
 | # | Perbaikan | Target |
 |---|---|---|
@@ -155,7 +155,7 @@ Diurutkan berdasarkan rasio dampak/risiko.
 | 6 | Project detail: pisahkan tugas `done` atau pagination per kolom Kanban | 327 KB → **< 120 KB** |
 | 7 | Cache header untuk halaman statis (`/produk`, legal) | TTFB produksi turun |
 
-### P3 — perlu pengukuran tambahan
+### Perf-3 — perlu pengukuran tambahan
 
 | # | Perbaikan | Catatan |
 |---|---|---|
@@ -180,7 +180,7 @@ Optimasi dianggap berhasil bila, pada data dan metode yang sama:
    mereferensikan file proyek (0 file non-`node_modules` selain chunk internal).
 5. Semua tes (unit, integrasi, E2E) tetap lulus.
 
-## 11. Hasil P1 — 18 November 2026
+## 11. Hasil Perf-1 — 18 November 2026
 
 Perubahan yang diterapkan:
 
@@ -233,7 +233,7 @@ Konfigurasi `.z-ai-config` lokal dipindahkan ke `.env`
 (`AI_BASE_URL`, `AI_API_KEY`) tanpa mencetak nilainya. Produksi tidak terpengaruh
 karena sejak awal memakai environment Vercel.
 
-## 12. Hasil P2 — 18 November 2026
+## 12. Hasil Perf-2 — 18 November 2026
 
 Perubahan:
 
@@ -271,5 +271,5 @@ kedaluwarsa tetap membutuhkan ±65 ms.
 | Cache header halaman statis | ✅ terpasang |
 
 Target 120 KB tidak realistis untuk 1.000 tugas aktif: payload minimum untuk
-tugas aktif saja sudah ±165 KB. Opsi lanjutan (P3) adalah pagination per kolom
+tugas aktif saja sudah ±165 KB. Opsi lanjutan (Perf-3) adalah pagination per kolom
 Kanban atau memuat detail tugas saat kartu dibuka.

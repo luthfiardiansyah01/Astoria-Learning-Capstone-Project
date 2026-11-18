@@ -17,10 +17,11 @@ Admin saat ini:
 | `admin@ut.ac.id` | Aktif | Domain aktif, dipakai untuk operasi harian. Hash bcrypt (cost 12) di database; `SEED_ADMIN_PASSWORD` di `.env.supabase` (tidak di-track git). |
 | `admin@sobat-adi.id` | Legacy | Domain tidak aktif. Jangan dihapus sebelum login admin aktif diverifikasi. |
 
-Catatan kredensial (per 16 November 2026):
+Catatan kredensial (per 18 November 2026):
 
-- Password `admin@ut.ac.id` saat ini **singkat dan hanya layak untuk demo**.
-  Rotasi sebelum aplikasi dipakai publik atau dinilai oleh penguji luar.
+- Password `admin@ut.ac.id` saat ini adalah **data uji coba** (singkat, hanya
+  layak untuk demo internal). Rotasi sebelum aplikasi dipakai publik atau
+  dinilai oleh penguji luar.
 - `.env.supabase` menyimpan `SEED_ADMIN_PASSWORD` dalam bentuk teks biasa. File
   itu hanya untuk seeding lokal dan tidak boleh diunggah, dikirim lewat chat,
   atau ditempel ke dokumen Word.

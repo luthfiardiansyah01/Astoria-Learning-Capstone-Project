@@ -34,6 +34,7 @@ operasional.
 | Tech stack dalam format akademik (draf bab skripsi) | [`TECH-STACK-SKRIPSI.md`](./TECH-STACK-SKRIPSI.md) |
 | Baseline performa & rencana optimasi | [`PERFORMANCE-BASELINE.md`](./PERFORMANCE-BASELINE.md) |
 | Rencana implementasi (arsip Oktober 2026) | [`RENCANA-IMPLEMENTASI.md`](./RENCANA-IMPLEMENTASI.md) |
+| Roadmap fase P0–P5 & Perf-1/2 | [`ROADMAP.md`](./ROADMAP.md) |
 | Rencana peningkatan kualitas | [`RENCANA-IMPLEMENTASI-KUALITAS.md`](./RENCANA-IMPLEMENTASI-KUALITAS.md) |
 | Proposal pilot kampus | [`PROPOSAL-PILOT-KAMPUS-SOBAT-ADI.md`](./PROPOSAL-PILOT-KAMPUS-SOBAT-ADI.md) |
 
