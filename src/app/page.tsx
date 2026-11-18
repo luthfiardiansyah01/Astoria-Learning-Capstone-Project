@@ -284,7 +284,7 @@ export default function AstoriaPage() {
               <Link
                 href="/akun"
                 data-testid="account-link"
-                className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="hidden sm:flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 aria-label="Akun dan keamanan"
                 title="Akun & keamanan"
               >
@@ -362,6 +362,9 @@ export default function AstoriaPage() {
             </Link>
             <Link href="/legal/kebijakan-privasi" className="hover:text-foreground hover:underline">
               Kebijakan Privasi
+            </Link>
+            <Link href="/akun" className="hover:text-foreground hover:underline">
+              Akun
             </Link>
             <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-foreground hover:underline">
               Kontak
