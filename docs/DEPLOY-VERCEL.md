@@ -81,6 +81,7 @@ Buka **Project → Settings → Environment Variables**, lalu isi untuk environm
 | `NEXT_PUBLIC_APP_URL` | tidak | `https://domain-produksi` | Dipakai link email/callback; bila kosong memakai `VERCEL_PROJECT_PRODUCTION_URL` |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | tidak | default `admin1@moedatrace.com` | Kontak publik di footer, halaman legal, dialog paket |
 | `LOG_LEVEL` | tidak | `info` (default) | `silent`/`debug`/`info`/`warn`/`error` |
+| `CRON_SECRET` | ya jika cron aktif | string acak | Dipakai header `Authorization: Bearer` untuk `/api/cron/reminders` |
 
 Catatan:
 - `SEED_ADMIN_*` **tidak** perlu diisi di Vercel. Itu hanya untuk menjalankan `seed:prod` sekali dari mesin lokal.

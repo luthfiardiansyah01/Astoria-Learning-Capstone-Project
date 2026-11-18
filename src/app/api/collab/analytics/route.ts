@@ -3,6 +3,7 @@ import { logger } from "@/lib/logger";
 // Admin/dosen: semua tim. Mahasiswa: hanya tim yang diikuti.
 
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/current-user";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
@@ -32,6 +33,13 @@ export async function GET() {
       const cached = responseCache.get(cacheKey);
       if (cached && cached.expires > Date.now()) {
         return NextResponse.json(cached.payload, {
+          headers: { "Cache-Control": "private, max-age=30" },
+        });
+      }
+      // Cache persisten antar-instance (serverless).
+      const persisted = await db.analyticsCache.findUnique({ where: { key: cacheKey } });
+      if (persisted && Date.now() - persisted.updatedAt.getTime() < CACHE_TTL_MS) {
+        return NextResponse.json(persisted.payload, {
           headers: { "Cache-Control": "private, max-age=30" },
         });
       }
@@ -184,6 +192,13 @@ export async function GET() {
     if (process.env.NODE_ENV === "production") {
       if (responseCache.size >= CACHE_MAX) responseCache.clear();
       responseCache.set(cacheKey, { expires: Date.now() + CACHE_TTL_MS, payload });
+      await db.analyticsCache
+        .upsert({
+          where: { key: cacheKey },
+          create: { key: cacheKey, payload: payload as unknown as Prisma.InputJsonValue },
+          update: { payload: payload as unknown as Prisma.InputJsonValue },
+        })
+        .catch(() => null);
     }
 
     return NextResponse.json(payload, {

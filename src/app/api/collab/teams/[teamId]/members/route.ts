@@ -9,6 +9,8 @@ import { assertTeamMember, logActivity, ForbiddenError } from "@/lib/collab";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { memberAddSchema, readBody } from "@/lib/validation";
 import { createNotification } from "@/lib/collab-notify";
+import { emailConfigured, sendEmail } from "@/lib/email";
+import { teamInviteEmail } from "@/lib/collab-email";
 import { effectivePlan, PLAN_LIMITS } from "@/lib/plans";
 
 export async function POST(
@@ -33,7 +35,7 @@ export async function POST(
     const { name } = parsed.data;
 
     // SQLite tidak mendukung `mode: "insensitive"` di Prisma, jadi filter manual.
-    const allUsers = await db.user.findMany({ select: { id: true, name: true, role: true } });
+    const allUsers = await db.user.findMany({ select: { id: true, name: true, role: true, email: true } });
     const needle = name.trim().toLowerCase();
     const matches = allUsers.filter((u) => u.name.toLowerCase() === needle);
     if (matches.length === 0) {
@@ -120,6 +122,17 @@ export async function POST(
         body: `Diundang oleh ${user.name}. Buka Collab untuk menerima atau menolak.`,
         link: "/collab",
       }).catch(() => null);
+
+      if (emailConfigured() && target.email && team?.name) {
+        await sendEmail({
+          to: target.email,
+          ...teamInviteEmail({
+            inviteeName: target.name,
+            inviterName: user.name,
+            teamName: team.name,
+          }),
+        }).catch(() => null);
+      }
     }
 
     return NextResponse.json({

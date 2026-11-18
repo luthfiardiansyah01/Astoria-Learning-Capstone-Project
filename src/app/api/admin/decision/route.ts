@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/current-user";
 import { adminDecisionSchema, readBody } from "@/lib/validation";
+import { logAdminAction } from "@/lib/audit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +18,14 @@ export async function POST(req: NextRequest) {
     const doc = await db.document.update({
       where: { id: documentId },
       data: { status: decision },
+    });
+
+    await logAdminAction({
+      adminId: auth.user.id,
+      action: `document.${decision}`,
+      targetType: "document",
+      targetId: documentId,
+      detail: { fileName: doc.fileName, status: doc.status },
     });
 
     return NextResponse.json({

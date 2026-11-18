@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { AstoriaSessionProvider } from "@/components/providers/session-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
-import { MotionProvider } from "@/components/providers/motion-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,10 +36,8 @@ export default function RootLayout({
       >
         <AstoriaSessionProvider>
           <QueryProvider>
-            <MotionProvider>
-              {children}
-              <SonnerToaster />
-            </MotionProvider>
+            {children}
+            <SonnerToaster />
           </QueryProvider>
         </AstoriaSessionProvider>
       </body>

@@ -5,16 +5,67 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/current-user";
 import { assertTeamMember, logActivity, ForbiddenError } from "@/lib/collab";
+import { TASK_LIST_SELECT } from "@/lib/collab";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { readBody, taskCreateSchema } from "@/lib/validation";
 import { PLAN_LIMITS } from "@/lib/plans";
 import { teamOwnerPlan } from "@/lib/team-plan";
 
-export async function POST(
+const TASK_STATUSES = new Set(["todo", "in_progress", "review", "done"]);
+
+export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Belum masuk." }, { status: 401 });
+
+    const { projectId } = await params;
+    const project = await db.project.findUnique({
+      where: { id: projectId },
+      select: { teamId: true },
+    });
+    if (!project) return NextResponse.json({ error: "Proyek tidak ditemukan." }, { status: 404 });
+    await assertTeamMember(user.id, project.teamId);
+
+    const url = new URL(req.url);
+    const status = url.searchParams.get("status") ?? "";
+    if (!TASK_STATUSES.has(status)) {
+      return NextResponse.json({ error: "Status tugas tidak valid." }, { status: 400 });
+    }
+    const cursor = url.searchParams.get("cursor")?.trim() || null;
+    const requested = Number(url.searchParams.get("limit"));
+    const limit =
+      Number.isFinite(requested) && requested > 0 ? Math.min(100, Math.floor(requested)) : 50;
+
+    const rows = await db.task.findMany({
+      where: { projectId, status },
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      select: TASK_LIST_SELECT,
+    });
+
+    const hasMore = rows.length > limit;
+    const tasks = rows.slice(0, limit);
+    return NextResponse.json({
+      tasks,
+      nextCursor: hasMore ? tasks[tasks.length - 1]?.id ?? null : null,
+    });
+  } catch (e) {
+    if (e instanceof ForbiddenError) {
+      return NextResponse.json({ error: e.message }, { status: 403 });
+    }
+    logger.error("[/api/collab/projects/[projectId]/tasks GET]", { error: e });
+    return NextResponse.json({ error: FALLBACK_RESPONSES.api_error }, { status: 500 });
+  }
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> }
+) {  try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Belum masuk." }, { status: 401 });
 

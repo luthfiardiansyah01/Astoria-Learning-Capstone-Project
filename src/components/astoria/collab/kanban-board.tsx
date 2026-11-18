@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import {
@@ -35,8 +35,8 @@ interface ProjectData {
   teamId: string;
   team: { name: string };
   tasks: CollabTask[];
-  doneTotal?: number;
-  doneLoaded?: number;
+  columnCounts?: Record<string, number>;
+  perColumn?: number;
 }
 
 export function KanbanBoard({ projectId }: { projectId: string }) {
@@ -45,20 +45,49 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
   const setActiveTask = useCollabUi((s) => s.setActiveTask);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [draggingTask, setDraggingTask] = useState<CollabTask | null>(null);
-  const [loadAllDone, setLoadAllDone] = useState(false);
+  const [extraTasks, setExtraTasks] = useState<Record<string, CollabTask[]>>({});
+  const [loadingColumn, setLoadingColumn] = useState<string | null>(null);
 
-  const queryKey = ["collab", "project", projectId, loadAllDone ? "all" : "recent"];
+  const queryKey = ["collab", "project", projectId];
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey,
     queryFn: async () => {
-      const res = await fetch(
-        `/api/collab/projects/${projectId}${loadAllDone ? "?done=all" : ""}`
-      );
+      const res = await fetch(`/api/collab/projects/${projectId}`);
       if (!res.ok) throw new Error("Gagal memuat proyek.");
       return (await res.json()).project as ProjectData;
     },
   });
+
+  useEffect(() => {
+    setExtraTasks({});
+  }, [projectId]);
+
+  const loadMoreColumn = async (status: string) => {
+    const current = [
+      ...(data?.tasks ?? []).filter((t) => t.status === status),
+      ...(extraTasks[status] ?? []),
+    ];
+    const cursor = current[current.length - 1]?.id;
+    if (!cursor || loadingColumn) return;
+
+    setLoadingColumn(status);
+    try {
+      const res = await fetch(
+        `/api/collab/projects/${projectId}/tasks?status=${encodeURIComponent(status)}&cursor=${encodeURIComponent(cursor)}`
+      );
+      if (!res.ok) throw new Error("Gagal memuat tugas berikutnya.");
+      const body = (await res.json()) as { tasks: CollabTask[] };
+      setExtraTasks((prev) => ({
+        ...prev,
+        [status]: [...(prev[status] ?? []), ...(body.tasks ?? [])],
+      }));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Gagal memuat tugas.");
+    } finally {
+      setLoadingColumn(null);
+    }
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -67,9 +96,20 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
 
   const columns = useMemo(() => {
     const grouped: Record<string, CollabTask[]> = { todo: [], in_progress: [], review: [], done: [] };
-    for (const t of data?.tasks ?? []) grouped[t.status]?.push(t);
+    const seen = new Set<string>();
+    for (const t of data?.tasks ?? []) {
+      grouped[t.status]?.push(t);
+      seen.add(t.id);
+    }
+    for (const list of Object.values(extraTasks)) {
+      for (const t of list) {
+        if (seen.has(t.id)) continue;
+        grouped[t.status]?.push(t);
+        seen.add(t.id);
+      }
+    }
     return grouped;
-  }, [data]);
+  }, [data, extraTasks]);
 
   const moveMutation = useMutation({
     mutationFn: async ({ taskId, status, order }: { taskId: string; status: string; order: number }) => {
@@ -225,17 +265,22 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
         onDragEnd={handleDragEnd}
       >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {STATUSES.map((status) => (
-            <KanbanColumn
-              key={status}
-              status={status}
-              tasks={columns[status] ?? []}
-              onOpenTask={setActiveTask}
-              doneTotal={status === "done" ? data?.doneTotal : undefined}
-              onLoadAllDone={status === "done" ? () => setLoadAllDone(true) : undefined}
-              loadingAllDone={status === "done" && loadAllDone && isLoading}
-            />
-          ))}
+          {STATUSES.map((status) => {
+            const loaded = columns[status]?.length ?? 0;
+            const total = data?.columnCounts?.[status] ?? loaded;
+            return (
+              <KanbanColumn
+                key={status}
+                status={status}
+                tasks={columns[status] ?? []}
+                onOpenTask={setActiveTask}
+                total={total}
+                hasMore={total > loaded}
+                loadingMore={loadingColumn === status}
+                onLoadMore={() => loadMoreColumn(status)}
+              />
+            );
+          })}
         </div>
         <DragOverlay>
           {draggingTask ? <TaskCard task={draggingTask} onOpen={() => {}} /> : null}

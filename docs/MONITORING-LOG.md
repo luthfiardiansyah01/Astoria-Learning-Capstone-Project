@@ -26,7 +26,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Commit kode | `c1e96a2` (P3); dokumentasi terakhir `c037472` |
 | Region aplikasi | `hnd1` (Tokyo), sama dengan database `ap-northeast-1` |
 | Migrasi database | **8/8** diterapkan |
-| Tabel `public` | **19**, semuanya RLS aktif |
+| Tabel `public` | **22**, semuanya RLS aktif |
 | Policy RLS publik | **0** |
 | CHECK constraint | **7** terpasang |
 | Index baru P3 | **5** terpasang |
@@ -128,6 +128,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-18 | Perf | Perf-1 optimasi dokumen & analitik | Selesai | `/api/documents` 198→11 ms (1,01 MB→10 KB); admin analytics 44→10 ms; traced files 391→12 |
 | 2026-11-18 | Perf | Perf-2 analitik kolaborasi & payload proyek | Selesai | Collab analytics 6 ms warm (p95 9); project detail 390→176 KB; cache header statis |
 | 2026-11-18 | P4 | Kesiapan publik | Selesai | Reset password, ekspor/hapus akun, kuitansi email, refund+alasan, consent S&K, CSP enforced, rotasi kredensial admin |
+| 2026-11-18 | P5 | Skala & produk | Sebagian | Kanban per-kolom (390→44,6 KB), cache analitik persisten, email undangan + cron, audit log, load test 667 RPS; bundle & pgvector tertunda |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -547,6 +548,34 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   (perlu rotasi `NEXTAUTH_SECRET` bila dicurigai bocor).
 - Email kuitansi bergantung pada Resend; kegagalan dicatat di log.
 - Penghapusan akun dengan riwayat pembayaran masih manual oleh admin.
+
+## Detail P5 — Skala & Produk (18 November 2026)
+
+**Perubahan**
+
+- Kanban: setiap kolom dimuat maksimal 50 tugas + `columnCounts`; tombol
+  **Muat lagi** memakai `GET /api/collab/projects/:id/tasks?status=&cursor=`.
+- Analitik kolaborasi: cache persisten `AnalyticsCache` (L2) di samping cache
+  memori 30 detik.
+- Email: undangan tim dikirim saat undangan dibuat; cron harian
+  `/api/cron/reminders` mengirim ringkasan tenggat (butuh `CRON_SECRET`).
+- Audit: tabel `AdminAuditLog` + API `/api/admin/audit`; aksi pembayaran,
+  moderasi dokumen, dan perubahan paket tercatat.
+- `MotionProvider` dipindah dari root layout ke halaman aplikasi/Collab.
+- `scripts/perf/load-test.ts` ditambahkan.
+
+**Verifikasi**
+
+- Unit **158**, integration **153**, E2E **13** lulus.
+- Project detail (1.000 tugas) 176 KB → **44,6 KB**, p50 16 ms.
+- Load test `/produk` (concurrency 20, 10 detik): **667 RPS**, p95 **44 ms**,
+  0 error.
+- Migrasi P5 diterapkan; RLS 22 tabel.
+
+**Sisa**
+
+- Bundle JS publik masih ±703 KB; perlu analisis bundle lanjutan.
+- pgvector belum aktif; menunggu ekstensi `vector` di Supabase.
 
 ## Template entri tahap berikutnya
 

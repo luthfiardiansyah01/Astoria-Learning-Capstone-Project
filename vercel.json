@@ -1,4 +1,10 @@
 {
   "buildCommand": "bun run build:prod",
-  "regions": ["hnd1"]
+  "regions": ["hnd1"],
+  "crons": [
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "0 1 * * *"
+    }
+  ]
 }

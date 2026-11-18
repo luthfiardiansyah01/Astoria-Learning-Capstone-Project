@@ -36,11 +36,25 @@ export async function logActivity(input: LogActivityInput) {
   });
 }
 
+export const TASK_LIST_SELECT = {
+  id: true,
+  title: true,
+  description: true,
+  status: true,
+  order: true,
+  xpReward: true,
+  documentId: true,
+  dueDate: true,
+  assignee: { select: { id: true, name: true } },
+} as const;
+
+const TASK_STATUSES = ["todo", "in_progress", "review", "done"] as const;
+
 export async function getProjectWithTasks(
   projectId: string,
-  options: { doneLimit?: number | "all" } = {}
+  options: { perColumnLimit?: number } = {}
 ) {
-  const doneLimit = options.doneLimit ?? 50;
+  const perColumn = options.perColumnLimit ?? 50;
 
   const project = await db.project.findUnique({
     where: { id: projectId },
@@ -58,52 +72,37 @@ export async function getProjectWithTasks(
           },
         },
       },
-      // Tugas aktif selalu dimuat; tugas selesai dibatasi agar payload Kanban
-      // tidak membengkak saat proyek berumur panjang.
-      tasks: {
-        where: { status: { not: "done" } },
-        orderBy: [{ status: "asc" }, { order: "asc" }],
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          status: true,
-          order: true,
-          xpReward: true,
-          documentId: true,
-          dueDate: true,
-          assignee: { select: { id: true, name: true } },
-        },
-      },
     },
   });
   if (!project) return null;
 
-  const doneWhere = { projectId, status: "done" };
-  const [doneTasks, doneTotal] = await Promise.all([
-    db.task.findMany({
-      where: doneWhere,
-      orderBy: [{ order: "asc" }],
-      take: doneLimit === "all" ? undefined : doneLimit,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        order: true,
-        xpReward: true,
-        documentId: true,
-        dueDate: true,
-        assignee: { select: { id: true, name: true } },
-      },
+  const [counts, ...columns] = await Promise.all([
+    db.task.groupBy({
+      by: ["status"],
+      where: { projectId },
+      _count: { _all: true },
     }),
-    db.task.count({ where: doneWhere }),
+    ...TASK_STATUSES.map((status) =>
+      db.task.findMany({
+        where: { projectId, status },
+        orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+        take: perColumn,
+        select: TASK_LIST_SELECT,
+      })
+    ),
   ]);
+
+  const columnCounts = Object.fromEntries(
+    TASK_STATUSES.map((status) => [
+      status,
+      counts.find((row) => row.status === status)?._count._all ?? 0,
+    ])
+  ) as Record<(typeof TASK_STATUSES)[number], number>;
 
   return {
     ...project,
-    tasks: [...project.tasks, ...doneTasks],
-    doneTotal,
-    doneLoaded: doneTasks.length,
+    tasks: columns.flat(),
+    columnCounts,
+    perColumn,
   };
 }

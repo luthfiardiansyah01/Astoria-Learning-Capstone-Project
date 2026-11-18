@@ -18,10 +18,7 @@ export async function GET(
     if (!user) return NextResponse.json({ error: "Belum masuk." }, { status: 401 });
 
     const { projectId } = await params;
-    const doneParam = _req.nextUrl.searchParams.get("done");
-    const project = await getProjectWithTasks(projectId, {
-      doneLimit: doneParam === "all" ? "all" : undefined,
-    });
+    const project = await getProjectWithTasks(projectId);
     if (!project) return NextResponse.json({ error: "Proyek tidak ditemukan." }, { status: 404 });
 
     await assertTeamMember(user.id, project.teamId);

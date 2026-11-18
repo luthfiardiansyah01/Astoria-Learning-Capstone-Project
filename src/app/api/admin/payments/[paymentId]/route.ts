@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/current-user";
 import { cancelProviderPayment, settlePayment, updatePaymentStatus } from "@/lib/billing";
 import { adminPaymentUpdateSchema, readBody } from "@/lib/validation";
+import { logAdminAction } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +81,18 @@ export async function PATCH(
   const updated = await db.payment.findUnique({
     where: { id: paymentId },
     include: { user: { select: { id: true, name: true, email: true } } },
+  });
+
+  await logAdminAction({
+    adminId: auth.user.id,
+    action: `payment.${parsed.data.status}`,
+    targetType: "payment",
+    targetId: paymentId,
+    detail: {
+      orderId: payment.orderId,
+      status: parsed.data.status,
+      reason: parsed.data.reason ?? null,
+    },
   });
 
   return NextResponse.json({ payment: updated });

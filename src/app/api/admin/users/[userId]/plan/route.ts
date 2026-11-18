@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/current-user";
 import { effectivePlan } from "@/lib/plans";
 import { readBody, adminPlanUpdateSchema } from "@/lib/validation";
 import { createNotification } from "@/lib/collab-notify";
+import { logAdminAction } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,19 @@ export async function PATCH(
         : `Diubah oleh ${auth.user.name}.`,
     link: "/",
   }).catch(() => null);
+
+  await logAdminAction({
+    adminId: auth.user.id,
+    action: "plan.updated",
+    targetType: "user",
+    targetId: userId,
+    detail: {
+      plan,
+      days: days ?? null,
+      planExpiresAt: planExpiresAt?.toISOString() ?? null,
+      resetTrial: Boolean(resetTrial),
+    },
+  });
 
   return NextResponse.json({ user: { ...updated, effectivePlan: effectivePlan(updated) } });
 }

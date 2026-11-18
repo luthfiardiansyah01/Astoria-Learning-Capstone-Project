@@ -216,7 +216,7 @@ describe("proyek", () => {
     expect(res.status).toBe(403);
   });
 
-  it("membatasi tugas selesai dan menyediakan total", async () => {
+  it("membatasi tiap kolom dan mendukung muat lagi", async () => {
     const owner = await createUser();
     const team = await createTeam(owner.id);
     const project = await createProject(team.id);
@@ -244,20 +244,32 @@ describe("proyek", () => {
       params({ projectId: project.id })
     );
     const body = (await res.json()) as {
-      project: { tasks: Array<{ status: string }>; doneTotal: number; doneLoaded: number };
+      project: {
+        tasks: Array<{ id: string; status: string }>;
+        columnCounts: Record<string, number>;
+      };
     };
     expect(res.status).toBe(200);
-    expect(body.project.tasks.filter((t) => t.status === "done")).toHaveLength(50);
+    const doneLoaded = body.project.tasks.filter((t) => t.status === "done");
+    expect(doneLoaded).toHaveLength(50);
     expect(body.project.tasks.filter((t) => t.status === "todo")).toHaveLength(5);
-    expect(body.project.doneTotal).toBe(60);
-    expect(body.project.doneLoaded).toBe(50);
+    expect(body.project.columnCounts.done).toBe(60);
 
-    const allRes = await projectDetailRoute.GET(
-      jsonRequest(`/api/collab/projects/${project.id}?done=all`, "GET"),
+    const lastDone = doneLoaded[doneLoaded.length - 1];
+    const moreRes = await tasksRoute.GET(
+      jsonRequest(
+        `/api/collab/projects/${project.id}/tasks?status=done&cursor=${lastDone.id}`,
+        "GET"
+      ),
       params({ projectId: project.id })
     );
-    const allBody = (await allRes.json()) as { project: { tasks: Array<{ status: string }> } };
-    expect(allBody.project.tasks.filter((t) => t.status === "done")).toHaveLength(60);
+    const moreBody = (await moreRes.json()) as {
+      tasks: Array<{ id: string; status: string }>;
+      nextCursor: string | null;
+    };
+    expect(moreRes.status).toBe(200);
+    expect(moreBody.tasks).toHaveLength(10);
+    expect(moreBody.tasks.every((t) => t.status === "done")).toBe(true);
   });
 
   it("hanya owner yang bisa menghapus proyek", async () => {

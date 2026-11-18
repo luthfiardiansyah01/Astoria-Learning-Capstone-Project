@@ -4,15 +4,15 @@
 
 Sejak migrasi `20261105000000_enable_row_level_security`, **semua tabel di schema
 `public` memiliki RLS aktif** dan tidak memiliki policy publik.
-Per 18 November 2026 (diverifikasi ulang ke database produksi) ada **20 tabel**
-dan **10 migrasi** yang diterapkan, dengan **0 policy** di schema `public`.
+Per 18 November 2026 (diverifikasi ulang ke database produksi) ada **22 tabel**
+dan **11 migrasi** yang diterapkan, dengan **0 policy** di schema `public`.
 
 Tabel yang dicakup:
 
 `_prisma_migrations`, `User`, `Team`, `TeamBadge`, `Notification`, `TeamMember`,
 `Project`, `Task`, `Document`, `TaskChatMessage`, `ActivityEvent`, `Chunk`,
 `ChatMessage`, `QuizQuestion`, `QuizAttempt`, `Badge`, `Payment`, `TeamInvite`,
-`EmailVerificationToken`, `PasswordResetToken`.
+`EmailVerificationToken`, `PasswordResetToken`, `AdminAuditLog`, `AnalyticsCache`.
 
 Migrasi P3 `20261107030000_p3_constraints_indexes` juga menambahkan:
 

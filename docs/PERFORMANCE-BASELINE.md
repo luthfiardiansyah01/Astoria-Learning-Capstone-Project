@@ -273,3 +273,23 @@ kedaluwarsa tetap membutuhkan ±65 ms.
 Target 120 KB tidak realistis untuk 1.000 tugas aktif: payload minimum untuk
 tugas aktif saja sudah ±165 KB. Opsi lanjutan (Perf-3) adalah pagination per kolom
 Kanban atau memuat detail tugas saat kartu dibuka.
+
+## 13. Hasil P5 — 18 November 2026
+
+| Metrik | Sebelum | Sesudah |
+|---|---:|---:|
+| Project detail (1.000 tugas) | 176 KB / 30 ms | **44,6 KB / 16 ms** |
+| Analitik kolaborasi (hangat) | 6 ms | 6 ms (cache persisten L2) |
+| Uji beban `/produk` | belum ada | **667 RPS**, p95 **44 ms**, 0 error |
+| JS publik `/login` | ±703 KB | ±703 KB (belum turun) |
+
+Uji beban: concurrency 20, durasi 10 detik, server lokal, database uji.
+Catatan:
+
+- Pagination per kolom Kanban menurunkan payload 75% dari Perf-2 dan 89% dari
+  baseline awal.
+- Bundle JS belum turun signifikan; `MotionProvider` sudah dipindah dari root
+  layout, tetapi chunk inti React/Next tetap ±700 KB sebelum kompresi. Perlu
+  analisis bundle (`@next/bundle-analyzer`) sebagai tahap terpisah.
+- pgvector belum aktif; migrasi hanya membuat kolom bila ekstensi `vector`
+  tersedia. Aplikasi tetap memakai cosine similarity di JS.

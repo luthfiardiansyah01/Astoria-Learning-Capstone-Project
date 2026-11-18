@@ -31,6 +31,7 @@ model User {
   badges           Badge[]
   teamMemberships  TeamMember[]
   passwordResetTokens PasswordResetToken[]
+  adminAuditLogs   AdminAuditLog[]  @relation("AdminAuditLogs")
   teamInvitesReceived TeamInvite[]  @relation("TeamInviteInvitee")
   teamInvitesSent     TeamInvite[]  @relation("TeamInviteInviter")
   verificationTokens  EmailVerificationToken[]
@@ -342,4 +343,25 @@ model Badge {
   earnedAt  DateTime @default(now())
 
   @@unique([userId, name])
+}
+// Jejak aksi admin untuk audit (moderasi, paket, pembayaran).
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  admin      User     @relation("AdminAuditLogs", fields: [adminId], references: [id], onDelete: Cascade)
+  action     String // payment.paid | payment.refunded | document.approved | plan.updated ...
+  targetType String // payment | document | user
+  targetId   String?
+  detail     Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([adminId])
+}
+
+// Cache payload analitik agar permintaan berikutnya tidak menghitung ulang.
+model AnalyticsCache {
+  key       String   @id
+  payload   Json
+  updatedAt DateTime @updatedAt
 }

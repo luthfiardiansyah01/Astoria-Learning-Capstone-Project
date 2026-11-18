@@ -27,6 +27,7 @@ import { XP_LEVELS } from "@/lib/gamif";
 import { useAstoria, type ViewKey } from "@/components/astoria/store";
 import { HomeView } from "@/components/astoria/home-view";
 import { EmailVerificationBanner } from "@/components/astoria/email-verification-banner";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import { AiQuotaBadge } from "@/components/astoria/ai-quota-badge";
 import { PlanBadge } from "@/components/astoria/plan-badge";
 import { CONTACT_EMAIL } from "@/lib/contact";
@@ -211,7 +212,8 @@ export default function AstoriaPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <MotionProvider>
+      <div className="min-h-screen flex flex-col bg-background">
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
         <div className="mx-auto max-w-6xl px-4">
@@ -372,6 +374,7 @@ export default function AstoriaPage() {
           </nav>
         </div>
       </footer>
-    </div>
+      </div>
+    </MotionProvider>
   );
 }

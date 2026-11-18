@@ -15,19 +15,20 @@ export function KanbanColumn({
   status,
   tasks,
   onOpenTask,
-  doneTotal,
-  onLoadAllDone,
-  loadingAllDone,
+  total,
+  hasMore,
+  loadingMore,
+  onLoadMore,
 }: {
   status: string;
   tasks: CollabTask[];
   onOpenTask: (id: string) => void;
-  doneTotal?: number;
-  onLoadAllDone?: () => void;
-  loadingAllDone?: boolean;
+  total?: number;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
-  const hasHiddenDone = status === "done" && typeof doneTotal === "number" && doneTotal > tasks.length;
 
   return (
     <div
@@ -40,14 +41,14 @@ export function KanbanColumn({
       <div className="flex items-center justify-between gap-2 px-1">
         <h3 className="text-sm font-semibold">{COLUMN_LABELS[status] ?? status}</h3>
         <div className="flex items-center gap-2">
-          {hasHiddenDone && (
+          {hasMore && (
             <button
               type="button"
-              onClick={onLoadAllDone}
-              disabled={loadingAllDone}
+              onClick={onLoadMore}
+              disabled={loadingMore}
               className="text-[10px] font-medium text-primary hover:underline disabled:opacity-50"
             >
-              {loadingAllDone ? "Memuat…" : `Muat semua (${doneTotal})`}
+              {loadingMore ? "Memuat…" : `Muat lagi (${(total ?? tasks.length) - tasks.length})`}
             </button>
           )}
           <span className="text-xs text-muted-foreground">{tasks.length}</span>
