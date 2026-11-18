@@ -5,7 +5,7 @@
 Sejak migrasi `20261105000000_enable_row_level_security`, **semua tabel di schema
 `public` memiliki RLS aktif** dan tidak memiliki policy publik.
 Per 18 November 2026 (diverifikasi ulang ke database produksi) ada **22 tabel**
-dan **11 migrasi** yang diterapkan, dengan **0 policy** di schema `public`.
+dan **12 migrasi** yang diterapkan, dengan **0 policy** di schema `public`.
 
 Tabel yang dicakup:
 
@@ -24,6 +24,9 @@ Migrasi P3 `20261107030000_p3_constraints_indexes` juga menambahkan:
 - Migrasi P4 `20261118010000_p4_password_reset_consent` menambahkan tabel
   `PasswordResetToken` (RLS aktif) dan kolom `Payment.consentAt` untuk bukti
   persetujuan Syarat & Ketentuan.
+- Migrasi P5 `20261118030000_pgvector_2048_hnsw` menyesuaikan kolom
+  `Chunk.embeddingVec` ke `vector(2048)` dan membuat index HNSW
+  (`vector_cosine_ops`) bila ekstensi `vector` tersedia.
 
 ## Kenapa aman untuk aplikasi
 

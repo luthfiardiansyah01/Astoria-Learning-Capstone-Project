@@ -28,6 +28,9 @@ import { useAstoria, type ViewKey } from "@/components/astoria/store";
 import { HomeView } from "@/components/astoria/home-view";
 import { EmailVerificationBanner } from "@/components/astoria/email-verification-banner";
 import { MotionProvider } from "@/components/providers/motion-provider";
+import { AstoriaSessionProvider } from "@/components/providers/session-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { AiQuotaBadge } from "@/components/astoria/ai-quota-badge";
 import { PlanBadge } from "@/components/astoria/plan-badge";
 import { CONTACT_EMAIL } from "@/lib/contact";
@@ -139,7 +142,20 @@ function NavPills({
   );
 }
 
-export default function AstoriaPage() {
+export default function Page() {
+  return (
+    <AstoriaSessionProvider>
+      <QueryProvider>
+        <MotionProvider>
+          <AstoriaPage />
+          <SonnerToaster />
+        </MotionProvider>
+      </QueryProvider>
+    </AstoriaSessionProvider>
+  );
+}
+
+function AstoriaPage() {
   const { view, setView, stats } = useAstoria();
   const reduceMotion = useReducedMotion();
   const router = useRouter();
@@ -212,8 +228,7 @@ export default function AstoriaPage() {
   }
 
   return (
-    <MotionProvider>
-      <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
         <div className="mx-auto max-w-6xl px-4">
@@ -374,7 +389,6 @@ export default function AstoriaPage() {
           </nav>
         </div>
       </footer>
-      </div>
-    </MotionProvider>
+    </div>
   );
 }

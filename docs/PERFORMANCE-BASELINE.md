@@ -281,15 +281,16 @@ Kanban atau memuat detail tugas saat kartu dibuka.
 | Project detail (1.000 tugas) | 176 KB / 30 ms | **44,6 KB / 16 ms** |
 | Analitik kolaborasi (hangat) | 6 ms | 6 ms (cache persisten L2) |
 | Uji beban `/produk` | belum ada | **667 RPS**, p95 **44 ms**, 0 error |
-| JS publik `/login` | ±703 KB | ±703 KB (belum turun) |
+| JS publik `/produk` | ±700 KB | **609 KB** (−13%) |
+| JS publik `/login` | ±705 KB | **678 KB** |
 
 Uji beban: concurrency 20, durasi 10 detik, server lokal, database uji.
 Catatan:
 
 - Pagination per kolom Kanban menurunkan payload 75% dari Perf-2 dan 89% dari
   baseline awal.
-- Bundle JS belum turun signifikan; `MotionProvider` sudah dipindah dari root
-  layout, tetapi chunk inti React/Next tetap ±700 KB sebelum kompresi. Perlu
-  analisis bundle (`@next/bundle-analyzer`) sebagai tahap terpisah.
-- pgvector belum aktif; migrasi hanya membuat kolom bila ekstensi `vector`
-  tersedia. Aplikasi tetap memakai cosine similarity di JS.
+- Bundle publik turun 13% setelah `SessionProvider`, `QueryProvider`, `MotionProvider`,
+  dan Toaster dipindah dari root layout ke layout rute yang membutuhkannya.
+- pgvector aktif: kolom `vector(2048)`, index HNSW, dual-write saat embedding baru,
+  dan backfill 225 chunk lama. Fallback cosine di JS tetap tersedia bila ekstensi
+  tidak ada.

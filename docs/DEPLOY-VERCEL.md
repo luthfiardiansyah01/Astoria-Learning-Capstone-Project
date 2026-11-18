@@ -190,6 +190,7 @@ Untuk pengujian cepat sebagian besar alur di atas, `scripts/smoke.ps1` bisa diar
 | Terapkan migrasi produksi | `bun run db:prod:deploy` |
 | Cek isi tabel utama | `bun scripts/db-prod.ts check` |
 | Seed admin pertama | `bun scripts/db-prod.ts seed` |
+| Backfill vector pgvector (sekali, setelah migrasi) | `bun scripts/backfill-vectors.ts --prod` |
 
 - Migrasi baru dibuat lokal dengan `bun x prisma migrate dev --name <nama>`, lalu di-commit. Migrasi otomatis diterapkan saat deployment **Production** di Vercel (`bun run build:prod` → `prisma migrate deploy`), atau manual lewat `bun run db:prod:deploy`.
 

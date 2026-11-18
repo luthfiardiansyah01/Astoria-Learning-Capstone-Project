@@ -42,7 +42,8 @@
     "perf:db": "bun scripts/perf/bench-db.ts",
     "perf:http": "bun scripts/perf/bench-http.ts",
     "perf:prod": "bun scripts/perf/bench-prod.ts",
-    "perf:load": "bun scripts/perf/load-test.ts"
+    "perf:load": "bun scripts/perf/load-test.ts",
+    "db:backfill-vectors": "bun scripts/backfill-vectors.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

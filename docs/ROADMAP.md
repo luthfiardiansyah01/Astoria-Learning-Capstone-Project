@@ -27,7 +27,7 @@ produksi + deploy". Itu **sudah selesai** dan bukan "P4" dalam roadmap ini.
 | **Perf-1** | Dokumen & analitik: pagination, index, agregasi SQL, tracing | ✅ Selesai | `195b359` |
 | **Perf-2** | Analitik kolaborasi, payload proyek, cache statis | ✅ Selesai | `ae36f89` |
 | **P4** | Kesiapan publik | ✅ Selesai (18 Nov 2026) | `MONITORING-LOG.md` entri 18 Nov |
-| **P5** | Skala & produk lanjutan | ⚠️ Sebagian (5 selesai, 2 tertunda) | lihat bagian 5 |
+| **P5** | Skala & produk lanjutan | ✅ Selesai (18 Nov 2026) | lihat bagian 5 |
 
 ## 3. Fase yang sudah selesai
 
@@ -88,10 +88,10 @@ Verifikasi P4: unit 158, integrasi 153, E2E 13 lulus; migrasi
 |---|---|---|---|
 | 1 | Pagination per kolom Kanban | ✅ Selesai | 50 tugas/kolom + tombol "Muat lagi"; payload 390→**44,6 KB** |
 | 2 | Precompute analitik | ✅ Selesai | Cache persisten `AnalyticsCache` + cache memori 30 detik |
-| 3 | Bundle JS & lazy-load | ⚠️ Sebagian | `MotionProvider` dipindah dari root layout; JS publik masih ±703 KB dan perlu analisis bundle lanjutan |
+| 3 | Bundle JS & lazy-load | ✅ Selesai | Provider dipindah dari root layout; JS publik 700→**609 KB** (−13%) |
 | 4 | Email undangan tim & tenggat | ✅ Selesai | Email undangan + cron harian `/api/cron/reminders` (butuh `CRON_SECRET`) |
 | 5 | Audit log aksi admin | ✅ Selesai | Tabel `AdminAuditLog`, pencatatan pembayaran/moderasi/paket, API `/api/admin/audit` |
-| 6 | pgvector untuk RAG | ⚠️ Siap diaktifkan | Migrasi opsional membuat ekstensi + kolom bila tersedia; aplikasi tetap memakai fallback JSON sampai ekstensi Supabase diaktifkan |
+| 6 | pgvector untuk RAG | ✅ Selesai | Kolom `vector(2048)`, index HNSW, dual-write, backfill 225 chunk; fallback JSON tetap ada |
 | 7 | Uji beban & monitoring | ✅ Selesai | `scripts/perf/load-test.ts`: 667 RPS, p95 44 ms, 0 error (concurrency 20, 10 detik) |
 
 Rincian P5 ada di `PERFORMANCE-BASELINE.md` bagian 13.

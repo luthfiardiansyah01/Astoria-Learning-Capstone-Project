@@ -34,7 +34,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Env pembayaran | `PAYMENT_PROVIDER`, `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION` terpasang |
 | Metode pembayaran | **Ditahan** (16 Nov 2026): kanal Midtrans belum disetujui, rekening manual belum diisi, `PAYMENT_MANUAL_ONLY=false` |
 | Tim orphan | `Anim Team` **dihapus** (backup di temp) |
-| Test | **158 unit** (18 Nov), **158 integration** (18 Nov), 13 E2E (18 Nov) |
+| Test | **158 unit** (18 Nov), **161 integration** (18 Nov), 13 E2E (18 Nov) |
 | Dependensi kritis | Next **16.4.6**, sharp **0.35.5**; override lodash 4.18.1, postcss 8.5.33, nanoid 3.3.20, source-map-js 1.2.2 |
 | Advisory runtime | **0** pada paket runtime utama; sisa temuan hanya rantai perkakas dev/build |
 | Log produksi terakhir | **0 error, 0 respons 5xx** |
@@ -128,7 +128,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-18 | Perf | Perf-1 optimasi dokumen & analitik | Selesai | `/api/documents` 198→11 ms (1,01 MB→10 KB); admin analytics 44→10 ms; traced files 391→12 |
 | 2026-11-18 | Perf | Perf-2 analitik kolaborasi & payload proyek | Selesai | Collab analytics 6 ms warm (p95 9); project detail 390→176 KB; cache header statis |
 | 2026-11-18 | P4 | Kesiapan publik | Selesai | Reset password, ekspor/hapus akun, kuitansi email, refund+alasan, consent S&K, CSP enforced, rotasi kredensial admin |
-| 2026-11-18 | P5 | Skala & produk | Sebagian | Kanban per-kolom (390→44,6 KB), cache analitik persisten, email undangan + cron, audit log, load test 667 RPS; bundle & pgvector tertunda |
+| 2026-11-18 | P5 | Skala & produk | Selesai | Kanban per-kolom (390→44,6 KB), cache analitik persisten, bundle 700→609 KB, email undangan + cron, audit log, pgvector 2048+HNSW (backfill 225), load test 667 RPS |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -566,16 +566,16 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 
 **Verifikasi**
 
-- Unit **158**, integration **158**, E2E **13** lulus.
+- Unit **158**, integration **161**, E2E **13** lulus.
 - Project detail (1.000 tugas) 176 KB → **44,6 KB**, p50 16 ms.
 - Load test `/produk` (concurrency 20, 10 detik): **667 RPS**, p95 **44 ms**,
   0 error.
-- Migrasi P5 diterapkan; RLS 22 tabel.
+- Migrasi P5 diterapkan; RLS 22 tabel; pgvector 2048 + index HNSW aktif.
 
 **Sisa**
 
-- Bundle JS publik masih ±703 KB; perlu analisis bundle lanjutan.
-- pgvector belum aktif; menunggu ekstensi `vector` di Supabase.
+- Tidak ada item P5 yang tertunda. Optimasi lanjutan (mis. analisis bundle per
+  chunk, tuning HNSW) bersifat opsional di luar cakupan P5.
 
 ## Template entri tahap berikutnya
 

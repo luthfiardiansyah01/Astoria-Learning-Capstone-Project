@@ -11,6 +11,8 @@ import {
 } from "./helpers";
 import * as auditRoute from "@/app/api/admin/audit/route";
 import * as cronRoute from "@/app/api/cron/reminders/route";
+import * as systemRoute from "@/app/api/admin/system/route";
+import { pgvectorAvailable, toVectorLiteral } from "@/lib/pgvector";
 
 beforeEach(async () => {
   await resetDb();
@@ -45,6 +47,25 @@ describe("audit log admin", () => {
     const body = (await res.json()) as { logs: Array<{ action: string }> };
     expect(body.logs).toHaveLength(1);
     expect(body.logs[0].action).toBe("plan.updated");
+  });
+});
+
+describe("pgvector & status sistem", () => {
+  it("format literal vektor aman untuk nilai tidak valid", () => {
+    expect(toVectorLiteral([1, 2.5, Number.NaN])).toBe("[1,2.5,0]");
+  });
+
+  it("melaporkan pgvector tidak tersedia di database tanpa ekstensi", async () => {
+    expect(await pgvectorAvailable()).toBe(false);
+  });
+
+  it("menyediakan status sistem untuk admin", async () => {
+    const admin = await createUser({ role: "admin" });
+    setAuthUser(admin);
+    const res = await systemRoute.GET();
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { pgvector: boolean };
+    expect(body.pgvector).toBe(false);
   });
 });
 

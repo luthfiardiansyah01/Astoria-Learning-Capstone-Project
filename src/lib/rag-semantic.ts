@@ -5,6 +5,7 @@
 import { db } from "./db";
 import { embedTexts } from "./ai";
 import { MAX_CONTEXT_LENGTH, retrieveRelevantChunks, tokenize } from "./rag";
+import { storeChunkVector, vectorSearch } from "./pgvector";
 
 const EMBED_BATCH = 16;
 const SEMANTIC_WEIGHT = 0.65;
@@ -43,6 +44,8 @@ export async function ensureChunkEmbeddings(chunks: ChunkRow[]): Promise<Map<str
         return db.chunk.update({ where: { id: c.id }, data: { embedding: JSON.stringify(result[j]) } });
       })
     );
+    // Dual-write ke pgvector bila tersedia; kegagalan tidak menggagalkan alur.
+    await Promise.all(batch.map((c, j) => storeChunkVector(c.id, result[j])));
   }
   return vectors;
 }
@@ -74,9 +77,17 @@ export async function retrieveForDocument(
   });
   const maxKeyword = Math.max(...rawKeyword, 1);
 
+  // Bila pgvector aktif, ambil skor kemiripan langsung dari database.
+  const pgHits = await vectorSearch(documentId, qVec[0], Math.max(chunks.length, 100));
+  const pgScores = pgHits ? new Map(pgHits.map((h) => [h.id, h.similarity])) : null;
+
   const scored = chunks.map((c, idx) => {
-    const vec = vectors.get(c.id);
-    const semantic = vec ? Math.max(0, cosine(qVec[0], vec)) : 0;
+    const semantic = pgScores
+      ? Math.max(0, pgScores.get(c.id) ?? 0)
+      : (() => {
+          const vec = vectors.get(c.id);
+          return vec ? Math.max(0, cosine(qVec[0], vec)) : 0;
+        })();
     return {
       idx,
       content: c.content,
