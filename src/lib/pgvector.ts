@@ -56,10 +56,11 @@ export async function vectorSearch(
   if (!(await pgvectorAvailable())) return null;
   try {
     const rows = await db.$queryRawUnsafe<VectorHit[]>(
-      `SELECT id, content, (1 - ("embeddingVec" <=> $1::vector))::float8 AS similarity
+      `SELECT id, content,
+              (1 - ("embeddingVec"::halfvec(2048) <=> $1::halfvec(2048)))::float8 AS similarity
        FROM "Chunk"
        WHERE "documentId" = $2 AND "embeddingVec" IS NOT NULL
-       ORDER BY "embeddingVec" <=> $1::vector
+       ORDER BY "embeddingVec"::halfvec(2048) <=> $1::halfvec(2048)
        LIMIT $3`,
       toVectorLiteral(queryVector),
       documentId,
