@@ -121,7 +121,7 @@ function TaskForm({
   const { data: documents } = useQuery<{ id: string; fileName: string }[]>({
     queryKey: ["documents"],
     queryFn: async () => {
-      const res = await fetch("/api/documents");
+      const res = await fetch("/api/documents?limit=100");
       if (!res.ok) throw new Error("Gagal memuat dokumen.");
       return (await res.json()).documents;
     },

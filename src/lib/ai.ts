@@ -1,13 +1,12 @@
 import { logger } from "@/lib/logger";
 // src/lib/ai.ts
-// Klien AI OpenAI-compatible (OpenRouter, dll) — HANYA untuk backend (server-side).
+// Klien AI OpenAI-compatible (OpenRouter, dll) - HANYA untuk backend (server-side).
 // Parameter per peran + retry + rotasi model cadangan + cache.
-// Konfigurasi: env AI_BASE_URL + AI_API_KEY (produksi/Vercel), atau file .z-ai-config (lokal).
+// Konfigurasi: env AI_BASE_URL + AI_API_KEY (produksi/Vercel maupun lokal).
+// Catatan: konfigurasi berbasis file (.z-ai-config) dihapus agar bundler tidak
+// menelusuri seluruh proyek (memperbesar artefak deploy).
 
 import { createHash } from "crypto";
-import { promises as fs } from "fs";
-import os from "os";
-import path from "path";
 import type { PARAMS } from "./prompts";
 
 type RoleParams = (typeof PARAMS)[keyof typeof PARAMS];
@@ -73,23 +72,8 @@ async function getConfig(): Promise<AiConfig> {
     return cachedConfig;
   }
 
-  const candidates = [
-    path.join(process.cwd(), ".z-ai-config"),
-    path.join(os.homedir(), ".z-ai-config"),
-  ];
-  for (const file of candidates) {
-    try {
-      const cfg = JSON.parse(await fs.readFile(file, "utf-8"));
-      if (cfg.baseUrl && cfg.apiKey) {
-        cachedConfig = { baseUrl: String(cfg.baseUrl).replace(/\/+$/, ""), apiKey: String(cfg.apiKey) };
-        return cachedConfig;
-      }
-    } catch {
-      // coba lokasi berikutnya
-    }
-  }
   throw new Error(
-    "Konfigurasi AI tidak ditemukan. Isi env AI_BASE_URL + AI_API_KEY, atau buat file .z-ai-config."
+    "Konfigurasi AI tidak ditemukan. Isi env AI_BASE_URL + AI_API_KEY."
   );
 }
 

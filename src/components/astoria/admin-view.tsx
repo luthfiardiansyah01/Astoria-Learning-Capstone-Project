@@ -77,6 +77,8 @@ const STATUS_META: Record<string, { label: string; variant: "default" | "seconda
 export function AdminView() {
   const { toast } = useToast();
   const [docs, setDocs] = useState<AdminDoc[]>([]);
+  const [docCursor, setDocCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [insightLoading, setInsightLoading] = useState(false);
@@ -87,13 +89,14 @@ export function AdminView() {
     setLoading(true);
     try {
       const [dRes, aRes] = await Promise.all([
-        fetch("/api/documents"),
+        fetch("/api/documents?limit=50"),
         fetch("/api/admin/analytics"),
       ]);
       if (!dRes.ok || !aRes.ok) throw new Error("Gagal memuat data admin.");
       const d = await dRes.json();
       const a = await aRes.json();
       setDocs(d.documents ?? []);
+      setDocCursor(d.nextCursor ?? null);
       setAnalytics(a.analytics ?? null);
     } catch {
       toast({
@@ -109,6 +112,26 @@ export function AdminView() {
   useEffect(() => {
     loadAll();
   }, []);
+
+  const loadMoreDocs = async () => {
+    if (!docCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/documents?limit=50&cursor=${encodeURIComponent(docCursor)}`);
+      if (!res.ok) throw new Error("Gagal memuat dokumen berikutnya.");
+      const data = await res.json();
+      setDocs((prev) => [...prev, ...(data.documents ?? [])]);
+      setDocCursor(data.nextCursor ?? null);
+    } catch {
+      toast({
+        title: "Gagal memuat dokumen",
+        description: "Coba lagi beberapa saat.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const decide = async (documentId: string, decision: string) => {
     setBusyDoc(documentId);
@@ -240,7 +263,8 @@ export function AdminView() {
                 Belum ada dokumen di platform.
               </p>
             ) : (
-              <div className="space-y-3 max-h-[34rem] overflow-y-auto astoria-scroll pr-1">
+              <>
+                <div className="space-y-3 max-h-[34rem] overflow-y-auto astoria-scroll pr-1">
                 {docs.map((d) => {
                   const sm = STATUS_META[d.status] ?? STATUS_META.pending;
                   return (
@@ -344,7 +368,21 @@ export function AdminView() {
                     </div>
                   );
                 })}
-              </div>
+                </div>
+                {docCursor && (
+                  <div className="mt-3 flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={loadMoreDocs}
+                      disabled={loadingMore}
+                    >
+                      {loadingMore && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                      Muat lebih banyak
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>

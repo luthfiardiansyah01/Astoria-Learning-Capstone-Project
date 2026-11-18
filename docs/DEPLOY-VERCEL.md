@@ -207,7 +207,7 @@ Jika `DIRECT_URL` kosong saat Production, build sengaja **gagal lebih awal** den
 
 ## 8. Keamanan
 
-- `.env`, `.env.supabase`, dan `.z-ai-config` tidak boleh masuk repository.
+- `.env` dan `.env.supabase` tidak boleh masuk repository.
 - Rotasi `NEXTAUTH_SECRET` akan membuat semua sesi lama logout — lakukan bila curiga bocor.
 - Rotasi API key OpenRouter dan token Upstash secara berkala.
 - Bila sebuah rahasia pernah ter-commit, mengubah nilainya di Vercel **tidak** menghapusnya dari riwayat Git; rotasi nilai tersebut adalah wajib.

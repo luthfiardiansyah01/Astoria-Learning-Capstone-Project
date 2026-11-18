@@ -74,7 +74,7 @@ export function ChatView() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/documents");
+        const res = await fetch("/api/documents?limit=100");
         const data = await res.json();
         const list: DocItem[] = (data.documents ?? []).filter(
           (d: DocItem & { status: string }) => d.status !== "rejected"

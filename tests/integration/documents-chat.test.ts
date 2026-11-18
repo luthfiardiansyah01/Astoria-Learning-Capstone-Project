@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { chatComplete, chatJSON } from "@/lib/ai";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
@@ -131,13 +132,49 @@ describe("GET /api/documents", () => {
     await createDocument(other.id, { status: "pending", fileName: "rahasia.txt" });
 
     setAuthUser(owner);
-    const res = await documentsRoute.GET();
+    const res = await documentsRoute.GET(new NextRequest("http://localhost/api/documents"));
     const body = (await res.json()) as { documents: { id: string; fileName: string }[] };
     const ids = body.documents.map((d) => d.id);
     expect(ids).toContain(own.id);
     expect(ids).toContain(approved.id);
     expect(ids).not.toContain(undefined);
     expect(body.documents.some((d) => d.fileName === "rahasia.txt")).toBe(false);
+  });
+
+  it("membatasi jumlah dokumen dan menyediakan cursor", async () => {
+    const user = await createUser();
+    for (let i = 0; i < 12; i++) {
+      await createDocument(user.id, { fileName: `dokumen-${i}.txt` });
+    }
+    setAuthUser(user);
+
+    const first = await documentsRoute.GET(
+      new NextRequest("http://localhost/api/documents?limit=5")
+    );
+    const page1 = (await first.json()) as {
+      documents: Array<Record<string, unknown>>;
+      nextCursor: string | null;
+    };
+    expect(page1.documents).toHaveLength(5);
+    expect(page1.nextCursor).toBeTruthy();
+    expect(page1.documents[0]).not.toHaveProperty("content");
+
+    const second = await documentsRoute.GET(
+      new NextRequest(
+        `http://localhost/api/documents?limit=5&cursor=${encodeURIComponent(page1.nextCursor!)}`
+      )
+    );
+    const page2 = (await second.json()) as {
+      documents: Array<{ id: string }>;
+      nextCursor: string | null;
+    };
+    expect(page2.documents).toHaveLength(5);
+
+    const ids = new Set([
+      ...page1.documents.map((d) => d.id as string),
+      ...page2.documents.map((d) => d.id),
+    ]);
+    expect(ids.size).toBe(10);
   });
 });
 

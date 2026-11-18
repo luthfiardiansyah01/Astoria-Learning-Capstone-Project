@@ -39,17 +39,24 @@ Tiga temuan utama:
    menjadi **89 ms** (p95 103 ms) karena memuat seluruh tim, proyek, tugas, dan
    aktivitas. `/api/admin/analytics` naik 11 ms → **44 ms** karena memuat semua
    dokumen untuk dihitung di JavaScript.
-3. **Output server 31,6 MB** — jauh di atas ukuran wajar. Peringatan Turbopack
-   menunjukkan `src/lib/ai.ts` membaca file secara dinamis sehingga **seluruh
-   proyek ikut ditelusuri** ke dalam output.
+3. **Tracing menyeret seluruh proyek** — peringatan Turbopack menunjukkan
+   `src/lib/ai.ts` membaca file konfigurasi secara dinamis. Akibatnya manifes
+   fungsi `api/chat` mereferensikan **391 file non-`node_modules`**, termasuk
+   `.z-ai-config`, `coverage/`, `docs/`, dan berkas proyek lain. Ini memperbesar
+   artefak deploy dan berpotensi membawa berkas rahasia lokal ke dalam bundel.
+   Catatan: angka "output server" di bawah sebagian besar adalah **source map**;
+   kode yang benar-benar dieksekusi sekitar **7,3 MB**.
 
 ## 3. Metrik build
 
 | Metrik | Nilai |
 |---|---:|
 | Waktu build (cache hangat) | **12,8 detik** |
-| Output server (`.next/server`) | **31,6 MB** |
+| Output server total (`.next/server`) | **31,6 MB** |
+| — Source map | 24,3 MB |
+| — Kode executable (tanpa map) | **7,3 MB** |
 | Output statis (`.next/static`) | **2,5 MB** |
+| File non-`node_modules` di manifes `api/chat` | **391** |
 | Halaman statis | 8 |
 | Route API | 42 |
 
@@ -138,7 +145,7 @@ Diurutkan berdasarkan rasio dampak/risiko.
 | 1 | `/api/documents`: pilih kolom minimal (`id, fileName, wordCount, status, createdAt, uploader`), jangan ambil `content`; tambah pagination (`limit` + cursor) | 1,01 MB → **< 60 KB**; 198 ms → **< 20 ms** |
 | 2 | Index `Document(createdAt)` untuk urutan admin | Menghindari Sort saat data besar |
 | 3 | `/api/admin/analytics`: `groupBy` status, hitung total di SQL, top-3 populer lewat query terbatas | 44 ms → **< 15 ms**, tidak lagi memuat semua dokumen |
-| 4 | Hapus pembacaan file dinamis di `ai.ts` (pakai env saja atau isolasi modul) | output server 31,6 MB → **< 10 MB**; peringatan Turbopack hilang |
+| 4 | Hapus pembacaan file dinamis di `ai.ts` (env saja) | file non-`node_modules` di manifes → **0**; executable tetap < 10 MB |
 
 ### P2 — dampak sedang
 
@@ -169,5 +176,59 @@ Optimasi dianggap berhasil bila, pada data dan metode yang sama:
 1. `/api/documents` p95 **< 50 ms** dan respons **< 100 KB**.
 2. `/api/admin/analytics` p95 **< 25 ms**.
 3. `/api/collab/analytics` p95 **< 50 ms**.
-4. Output server **< 10 MB** dan peringatan tracing hilang.
+4. Kode executable server **< 10 MB** dan manifes fungsi tidak lagi
+   mereferensikan file proyek (0 file non-`node_modules` selain chunk internal).
 5. Semua tes (unit, integrasi, E2E) tetap lulus.
+
+## 11. Hasil P1 — 18 November 2026
+
+Perubahan yang diterapkan:
+
+1. `/api/documents`: kolom minimal (tanpa `content`), pagination cursor
+   (`limit` default 50, maks 100), filter `status`.
+2. Index baru: `Document(createdAt)` dan `Document(uploaderId, createdAt)`
+   (menggantikan index `uploaderId` tunggal).
+3. `/api/admin/analytics`: agregasi status via `groupBy`, top-3 dokumen lewat
+   query terbatas (bukan memuat semua dokumen).
+4. `src/lib/ai.ts`: konfigurasi **hanya dari env**; pembacaan `.z-ai-config`
+   dihapus sehingga tracing tidak lagi menyeret proyek.
+
+### Perbandingan (data sama: 5.000 dokumen, 1.000 tugas)
+
+| Endpoint | Sebelum | Sesudah | Perubahan |
+|---|---:|---:|---|
+| `GET /api/documents` | 198 ms / 1.014 KB | **11 ms / 10 KB** | **18× lebih cepat, −99% payload** |
+| `GET /api/admin/analytics` | 44 ms | **10 ms** | 4,4× lebih cepat |
+| `GET /api/collab/analytics` | 89 ms | 61 ms | belum dioptimasi (P2) |
+| `GET project detail` | 40 ms / 327 KB | 34 ms / 390 KB | payload belum dipecah (P2) |
+| `GET /login`, `/produk` | 2 ms | 2 ms | stabil |
+
+### Database
+
+| Query | Sebelum | Sesudah |
+|---|---|---|
+| Dokumen urut `createdAt` | Seq Scan + Sort, 1,7 ms, 1.213 buffer | **Index Scan, 0,09 ms, 16 buffer** |
+
+### Artefak deploy
+
+| Metrik | Sebelum | Sesudah |
+|---|---:|---:|
+| File non-`node_modules` di manifes `api/chat` | **391** | **12** (hanya chunk internal) |
+| `.z-ai-config` ikut tertracing | ya | **tidak** |
+| Kode executable server | 7,3 MB | 7,1 MB |
+
+### Status target
+
+| Target | Status |
+|---|---|
+| `/api/documents` p95 < 50 ms dan < 100 KB | ✅ 13 ms / 10 KB |
+| `/api/admin/analytics` p95 < 25 ms | ✅ 13 ms |
+| `/api/collab/analytics` p95 < 50 ms | ❌ 75 ms → P2 |
+| Executable server < 10 MB, file proyek 0 | ✅ 7,1 MB / 12 chunk internal |
+| Semua tes lulus | ✅ 158 unit, 142 integrasi, 13 E2E |
+
+### Catatan migrasi AI
+
+Konfigurasi `.z-ai-config` lokal dipindahkan ke `.env`
+(`AI_BASE_URL`, `AI_API_KEY`) tanpa mencetak nilainya. Produksi tidak terpengaruh
+karena sejak awal memakai environment Vercel.

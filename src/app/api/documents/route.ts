@@ -44,28 +44,64 @@ interface ModerationResult {
   rekomendasi_admin: string;
 }
 
-export async function GET() {
+const DEFAULT_DOC_LIMIT = 50;
+const MAX_DOC_LIMIT = 100;
+const DOC_STATUSES = new Set(["pending", "approved", "rejected"]);
+
+export async function GET(req: NextRequest) {
   try {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const me = auth.user;
-    const documents = await db.document.findMany({
-      where: me.role === "admin" ? {} : { OR: [{ uploaderId: me.id }, { status: "approved" }] },
-      orderBy: { createdAt: "desc" },
-      include: { uploader: { select: { name: true } } },
+
+    const url = new URL(req.url);
+    const requested = Number(url.searchParams.get("limit"));
+    const limit =
+      Number.isFinite(requested) && requested > 0
+        ? Math.min(MAX_DOC_LIMIT, Math.floor(requested))
+        : DEFAULT_DOC_LIMIT;
+    const cursor = url.searchParams.get("cursor")?.trim() || null;
+    const statusFilter = url.searchParams.get("status")?.trim() || null;
+
+    const where = {
+      ...(me.role === "admin" ? {} : { OR: [{ uploaderId: me.id }, { status: "approved" }] }),
+      ...(statusFilter && DOC_STATUSES.has(statusFilter) ? { status: statusFilter } : {}),
+    };
+
+    // Ambil satu baris ekstra untuk mengetahui apakah masih ada halaman berikutnya.
+    const rows = await db.document.findMany({
+      where,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      // Kolom `content` sengaja tidak diambil: ukurannya besar dan tidak dipakai UI.
+      select: {
+        id: true,
+        fileName: true,
+        wordCount: true,
+        status: true,
+        metadata: true,
+        moderation: true,
+        createdAt: true,
+        uploader: { select: { name: true } },
+      },
     });
 
+    const hasMore = rows.length > limit;
+    const documents = rows.slice(0, limit).map((d) => ({
+      id: d.id,
+      fileName: d.fileName,
+      wordCount: d.wordCount,
+      status: d.status,
+      metadata: d.metadata ? JSON.parse(d.metadata) : null,
+      moderation: d.moderation ? JSON.parse(d.moderation) : null,
+      uploader: d.uploader.name,
+      createdAt: d.createdAt,
+    }));
+
     return NextResponse.json({
-      documents: documents.map((d) => ({
-        id: d.id,
-        fileName: d.fileName,
-        wordCount: d.wordCount,
-        status: d.status,
-        metadata: d.metadata ? JSON.parse(d.metadata) : null,
-        moderation: d.moderation ? JSON.parse(d.moderation) : null,
-        uploader: d.uploader.name,
-        createdAt: d.createdAt,
-      })),
+      documents,
+      nextCursor: hasMore ? documents[documents.length - 1]?.id ?? null : null,
     });
   } catch (e) {
     logger.error("[/api/documents GET]", { error: e });

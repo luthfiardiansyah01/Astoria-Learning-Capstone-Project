@@ -1,6 +1,6 @@
 # Log Monitoring & Tahapan SOBAT ADI
 
-Dokumen ini adalah catatan operasional berjalan. Setiap tahap (P0, P1, P2, â€¦)
+Dokumen ini adalah catatan operasional berjalan. Setiap tahap (P0, P1, P2, …)
 wajib menambahkan entri di bagian **Log Tahapan** agar keputusan, bukti
 verifikasi, dan sisa risiko tidak hilang.
 
@@ -39,8 +39,8 @@ verifikasi, dan sisa risiko tidak hilang.
 | Advisory runtime | **0** pada paket runtime utama; sisa temuan hanya rantai perkakas dev/build |
 | Log produksi terakhir | **0 error, 0 respons 5xx** |
 | CSP | **Report-Only** (belum enforced) |
-| Halaman publik | `/login`, `/register`, `/produk`, `/verify-email`, legal â†’ **200** |
-| Webhook Midtrans | `GET /api/billing/webhook/midtrans` â†’ **200** |
+| Halaman publik | `/login`, `/register`, `/produk`, `/verify-email`, legal → **200** |
+| Webhook Midtrans | `GET /api/billing/webhook/midtrans` → **200** |
 
 ## Checklist monitoring
 
@@ -60,10 +60,10 @@ verifikasi, dan sisa risiko tidak hilang.
 
 | Item | Cara cek | Tindakan |
 |---|---|---|
-| Channel Midtrans | Dashboard Midtrans â†’ business review/channel | Bila aktif, uji transaksi kecil end-to-end |
-| Pembayaran pending | Admin â†’ pembayaran | Cocokkan order ID + nominal; jangan tandai `paid` tanpa bukti |
+| Channel Midtrans | Dashboard Midtrans → business review/channel | Bila aktif, uji transaksi kecil end-to-end |
+| Pembayaran pending | Admin → pembayaran | Cocokkan order ID + nominal; jangan tandai `paid` tanpa bukti |
 | Admin legacy | Login/daftar admin | Hapus/nonaktifkan `admin@sobat-adi.id` setelah admin aktif aman |
-| Backup Supabase | Dashboard â†’ Database â†’ Backups | Pastikan backup terbaru tersedia |
+| Backup Supabase | Dashboard → Database → Backups | Pastikan backup terbaru tersedia |
 | Dependency/security | `bun audit` atau Dependabot | Perbarui patch kritis |
 
 ### Bulanan
@@ -71,7 +71,7 @@ verifikasi, dan sisa risiko tidak hilang.
 | Item | Cara cek | Tindakan |
 |---|---|---|
 | Secret hygiene | `git grep` pola token; cek history | Rotasi token yang pernah terekspos |
-| Supabase linter/RLS | Dashboard â†’ Advisors | Tutup temuan baru |
+| Supabase linter/RLS | Dashboard → Advisors | Tutup temuan baru |
 | Kredensial admin | Password manager | Rotasi berkala; pastikan dua admin aktif |
 | Akses Vercel/Supabase | Daftar member | Cabut akses yang tidak lagi diperlukan |
 
@@ -125,8 +125,9 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-16 | Payment | Konfigurasi metode pembayaran **ditahan** | Ditunda | Midtrans production terpasang, kanal belum disetujui; rekening manual belum diisi; fitur transfer manual tersedia tetapi tidak diaktifkan |
 | 2026-11-18 | Fix | Stabilitas & keamanan deploy | Selesai | Next 16.4.6, sharp 0.35.5, override dependensi rentan; batas body chunked; bcrypt 12; guard seed; tautan legal |
 | 2026-11-18 | Perf | Baseline performa terukur | Selesai | `PERFORMANCE-BASELINE.md` + 4 skrip di `scripts/perf/`; 3 hotspot: documents 1,01 MB/198 ms, collab analytics 89 ms, server 31,6 MB |
+| 2026-11-18 | Perf | P1 optimasi dokumen & analitik | Selesai | `/api/documents` 198→11 ms (1,01 MB→10 KB); admin analytics 44→10 ms; traced files 391→12 |
 
-## Detail Fase P0 â€” 7 November 2026
+## Detail Fase P0 — 7 November 2026
 
 **Perubahan**
 - Rotasi password database melalui Supabase Management API.
@@ -151,7 +152,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Channel pembayaran Midtrans belum aktif; alur manual tetap tersedia.
 - Layanan eksternal di luar repo yang masih memakai password DB lama perlu diperbarui.
 
-## Detail Fase P1 â€” 7 November 2026
+## Detail Fase P1 — 7 November 2026
 
 **Perubahan**
 - Middleware batas body: 1 MB untuk API umum, 256 KB untuk webhook.
@@ -175,7 +176,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - CI `733a6a7` sukses; deployment Production Ready.
 
 **Sisa risiko (saat P1 awal)**
-- Verifikasi email dan CAPTCHA saat itu belum aktif; kemudian diaktifkan â€”
+- Verifikasi email dan CAPTCHA saat itu belum aktif; kemudian diaktifkan —
   lihat bagian **Detail entri P1 lanjutan**.
 - Batas anggota tim saat itu masih hitung-lalu-buat; kemudian dibuat atomik di P2.
 - Admin legacy `admin@sobat-adi.id` masih aktif.
@@ -185,7 +186,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Sediakan `RESEND_API_KEY`/SMTP dan kunci Turnstile untuk P1 lanjutan.
 - Atomickan batas anggota tim dan pertimbangkan undangan via email.
 
-## Detail Fase P1 â€” Verifikasi Email & CAPTCHA (7 November 2026)
+## Detail Fase P1 — Verifikasi Email & CAPTCHA (7 November 2026)
 
 **Perubahan**
 - Tambah `User.emailVerifiedAt` dan model `EmailVerificationToken` (hash SHA-256,
@@ -201,7 +202,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 **Verifikasi**
 - Unit 150 / integration 131 / E2E 12 lulus.
 - Migrasi `20261107020000_email_verification` diterapkan ke test DB.
-- Alur test: registrasi â†’ token â†’ verifikasi â†’ trial 7 hari; akun belum
+- Alur test: registrasi → token → verifikasi → trial 7 hari; akun belum
   verifikasi ditolak saat klaim trial dan AI.
 
 **Status produksi**
@@ -221,7 +222,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Resend dan Turnstile adalah dependensi eksternal; outage dapat menunda
   registrasi/verifikasi.
 
-## Detail Fase P2 â€” 7 November 2026
+## Detail Fase P2 — 7 November 2026
 
 **Perubahan**
 - Semua cek batas paket (tim, proyek, tugas, anggota) memakai transaksi +
@@ -262,7 +263,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   agar tidak memotong kuota.
 - Komponen UI lama dan dependency tak terpakai sudah dibersihkan di P3.
 
-## Detail Fase P3 â€” 7 November 2026
+## Detail Fase P3 — 7 November 2026
 
 **Perubahan**
 - Migrasi `20261107030000_p3_constraints_indexes`:
@@ -295,7 +296,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   melalui proses arsip/soft-delete.
 - Backup tim orphan hanya di temp; hapus setelah yakin tidak diperlukan.
 
-## Detail Fase Dokumentasi â€” 8 November 2026
+## Detail Fase Dokumentasi — 8 November 2026
 
 **Perubahan**
 - Tambah `docs/README.md` sebagai indeks seluruh dokumentasi.
@@ -316,7 +317,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - `docs/README.md` menjadi pintu masuk dokumentasi.
 - Artefak Midtrans berisi akun dummy tetap di luar repo.
 
-## Detail Fase Dokumentasi â€” 14 & 16 November 2026
+## Detail Fase Dokumentasi — 14 & 16 November 2026
 
 **Perubahan**
 
@@ -373,17 +374,17 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 
 **Verifikasi**
 
-- `bun run test:unit` â†’ **150 lulus** (10 berkas, Â±0,4 detik).
+- `bun run test:unit` → **150 lulus** (10 berkas, ±0,4 detik).
 - Produksi: `/login`, `/register`, `/produk`, `/verify-email`,
-  `/legal/syarat-ketentuan` â†’ **200**.
+  `/legal/syarat-ketentuan` → **200**.
 - Header produksi: CSP `Report-Only`, HSTS `max-age=63072000`, `nosniff`,
   `X-Frame-Options: DENY`, `Permissions-Policy` terkirim.
 - Database produksi: 8 migrasi selesai, 19 tabel `public` seluruhnya RLS aktif,
   0 policy, 7 CHECK, 5 index P3.
 - Env production (nama saja): 21 variabel, termasuk email/CAPTCHA, Upstash,
   Midtrans, dan AI. Xendit serta variabel opsional belum diisi.
-- `GET /api/billing/webhook/midtrans` â†’ **200**; `GET /api/billing/config`
-  tanpa sesi â†’ **401**.
+- `GET /api/billing/webhook/midtrans` → **200**; `GET /api/billing/config`
+  tanpa sesi → **401**.
 - Build lokal (`bun run build`) lulus; halaman `/legal/kebijakan-privasi`
   ter-prerender statis.
 - Deployment produksi **Ready** (59 detik): `/legal/kebijakan-privasi` **200**,
@@ -401,15 +402,15 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   `PAYMENT_MANUAL_ONLY=false`, sehingga pembayaran otomatis bergantung pada
   persetujuan Midtrans dan pembayaran nyata belum bisa diproses lewat aplikasi.
 
-## Detail Perbaikan Stabilitas â€” 18 November 2026
+## Detail Perbaikan Stabilitas — 18 November 2026
 
 **Perubahan**
 
 - **Upgrade dependensi keamanan**:
-  - `next` 16.4.3 â†’ **16.4.6** dan `eslint-config-next` mengikuti. Sebelumnya
+  - `next` 16.4.3 → **16.4.6** dan `eslint-config-next` mengikuti. Sebelumnya
     `bun run build` berhenti dengan `SecurityFatalError` karena versi lama masuk
     daftar kerentanan.
-  - `sharp` 0.34.3 â†’ **0.35.5**.
+  - `sharp` 0.34.3 → **0.35.5**.
   - Override: `lodash` 4.18.1, `postcss` 8.5.33, `nanoid` 3.3.20,
     `source-map-js` 1.2.2.
   - `prisma` dipindah ke `devDependencies` (CLI tidak dibutuhkan saat runtime).
@@ -428,8 +429,8 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 
 **Verifikasi**
 
-- `tsc --noEmit`, `eslint .`, dan `bun run build` â†’ **0 error**.
-- Unit **155**, integration **141**, E2E **13** â€” semuanya lulus.
+- `tsc --noEmit`, `eslint .`, dan `bun run build` → **0 error**.
+- Unit **155**, integration **141**, E2E **13** — semuanya lulus.
 - Build dengan Next 16.4.6 selesai tanpa `SecurityFatalError`.
 - `bun audit`: tidak ada advisory pada paket runtime utama
   (`next`, `sharp`, `lodash`, `postcss`, `nanoid`, `source-map-js`).
@@ -445,12 +446,46 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 
 
 
+## Detail Optimasi P1 — 18 November 2026
+
+**Perubahan**
+
+- `/api/documents`: hanya mengambil kolom yang dipakai UI (tanpa `content`),
+  pagination cursor (`limit` 50, maks 100) dan filter `status`. Respons kini
+  menyertakan `nextCursor`.
+- Migrasi `20261118000000_perf_document_indexes`: index `Document(createdAt)`
+  dan `Document(uploaderId, createdAt)`; index `uploaderId` tunggal dihapus
+  karena tercakup prefix composite.
+- `/api/admin/analytics`: status dokumen dihitung dengan `groupBy`, top-3
+  dokumen lewat query `take: 3` berurut relasi (tidak lagi memuat semua dokumen).
+- `src/lib/ai.ts`: konfigurasi AI hanya dari env; pembacaan `.z-ai-config`
+  dihapus. `.z-ai-config.example` dihapus dan nilainya dipindahkan ke `.env`
+  lokal tanpa mencetak rahasia.
+- UI admin menampilkan tombol **Muat lebih banyak**; pemilih dokumen di chat,
+  kuis, dan tugas memakai `?limit=100`.
+
+**Verifikasi**
+
+- Unit **158**, integration **142**, E2E **13** lulus.
+- Data 5.000 dokumen: `/api/documents` 198 ms → **11 ms**, 1,01 MB → **10 KB**;
+  `/api/admin/analytics` 44 ms → **10 ms**.
+- Query dokumen memakai Index Scan: 1,7 ms/1.213 buffer → **0,09 ms/16 buffer**.
+- Manifes `api/chat`: file non-`node_modules` **391 → 12**; `.z-ai-config`
+  tidak lagi ikut tertracing.
+
+**Sisa untuk P2**
+
+- `/api/collab/analytics` masih 61 ms (p95 75 ms) karena memuat seluruh
+  tim/proyek/tugas/aktivitas.
+- Project detail masih mengirim ±390 KB untuk 1.000 tugas.
+- Belum ada cache header khusus untuk halaman statis.
+
 ## Template entri tahap berikutnya
 
 Salin template ini ke bagian paling bawah **Log tahapan** dan isi:
 
 ```markdown
-### YYYY-MM-DD â€” P1 â€” <judul>
+### YYYY-MM-DD — P1 — <judul>
 
 **Perubahan**
 - ...

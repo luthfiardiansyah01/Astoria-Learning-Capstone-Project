@@ -19,11 +19,14 @@ export async function GET(req: NextRequest) {
     const withInsight = new URL(req.url).searchParams.get("insight") === "1";
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    const [totalUsers, docsThisWeek, totalChats, documents, attemptStats, recentQuestions] =
+    const [totalUsers, docsThisWeek, totalChats, statusGroups, popularDocs, attemptStats, recentQuestions] =
       await Promise.all([
         db.user.count({ where: { role: "mahasiswa" } }),
         db.document.count({ where: { createdAt: { gte: oneWeekAgo } } }),
         db.chatMessage.count({ where: { role: "user" } }),
+        // Agregasi di database, bukan memuat seluruh dokumen ke memori.
+        db.document.groupBy({ by: ["status"], _count: { _all: true } }),
+        // Top-3 dokumen diurutkan lewat relasi count, hanya 3 baris diambil.
         db.document.findMany({
           select: {
             id: true,
@@ -31,6 +34,8 @@ export async function GET(req: NextRequest) {
             status: true,
             _count: { select: { chatMessages: true, quizAttempts: true } },
           },
+          orderBy: { chatMessages: { _count: "desc" } },
+          take: 3,
         }),
         db.quizAttempt.aggregate({
           _count: { _all: true },
@@ -45,16 +50,17 @@ export async function GET(req: NextRequest) {
         }),
       ]);
 
+    const statusCount = (status: string) =>
+      statusGroups.find((group) => group.status === status)?._count._all ?? 0;
+    const totalDocuments = statusGroups.reduce((sum, group) => sum + group._count._all, 0);
+
     // Dokumen paling populer (interaksi chat terbanyak)
-    const popular = [...documents]
-      .sort((a, b) => b._count.chatMessages - a._count.chatMessages)
-      .slice(0, 3)
-      .map((d) => ({
-        fileName: d.fileName,
-        status: d.status,
-        interaksi: d._count.chatMessages,
-        kuis: d._count.quizAttempts,
-      }));
+    const popular = popularDocs.map((d) => ({
+      fileName: d.fileName,
+      status: d.status,
+      interaksi: d._count.chatMessages,
+      kuis: d._count.quizAttempts,
+    }));
 
     // Topik yang sering ditanyakan (frekuensi kata dari pertanyaan terbaru)
     const wordFreq = new Map<string, number>();
@@ -73,9 +79,9 @@ export async function GET(req: NextRequest) {
     const avgQuiz = Math.round(attemptStats._avg.skor ?? 0);
 
     const statusBreakdown = {
-      approved: documents.filter((d) => d.status === "approved").length,
-      pending: documents.filter((d) => d.status === "pending").length,
-      rejected: documents.filter((d) => d.status === "rejected").length,
+      approved: statusCount("approved"),
+      pending: statusCount("pending"),
+      rejected: statusCount("rejected"),
     };
 
     // ── AI Analytics Summarizer (Seksi 5.2), hanya saat diminta ──
@@ -108,7 +114,7 @@ export async function GET(req: NextRequest) {
         const topDoc = popular[0]?.fileName ?? "belum ada";
         const topTopic = topTopics[0]?.kata ?? "belum ada";
         insight = [
-          `1. Ringkasan performa: ${totalUsers} mahasiswa, ${documents.length} dokumen, dan ${totalChats} interaksi chat.`,
+          `1. Ringkasan performa: ${totalUsers} mahasiswa, ${totalDocuments} dokumen, dan ${totalChats} interaksi chat.`,
           `2. Dokumen paling populer: ${topDoc}. Topik yang paling sering ditanyakan: ${topTopic}.`,
           `3. Rata-rata skor kuis: ${avgQuiz}. Dokumen menunggu review: ${statusBreakdown.pending}.`,
           "4. Rekomendasi: tinjau dokumen berstatus review, lengkapi materi pada topik tersibuk, dan dorong mahasiswa menyelesaikan kuis.",
@@ -123,7 +129,7 @@ export async function GET(req: NextRequest) {
         totalUsers,
         docsThisWeek,
         totalChats,
-        totalDocuments: documents.length,
+        totalDocuments,
         totalQuiz,
         avgQuiz,
         statusBreakdown,
