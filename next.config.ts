@@ -29,6 +29,13 @@ const securityHeaders = [
   },
 ];
 
+const staticCacheHeaders = [
+  {
+    key: "Cache-Control",
+    value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+  },
+];
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
@@ -37,7 +44,11 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["lucide-react", "framer-motion", "recharts"],
   },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      { source: "/produk", headers: staticCacheHeaders },
+      { source: "/legal/:path*", headers: staticCacheHeaders },
+    ];
   },
 };
 

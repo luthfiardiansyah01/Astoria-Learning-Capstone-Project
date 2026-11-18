@@ -35,6 +35,8 @@ interface ProjectData {
   teamId: string;
   team: { name: string };
   tasks: CollabTask[];
+  doneTotal?: number;
+  doneLoaded?: number;
 }
 
 export function KanbanBoard({ projectId }: { projectId: string }) {
@@ -43,13 +45,16 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
   const setActiveTask = useCollabUi((s) => s.setActiveTask);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [draggingTask, setDraggingTask] = useState<CollabTask | null>(null);
+  const [loadAllDone, setLoadAllDone] = useState(false);
 
-  const queryKey = ["collab", "project", projectId];
+  const queryKey = ["collab", "project", projectId, loadAllDone ? "all" : "recent"];
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey,
     queryFn: async () => {
-      const res = await fetch(`/api/collab/projects/${projectId}`);
+      const res = await fetch(
+        `/api/collab/projects/${projectId}${loadAllDone ? "?done=all" : ""}`
+      );
       if (!res.ok) throw new Error("Gagal memuat proyek.");
       return (await res.json()).project as ProjectData;
     },
@@ -226,6 +231,9 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
               status={status}
               tasks={columns[status] ?? []}
               onOpenTask={setActiveTask}
+              doneTotal={status === "done" ? data?.doneTotal : undefined}
+              onLoadAllDone={status === "done" ? () => setLoadAllDone(true) : undefined}
+              loadingAllDone={status === "done" && loadAllDone && isLoading}
             />
           ))}
         </div>

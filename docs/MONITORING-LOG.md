@@ -126,6 +126,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-18 | Fix | Stabilitas & keamanan deploy | Selesai | Next 16.4.6, sharp 0.35.5, override dependensi rentan; batas body chunked; bcrypt 12; guard seed; tautan legal |
 | 2026-11-18 | Perf | Baseline performa terukur | Selesai | `PERFORMANCE-BASELINE.md` + 4 skrip di `scripts/perf/`; 3 hotspot: documents 1,01 MB/198 ms, collab analytics 89 ms, server 31,6 MB |
 | 2026-11-18 | Perf | P1 optimasi dokumen & analitik | Selesai | `/api/documents` 198→11 ms (1,01 MB→10 KB); admin analytics 44→10 ms; traced files 391→12 |
+| 2026-11-18 | Perf | P2 analitik kolaborasi & payload proyek | Selesai | Collab analytics 6 ms warm (p95 9); project detail 390→176 KB; cache header statis |
 
 ## Detail Fase P0 — 7 November 2026
 
@@ -479,6 +480,33 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   tim/proyek/tugas/aktivitas.
 - Project detail masih mengirim ±390 KB untuk 1.000 tugas.
 - Belum ada cache header khusus untuk halaman statis.
+
+## Detail Optimasi P2 — 18 November 2026
+
+**Perubahan**
+
+- `/api/collab/analytics`: `groupBy` untuk aktivitas AI dan aktivitas 7 hari,
+  tren 14 hari lewat SQL, hanya memuat `task_completed`, dan cache 30 detik per
+  pengguna (aktif hanya di produksi).
+- Detail proyek: tugas selesai dibatasi 50 dengan `doneTotal`/`doneLoaded`;
+  tombol **Muat semua (N)** di kolom Selesai memakai `?done=all`; field tugas
+  dipangkas ke yang dipakai UI.
+- `next.config.ts`: header cache untuk `/produk` dan `/legal/*`.
+
+**Verifikasi**
+
+- Unit **158**, integration **143**, E2E **13** lulus.
+- A/B pada sesi yang sama (50 iterasi): collab analytics 70 ms → **6 ms warm**
+  (p95 9 ms), cold 65 ms; project detail 390 KB → **176 KB**.
+- Uji regresi: pagination selesai (`50` dari `60`) dan `?done=all` mengembalikan
+  seluruh 60 tugas.
+
+**Sisa risiko**
+
+- Cache analitik dapat tertinggal maksimal 30 detik.
+- Payload proyek masih 176 KB untuk 1.000 tugas aktif; target <120 KB tidak
+  realistis tanpa pagination per kolom (dijadwalkan P3).
+- Cache header mengandalkan CDN Vercel; perilaku lokal tidak mewakili.
 
 ## Template entri tahap berikutnya
 

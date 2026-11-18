@@ -232,3 +232,44 @@ Perubahan yang diterapkan:
 Konfigurasi `.z-ai-config` lokal dipindahkan ke `.env`
 (`AI_BASE_URL`, `AI_API_KEY`) tanpa mencetak nilainya. Produksi tidak terpengaruh
 karena sejak awal memakai environment Vercel.
+
+## 12. Hasil P2 — 18 November 2026
+
+Perubahan:
+
+1. `/api/collab/analytics`
+   - Aktivitas `ai_mentor_used` dan aktivitas 7 hari diagregasi dengan `groupBy`.
+   - Tren 14 hari dihitung di SQL (tanggal WIB).
+   - Hanya baris `task_completed` yang dimuat (untuk hitungan tepat waktu).
+   - Cache 30 detik per pengguna (`Cache-Control: private, max-age=30`), hanya
+     aktif di produksi.
+2. Detail proyek
+   - Tugas selesai dibatasi **50** terbaru, dengan `doneTotal` dan `doneLoaded`.
+   - Kolom tugas dipangkas ke field yang dipakai UI (tanpa `aiSuggestions`).
+   - Tombol **Muat semua (N)** di kolom Selesai memuat seluruh tugas selesai
+     lewat `?done=all`.
+3. Header cache untuk `/produk` dan `/legal/*`
+   (`s-maxage=3600, stale-while-revalidate=86400`).
+
+### Perbandingan A/B (50 iterasi, sesi mesin yang sama)
+
+| Endpoint | P1 | P2 (cold) | P2 (warm) |
+|---|---:|---:|---:|
+| `GET /api/collab/analytics` | 70 ms (p95 165) | 65 ms (p95 89) | **6 ms (p95 9)** |
+| `GET project detail` | 37 ms / **390 KB** | 30 ms / **176 KB** | — |
+| `GET /login` (kontrol) | 2 ms | 3 ms | 3 ms |
+
+Catatan: “warm” berarti cache 30 detik aktif. Permintaan pertama setelah cache
+kedaluwarsa tetap membutuhkan ±65 ms.
+
+### Status target P2
+
+| Target | Status |
+|---|---|
+| `/api/collab/analytics` p95 < 50 ms | ✅ 9 ms (warm); ⚠️ 89 ms saat cold |
+| Project detail < 120 KB | ⚠️ **176 KB** (turun 55% dari 390 KB) |
+| Cache header halaman statis | ✅ terpasang |
+
+Target 120 KB tidak realistis untuk 1.000 tugas aktif: payload minimum untuk
+tugas aktif saja sudah ±165 KB. Opsi lanjutan (P3) adalah pagination per kolom
+Kanban atau memuat detail tugas saat kartu dibuka.

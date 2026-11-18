@@ -216,6 +216,50 @@ describe("proyek", () => {
     expect(res.status).toBe(403);
   });
 
+  it("membatasi tugas selesai dan menyediakan total", async () => {
+    const owner = await createUser();
+    const team = await createTeam(owner.id);
+    const project = await createProject(team.id);
+
+    await db.task.createMany({
+      data: Array.from({ length: 60 }, (_, i) => ({
+        projectId: project.id,
+        title: `Selesai ${i}`,
+        status: "done",
+        order: i,
+      })),
+    });
+    await db.task.createMany({
+      data: Array.from({ length: 5 }, (_, i) => ({
+        projectId: project.id,
+        title: `Aktif ${i}`,
+        status: "todo",
+        order: i,
+      })),
+    });
+
+    setAuthUser(owner);
+    const res = await projectDetailRoute.GET(
+      jsonRequest(`/api/collab/projects/${project.id}`, "GET"),
+      params({ projectId: project.id })
+    );
+    const body = (await res.json()) as {
+      project: { tasks: Array<{ status: string }>; doneTotal: number; doneLoaded: number };
+    };
+    expect(res.status).toBe(200);
+    expect(body.project.tasks.filter((t) => t.status === "done")).toHaveLength(50);
+    expect(body.project.tasks.filter((t) => t.status === "todo")).toHaveLength(5);
+    expect(body.project.doneTotal).toBe(60);
+    expect(body.project.doneLoaded).toBe(50);
+
+    const allRes = await projectDetailRoute.GET(
+      jsonRequest(`/api/collab/projects/${project.id}?done=all`, "GET"),
+      params({ projectId: project.id })
+    );
+    const allBody = (await allRes.json()) as { project: { tasks: Array<{ status: string }> } };
+    expect(allBody.project.tasks.filter((t) => t.status === "done")).toHaveLength(60);
+  });
+
   it("hanya owner yang bisa menghapus proyek", async () => {
     const owner = await createUser();
     const member = await createUser();

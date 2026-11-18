@@ -15,12 +15,19 @@ export function KanbanColumn({
   status,
   tasks,
   onOpenTask,
+  doneTotal,
+  onLoadAllDone,
+  loadingAllDone,
 }: {
   status: string;
   tasks: CollabTask[];
   onOpenTask: (id: string) => void;
+  doneTotal?: number;
+  onLoadAllDone?: () => void;
+  loadingAllDone?: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
+  const hasHiddenDone = status === "done" && typeof doneTotal === "number" && doneTotal > tasks.length;
 
   return (
     <div
@@ -30,9 +37,21 @@ export function KanbanColumn({
         isOver ? "border-primary bg-primary/5" : ""
       }`}
     >
-      <div className="flex items-center justify-between px-1">
+      <div className="flex items-center justify-between gap-2 px-1">
         <h3 className="text-sm font-semibold">{COLUMN_LABELS[status] ?? status}</h3>
-        <span className="text-xs text-muted-foreground">{tasks.length}</span>
+        <div className="flex items-center gap-2">
+          {hasHiddenDone && (
+            <button
+              type="button"
+              onClick={onLoadAllDone}
+              disabled={loadingAllDone}
+              className="text-[10px] font-medium text-primary hover:underline disabled:opacity-50"
+            >
+              {loadingAllDone ? "Memuat…" : `Muat semua (${doneTotal})`}
+            </button>
+          )}
+          <span className="text-xs text-muted-foreground">{tasks.length}</span>
+        </div>
       </div>
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-2">
