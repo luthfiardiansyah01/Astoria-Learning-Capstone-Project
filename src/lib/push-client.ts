@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
 
@@ -74,7 +74,8 @@ export async function disablePush() {
 }
 
 export async function sendTestPush() {
-  const res = await fetch("/api/push/test", { method: "POST" });
+  const res = await fetch("/api/push/send-test", { method: "POST" });
   const body = (await res.json().catch(() => ({}))) as { error?: string };
   if (!res.ok) throw new Error(body.error || "Gagal mengirim notifikasi uji.");
 }
+

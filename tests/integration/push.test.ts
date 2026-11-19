@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it } from "vitest";
+﻿import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { createUser, jsonRequest, resetDb, setAuthUser } from "./helpers";
 import * as subscribeRoute from "@/app/api/push/subscribe/route";
-import * as testRoute from "@/app/api/push/test/route";
+import * as testRoute from "@/app/api/push/send-test/route";
 
 const ENDPOINT = "https://push.example.com/subscription/abc";
 
@@ -84,3 +84,4 @@ describe("langganan Web Push", () => {
     expect(await db.pushSubscription.count({ where: { endpoint: ENDPOINT } })).toBe(0);
   });
 });
+
