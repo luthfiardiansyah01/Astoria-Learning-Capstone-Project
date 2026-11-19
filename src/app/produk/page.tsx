@@ -237,7 +237,10 @@ export default function ProdukPage() {
           </div>
 
           <div className="mt-4 flex flex-col gap-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <p>SOBAT ADI — platform belajar bertenaga AI untuk mahasiswa PJJ Universitas Terbuka.</p>
+            <p>
+              SOBAT ADI — platform belajar bertenaga AI untuk seluruh jenjang pendidikan yang ingin
+              belajar jarak jauh.
+            </p>
             <div className="flex flex-wrap items-center gap-3">
               <Link href="/legal/syarat-ketentuan" className="hover:text-foreground">
                 Syarat & Ketentuan
