@@ -71,7 +71,10 @@ Admin dapat mengirim pengumuman ke seluruh mahasiswa melalui panel
 | POST | `/api/admin/broadcast` | Membuat notifikasi in-app untuk semua mahasiswa dan mengirim push ke perangkat terdaftar |
 
 Batas: 3 siaran per 10 menit per admin. Push hanya sampai ke perangkat yang
-sudah mengaktifkan notifikasi.
+sudah mengaktifkan notifikasi. Sebelum dikirim, admin melihat dialog konfirmasi
+berisi judul, jumlah penerima, dan penjelasan cakupan push. Setiap siaran dicatat
+di `AdminAuditLog` dengan aksi `notification.broadcast` beserta jumlah penerima,
+perangkat, berhasil, dan gagal.
 
 ## 8. Batasan
 

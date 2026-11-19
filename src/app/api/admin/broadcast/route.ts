@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/current-user";
 import { sendPushToAll } from "@/lib/push";
 import { broadcastSchema, readBody } from "@/lib/validation";
 import { rateLimit } from "@/lib/rate-limit";
+import { logAdminAction } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,22 @@ export async function POST(req: NextRequest) {
       body,
       url: url || "/",
       tag: "broadcast",
+    });
+
+    await logAdminAction({
+      adminId: auth.user.id,
+      action: "notification.broadcast",
+      targetType: "broadcast",
+      detail: {
+        title,
+        body,
+        url: url || "/",
+        users: recipients.length,
+        devices: push.total,
+        sent: push.sent,
+        failed: push.failed,
+        pushSkipped: push.skipped,
+      },
     });
 
     return NextResponse.json({

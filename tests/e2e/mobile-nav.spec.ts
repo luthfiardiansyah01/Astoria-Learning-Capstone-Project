@@ -23,7 +23,7 @@ test("navigasi bawah mobile membuka panduan interaktif", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Unggah modul kuliah/ })).toBeHidden();
 
   await page.locator('[data-testid="nav-mentor"]:visible').click();
-  await expect(page.getByText("Dokumen Modul")).toBeVisible();
+  await expect(page.getByText("Dokumen Modul", { exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
 

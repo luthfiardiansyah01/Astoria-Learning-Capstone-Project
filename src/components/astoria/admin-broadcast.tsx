@@ -7,6 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Stats = { users: number; devices: number; subscribers: number };
 
@@ -15,6 +25,7 @@ export function AdminBroadcast() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -25,8 +36,7 @@ export function AdminBroadcast() {
       .catch(() => null);
   }, []);
 
-  async function send(event: React.FormEvent) {
-    event.preventDefault();
+  async function send() {
     setError(null);
     setMessage(null);
     setBusy(true);
@@ -78,7 +88,14 @@ export function AdminBroadcast() {
             {stats.devices} perangkat terdaftar
           </p>
         )}
-        <form onSubmit={send} className="space-y-3">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!title.trim() || !body.trim()) return;
+            setConfirmOpen(true);
+          }}
+          className="space-y-3"
+        >
           <div className="space-y-1.5">
             <Label htmlFor="broadcast-title">Judul</Label>
             <Input
@@ -118,6 +135,30 @@ export function AdminBroadcast() {
             {busy ? "Mengirim…" : "Kirim siaran"}
           </Button>
         </form>
+
+        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Kirim siaran ke semua pengguna?</AlertDialogTitle>
+              <AlertDialogDescription>
+                &ldquo;{title}&rdquo; akan dikirim ke {stats?.users ?? "seluruh"} mahasiswa.
+                Notifikasi dalam aplikasi selalu terkirim; push hanya ke perangkat yang sudah
+                mengaktifkan notifikasi.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Batal</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  setConfirmOpen(false);
+                  void send();
+                }}
+              >
+                Kirim sekarang
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );

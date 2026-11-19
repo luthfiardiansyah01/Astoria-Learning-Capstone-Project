@@ -34,7 +34,7 @@ test("unggah dokumen → ekstraksi → chat menjawab dengan referensi", async ({
   await expect(page.getByText("Modul E2E Upload").first()).toBeVisible();
 
   await gotoNav(page, "mentor");
-  await expect(page.getByText("Dokumen Modul")).toBeVisible();
+  await expect(page.getByText("Dokumen Modul", { exact: true })).toBeVisible();
   await expect(page.getByText("Modul E2E Upload").first()).toBeVisible();
 
   await page.getByTestId("chat-input").fill("Apa itu permintaan?");

@@ -9,7 +9,7 @@ test("smoke mobile 375x812 untuk Beranda, Mentor, dan Kuis", async ({ page }) =>
   await expectNoHorizontalOverflow(page);
 
   await gotoNav(page, "mentor");
-  await expect(page.getByText("Dokumen Modul")).toBeVisible();
+  await expect(page.getByText("Dokumen Modul", { exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
   await gotoNav(page, "kuis");

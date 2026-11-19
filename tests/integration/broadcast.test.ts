@@ -57,6 +57,13 @@ describe("siaran notifikasi admin", () => {
     });
     expect(notifications).toHaveLength(2);
     expect(notifications[0].type).toBe("broadcast");
+
+    const log = await db.adminAuditLog.findFirst({
+      where: { action: "notification.broadcast" },
+    });
+    expect(log).not.toBeNull();
+    expect(log?.targetType).toBe("broadcast");
+    expect(log?.detail).toMatchObject({ title: "Pemeliharaan", users: 2 });
   });
 
   it("menolak judul kosong", async () => {

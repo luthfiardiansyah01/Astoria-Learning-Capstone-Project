@@ -6,7 +6,7 @@ test("semua menu utama dapat dibuka", async ({ page }) => {
   await expect(page.getByText(/Sapaan Mentor/)).toBeVisible();
 
   await page.locator('[data-testid="nav-mentor"]:visible').click();
-  await expect(page.getByText("Dokumen Modul")).toBeVisible();
+  await expect(page.getByText("Dokumen Modul", { exact: true })).toBeVisible();
 
   await page.locator('[data-testid="nav-unggah"]:visible').click();
   await expect(page.getByText("Unggah Modul Kuliah")).toBeVisible();
@@ -70,4 +70,12 @@ test("menu admin tersedia untuk admin", async ({ page }) => {
   await adminNav.click();
   await expect(page.getByText("Manajemen & Moderasi Dokumen")).toBeVisible();
   await expect(page.getByText("Siaran notifikasi")).toBeVisible();
+
+  await page.getByLabel("Judul").fill("Uji siaran");
+  await page.getByLabel("Isi pesan").fill("Pesan uji dari E2E.");
+  await page.getByRole("button", { name: "Kirim siaran" }).click();
+  await expect(page.getByRole("alertdialog")).toBeVisible();
+  await expect(page.getByText("Kirim siaran ke semua pengguna?")).toBeVisible();
+  await page.getByRole("button", { name: "Batal" }).click();
+  await expect(page.getByRole("alertdialog")).toBeHidden();
 });

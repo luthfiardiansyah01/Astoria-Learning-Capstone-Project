@@ -7,7 +7,7 @@ import { logger } from "./logger";
 export interface AdminAuditInput {
   adminId: string;
   action: string;
-  targetType: "payment" | "document" | "user";
+  targetType: "payment" | "document" | "user" | "broadcast";
   targetId?: string | null;
   detail?: Prisma.InputJsonValue;
 }
