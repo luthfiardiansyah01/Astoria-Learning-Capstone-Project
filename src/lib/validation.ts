@@ -169,6 +169,30 @@ export const deleteAccountSchema = z.object({
   password: z.string().min(1, "Password wajib diisi untuk konfirmasi.").max(200),
 });
 
+export const profileSettingsSchema = z
+  .object({
+    name: wajib("Nama", 80).optional(),
+    theme: z.enum(["system", "light", "dark"], { message: "Tema tidak valid." }).optional(),
+    fontScale: z.enum(["small", "normal", "large", "xlarge"], { message: "Ukuran teks tidak valid." }).optional(),
+    reducedMotion: z.boolean().optional(),
+    emailReminders: z.boolean().optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "Tidak ada perubahan untuk disimpan.",
+  });
+
+export const pushSubscribeSchema = z.object({
+  endpoint: z.string().url("Endpoint push tidak valid.").max(2000),
+  keys: z.object({
+    p256dh: z.string().min(1, "Kunci p256dh wajib diisi.").max(500),
+    auth: z.string().min(1, "Kunci auth wajib diisi.").max(500),
+  }),
+});
+
+export const pushUnsubscribeSchema = z.object({
+  endpoint: z.string().url("Endpoint push tidak valid.").max(2000),
+});
+
 export const checkoutSchema = z.object({
   acceptTerms: z
     .boolean({ message: "Persetujuan Syarat & Ketentuan wajib diisi." })

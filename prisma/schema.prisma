@@ -18,6 +18,10 @@ model User {
   trialUsedAt      DateTime?
   email            String?           @unique
   emailVerifiedAt  DateTime?
+  theme            String            @default("system") // system | light | dark
+  fontScale        String            @default("normal") // small | normal | large | xlarge
+  reducedMotion    Boolean           @default(false)
+  emailReminders   Boolean           @default(true)
   passwordHash     String?
   xp               Int               @default(0)
   level            Int               @default(1)
@@ -39,6 +43,7 @@ model User {
   taskChatMessages TaskChatMessage[]
   activityEvents   ActivityEvent[]
   notifications    Notification[]
+  pushSubscriptions PushSubscription[]
   payments         Payment[]
 }
 
@@ -364,4 +369,18 @@ model AnalyticsCache {
   key       String   @id
   payload   Json
   updatedAt DateTime @updatedAt
+}
+
+// Langganan Web Push per perangkat pengguna.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

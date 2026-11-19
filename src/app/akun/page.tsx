@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AccountSettings } from "@/components/astoria/account-settings";
 
 export default function AkunPage() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -117,13 +118,15 @@ export default function AkunPage() {
     <main className="min-h-screen bg-background px-4 py-10">
       <div className="mx-auto w-full max-w-2xl space-y-5">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Akun & Keamanan</h1>
+          <h1 className="text-2xl font-bold">Akun & Pengaturan</h1>
           <Button variant="ghost" size="sm" asChild>
             <Link href="/">
               <ArrowLeft className="mr-1.5 h-4 w-4" /> Kembali
             </Link>
           </Button>
         </div>
+
+        <AccountSettings />
 
         <Card>
           <CardHeader>

@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { emailConfigured, sendEmail } from "@/lib/email";
 import { dueTasksEmail, type DueTask } from "@/lib/collab-email";
 import { wibDayKey } from "@/lib/rate-limit";
+import { sendPushToUser } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
           some: { status: { not: "done" }, dueDate: { not: null, lte: horizon } },
         },
       },
-      select: { id: true, email: true, name: true },
+      select: { id: true, email: true, name: true, emailReminders: true },
       take: 200,
     });
 
@@ -76,7 +77,14 @@ export async function GET(req: NextRequest) {
         throw e;
       }
 
-      if (emailConfigured() && user.email) {
+      void sendPushToUser(user.id, {
+        title: "Ringkasan tenggat tugas",
+        body: `${tasks.length} tugas perlu perhatian.`,
+        url: "/collab",
+        tag: "due-digest",
+      }).catch(() => null);
+
+      if (user.emailReminders && emailConfigured() && user.email) {
         const due: DueTask[] = tasks.map((t) => ({
           title: t.title,
           projectName: t.project.name,

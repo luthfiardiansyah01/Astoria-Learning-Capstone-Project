@@ -3,6 +3,7 @@
 
 import { db } from "./db";
 import { wibDayKey } from "./rate-limit";
+import { sendPushToUser } from "./push";
 
 export interface NotificationInput {
   type: string;
@@ -13,6 +14,7 @@ export interface NotificationInput {
 }
 
 export async function createNotification(userId: string, input: NotificationInput) {
+  let created = false;
   try {
     await db.notification.create({
       data: {
@@ -24,9 +26,19 @@ export async function createNotification(userId: string, input: NotificationInpu
         dedupeKey: input.dedupeKey ?? null,
       },
     });
+    created = true;
   } catch (e) {
     // P2002 = sudah pernah dibuat (dedupeKey sama) → abaikan
     if ((e as { code?: string }).code !== "P2002") throw e;
+  }
+
+  if (created) {
+    void sendPushToUser(userId, {
+      title: input.title,
+      body: input.body,
+      url: input.link ?? "/collab",
+      tag: input.type,
+    }).catch(() => null);
   }
 }
 

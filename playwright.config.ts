@@ -16,6 +16,7 @@ process.env.AI_FALLBACK_MODELS = "mock-model";
 process.env.AI_EMBED_MODEL = "mock-embed";
 process.env.UPSTASH_REDIS_REST_URL = "";
 process.env.UPSTASH_REDIS_REST_TOKEN = "";
+process.env.RATE_LIMIT_DISABLED = "true";
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -56,6 +57,7 @@ export default defineConfig({
         AI_EMBED_MODEL: "mock-embed",
         UPSTASH_REDIS_REST_URL: "",
         UPSTASH_REDIS_REST_TOKEN: "",
+        RATE_LIMIT_DISABLED: "true",
       },
     },
   ],

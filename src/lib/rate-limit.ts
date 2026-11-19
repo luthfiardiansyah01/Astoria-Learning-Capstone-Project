@@ -109,6 +109,12 @@ export async function rateLimit(
   options: RateLimitOptions = {}
 ): Promise<RateLimitResult> {
   const key = `sobadi:rl:${name}:${id}`;
+
+  // Hanya untuk suite E2E: jangan pernah diaktifkan di produksi.
+  if (process.env.RATE_LIMIT_DISABLED === "true") {
+    return { ok: true, remaining: max, retryAfter: 0 };
+  }
+
   const cfg = redisConfig();
   const failClosed = options.failClosed === true && process.env.RATE_LIMIT_FAIL_CLOSED === "true";
 

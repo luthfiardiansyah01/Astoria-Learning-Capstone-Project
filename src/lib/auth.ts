@@ -55,10 +55,17 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "mahasiswa";
+        token.name = user.name;
+      }
+      if (trigger === "update") {
+        const nextName = (session as { name?: unknown } | null)?.name;
+        if (typeof nextName === "string" && nextName.trim()) {
+          token.name = nextName.trim().slice(0, 80);
+        }
       }
       return token;
     },

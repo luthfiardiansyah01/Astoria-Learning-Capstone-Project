@@ -31,6 +31,7 @@ import { MobileNav } from "@/components/astoria/mobile-nav";
 import { AppGuide } from "@/components/astoria/app-guide";
 import { EmailVerificationBanner } from "@/components/astoria/email-verification-banner";
 import { MotionProvider } from "@/components/providers/motion-provider";
+import { PreferencesProvider } from "@/components/providers/preferences-provider";
 import { AstoriaSessionProvider } from "@/components/providers/session-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
@@ -150,6 +151,7 @@ export default function Page() {
     <AstoriaSessionProvider>
       <QueryProvider>
         <MotionProvider>
+          <PreferencesProvider />
           <AstoriaPage />
           <SonnerToaster />
         </MotionProvider>
@@ -235,7 +237,7 @@ function AstoriaPage() {
     <div className="min-h-screen flex flex-col bg-background">
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-6xl px-3 sm:px-4">
           <div className="flex h-16 items-center gap-3">
             {/* Logo */}
             <button
@@ -268,7 +270,7 @@ function AstoriaPage() {
             </div>
 
             {/* Aksi kanan */}
-            <div className="ml-auto flex shrink-0 items-center gap-1.5 lg:ml-0">
+            <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
               <PlanBadge />
               <AiQuotaBadge />
 
@@ -276,7 +278,7 @@ function AstoriaPage() {
                 href="/collab"
                 data-testid="nav-collab"
                 aria-label="Buka Astoria Collab"
-                className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="flex items-center gap-1.5 rounded-full px-2 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <Users className="h-3.5 w-3.5" />
                 <span className="hidden md:inline">Collab</span>
@@ -328,7 +330,7 @@ function AstoriaPage() {
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 data-testid="logout"
-                className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="flex items-center gap-1.5 rounded-full px-2 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 aria-label="Keluar"
                 title={`Keluar (${session?.user?.name ?? ""})`}
               >
