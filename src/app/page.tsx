@@ -29,6 +29,7 @@ import { useAstoria, type ViewKey } from "@/components/astoria/store";
 import { HomeView } from "@/components/astoria/home-view";
 import { MobileNav } from "@/components/astoria/mobile-nav";
 import { AppGuide } from "@/components/astoria/app-guide";
+import { PushOptIn } from "@/components/astoria/push-optin";
 import { EmailVerificationBanner } from "@/components/astoria/email-verification-banner";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { PreferencesProvider } from "@/components/providers/preferences-provider";
@@ -349,6 +350,7 @@ function AstoriaPage() {
         className="flex-1 mx-auto w-full max-w-6xl px-4 py-6 pb-24 lg:pb-6"
       >
         <EmailVerificationBanner />
+        <PushOptIn />
         <p aria-live="polite" className="sr-only">
           {navItems.find((item) => item.key === view)?.label ?? "Beranda"} aktif
         </p>

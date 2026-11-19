@@ -47,7 +47,33 @@ Perangkat: motorola edge 60 pro, Chrome, server lokal, database uji.
 - `tests/e2e/settings.spec.ts`: preferensi tampilan dan ukuran teks.
 - `tests/integration/settings.test.ts`: validasi dan penyimpanan preferensi.
 
-## 5. Batasan
+## 6. Ajakan aktivasi untuk semua pengguna
+
+Banner `PushOptIn` tampil otomatis di beranda aplikasi selama:
+
+- peramban mendukung Web Push,
+- kunci VAPID tersedia,
+- izin belum ditolak,
+- perangkat belum berlangganan,
+- pengguna belum menekan "Nanti".
+
+Banner tidak dapat mengaktifkan notifikasi tanpa persetujuan pengguna; tombol
+"Aktifkan" memicu dialog izin resmi peramban.
+
+## 7. Siaran admin
+
+Admin dapat mengirim pengumuman ke seluruh mahasiswa melalui panel
+**Siaran notifikasi** di menu Admin.
+
+| Metode | Rute | Fungsi |
+|---|---|---|
+| GET | `/api/admin/broadcast` | Statistik pengguna, perangkat, dan pelanggan push |
+| POST | `/api/admin/broadcast` | Membuat notifikasi in-app untuk semua mahasiswa dan mengirim push ke perangkat terdaftar |
+
+Batas: 3 siaran per 10 menit per admin. Push hanya sampai ke perangkat yang
+sudah mengaktifkan notifikasi.
+
+## 8. Batasan
 
 - Pengiriman email sebenarnya belum diuji karena Resend tidak dikonfigurasi pada
   lingkungan lokal. Yang diuji adalah penyimpanan preferensi dan logika cron.

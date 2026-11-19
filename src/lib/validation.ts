@@ -193,6 +193,12 @@ export const pushUnsubscribeSchema = z.object({
   endpoint: z.string().url("Endpoint push tidak valid.").max(2000),
 });
 
+export const broadcastSchema = z.object({
+  title: wajib("Judul", 80),
+  body: wajib("Isi", 200),
+  url: z.string().trim().max(300).optional(),
+});
+
 export const checkoutSchema = z.object({
   acceptTerms: z
     .boolean({ message: "Persetujuan Syarat & Ketentuan wajib diisi." })

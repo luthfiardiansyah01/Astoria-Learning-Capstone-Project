@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Markdown } from "./markdown";
 import { AdminPlanPanel } from "./admin-plan-panel";
+import { AdminBroadcast } from "./admin-broadcast";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminDoc {
@@ -210,6 +211,7 @@ export function AdminView() {
           ))}
         </div>
         <div className="h-64 rounded-2xl bg-muted animate-pulse" />
+        <AdminBroadcast />
         <AdminPlanPanel />
       </div>
     );
@@ -496,7 +498,8 @@ export function AdminView() {
         </div>
       </div>
 
-      <AdminPlanPanel />
+      <AdminBroadcast />
+        <AdminPlanPanel />
 
       <AlertDialog
         open={!!deleteTarget}

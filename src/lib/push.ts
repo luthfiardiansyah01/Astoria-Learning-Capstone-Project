@@ -58,3 +58,36 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
   }
   return { sent, skipped: false as const };
 }
+
+/** Kirim ke seluruh perangkat yang terdaftar (siaran admin). */
+export async function sendPushToAll(payload: PushPayload) {
+  if (!pushConfigured()) return { sent: 0, failed: 0, total: 0, skipped: true as const };
+
+  const subscriptions = await db.pushSubscription.findMany();
+  let sent = 0;
+  let failed = 0;
+
+  for (let i = 0; i < subscriptions.length; i += 20) {
+    const batch = subscriptions.slice(i, i + 20);
+    await Promise.all(
+      batch.map(async (sub) => {
+        try {
+          await sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            JSON.stringify(payload),
+            { TTL: 60 * 60 }
+          );
+          sent += 1;
+        } catch (e) {
+          failed += 1;
+          const status = (e as { statusCode?: number }).statusCode;
+          if (status === 404 || status === 410) {
+            await db.pushSubscription.deleteMany({ where: { endpoint: sub.endpoint } });
+          }
+        }
+      })
+    );
+  }
+
+  return { sent, failed, total: subscriptions.length, skipped: false as const };
+}
