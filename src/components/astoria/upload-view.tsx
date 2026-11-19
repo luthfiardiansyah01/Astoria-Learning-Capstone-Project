@@ -1,7 +1,7 @@
 // Unggah Dokumen - pemrosesan dokumen (Seksi 4) + status moderasi (Seksi 5.1)
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -19,6 +19,8 @@ import {
   AlertTriangle,
   RotateCcw,
   Trash2,
+  Scissors,
+  ListChecks,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAstoria } from "./store";
 import { PLAN_LIMITS } from "@/lib/plans";
+import { splitDocument } from "@/lib/doc-split";
 
 interface UploadResult {
   document: {
@@ -56,8 +59,30 @@ interface UploadResult {
   };
 }
 
-export function UploadView() {
-  const { toast } = useToast();
+function CheckRow({
+  ok,
+  label,
+  detail,
+}: {
+  ok: boolean;
+  label: string;
+  detail: string;
+}) {
+  const Icon = ok ? CheckCircle2 : XCircle;
+  return (
+    <div className="flex items-start gap-2 text-xs">
+      <Icon
+        className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${ok ? "text-emerald-600" : "text-destructive"}`}
+        aria-hidden="true"
+      />
+      <span className={ok ? "text-muted-foreground" : "text-destructive"}>
+        <strong className={ok ? "text-foreground" : ""}>{label}:</strong> {detail}
+      </span>
+    </div>
+  );
+}
+
+export function UploadView() {  const { toast } = useToast();
   const { setActiveDocument, setView } = useAstoria();
   const queryClient = useQueryClient();
   const { data: planData } = useQuery<{ plan: "free" | "premium"; limits: typeof PLAN_LIMITS.free }>({
@@ -75,15 +100,24 @@ export function UploadView() {
   const [processing, setProcessing] = useState(false);
   const [readingFile, setReadingFile] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [fileInfo, setFileInfo] = useState<{ kind: "pdf" | "text"; pages?: number; chars: number } | null>(null);
+  const [fileInfo, setFileInfo] = useState<{ kind: "pdf" | "text"; pages?: number; chars: number; bytes: number } | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [sourceContent, setSourceContent] = useState<string | null>(null);
+  const [activePart, setActivePart] = useState<number | null>(null);
   const [result, setResult] = useState<UploadResult["document"] | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const charCount = content.length;
   const tooLong = charCount > limits.maxDocChars;
+  const overBy = Math.max(0, charCount - limits.maxDocChars);
+  const splitParts = useMemo(
+    () => (sourceContent ? splitDocument(sourceContent, limits.maxDocChars) : []),
+    [sourceContent, limits.maxDocChars]
+  );
 
   const readFile = async (file: File) => {
+    setFileError(null);
     const lower = file.name.toLowerCase();
     const isPdf = lower.endsWith(".pdf") || file.type === "application/pdf";
     const isText =
@@ -92,6 +126,7 @@ export function UploadView() {
       file.type === "text/markdown";
 
     if (!isPdf && !isText) {
+      setFileError("Format tidak didukung. Gunakan PDF, TXT, atau MD.");
       toast({
         title: "Format tidak didukung",
         description: "Gunakan PDF, TXT, MD, atau tempel teks modul langsung.",
@@ -102,6 +137,9 @@ export function UploadView() {
 
     const maxBytes = isPdf ? limits.maxPdfBytes : limits.maxTextBytes;
     if (file.size > maxBytes) {
+      setFileError(
+        `Ukuran file ${(file.size / (1024 * 1024)).toFixed(2)} MB melebihi batas ${Math.round(maxBytes / (1024 * 1024))} MB.`
+      );
       toast({
         title: "File terlalu besar",
         description: isPdf
@@ -149,6 +187,7 @@ export function UploadView() {
           .trim();
 
         if (text.replace(/\[Halaman \d+\]/g, "").trim().length < 30) {
+          setFileError("PDF tidak berisi teks. Gunakan PDF hasil OCR atau tempel teks modul.");
           toast({
             title: "PDF tidak berisi teks",
             description:
@@ -163,7 +202,9 @@ export function UploadView() {
 
       setFileName(file.name);
       setContent(text);
-      setFileInfo({ kind: isPdf ? "pdf" : "text", pages, chars: text.length });
+      setSourceContent(null);
+      setActivePart(null);
+      setFileInfo({ kind: isPdf ? "pdf" : "text", pages, chars: text.length, bytes: file.size });
       toast({
         title: isPdf ? "PDF berhasil dibaca" : "File berhasil dibaca",
         description: isPdf
@@ -173,6 +214,9 @@ export function UploadView() {
     } catch (e) {
       const message = e instanceof Error ? e.message : "";
       const isPassword = /password/i.test(message);
+      setFileError(
+        isPassword ? "PDF terkunci password." : "Gagal membaca PDF. Pastikan file valid."
+      );
       toast({
         title: isPassword ? "PDF terkunci password" : "Gagal membaca PDF",
         description: isPassword
@@ -212,6 +256,16 @@ export function UploadView() {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.code === "doc_too_long" && typeof data.charCount === "number") {
+          setSourceContent(content);
+          setActivePart(null);
+          toast({
+            title: "Dokumen perlu dipecah",
+            description: `${data.charCount.toLocaleString("id-ID")} karakter, batas ${Number(data.maxChars).toLocaleString("id-ID")}. Pecah menjadi ${data.suggestedParts} bagian.`,
+            variant: "destructive",
+          });
+          return;
+        }
         toast({ title: "Gagal memproses", description: data.error, variant: "destructive" });
         return;
       }
@@ -244,8 +298,30 @@ export function UploadView() {
     setFileName("");
     setContent("");
     setFileInfo(null);
+    setFileError(null);
+    setSourceContent(null);
+    setActivePart(null);
     setActiveDocument(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const applyPart = (index: number) => {
+    const part = splitParts[index];
+    if (!part) return;
+    setContent(part.content);
+    setActivePart(index);
+    setFileInfo(null);
+    setFileError(null);
+    const base = (fileName || "modul")
+      .replace(/\.[^.]+$/, "")
+      .replace(/-bagian-\d+$/i, "");
+    setFileName(`${base}-bagian-${index + 1}.txt`);
+  };
+
+  const restoreFull = () => {
+    if (!sourceContent) return;
+    setContent(sourceContent);
+    setActivePart(null);
   };
 
   const deleteUploaded = async () => {
@@ -375,6 +451,9 @@ export function UploadView() {
                   onChange={(e) => {
                     setContent(e.target.value);
                     setFileInfo(null);
+                    setFileError(null);
+                    setSourceContent(null);
+                    setActivePart(null);
                     setResult(null);
                   }}
                   rows={9}
@@ -395,11 +474,126 @@ export function UploadView() {
               )}
             </div>
 
+            <div className="space-y-1.5 rounded-lg border bg-muted/20 p-3">
+              <p className="flex items-center gap-1.5 text-xs font-medium">
+                <ListChecks className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                Pemeriksaan dokumen
+              </p>
+              <CheckRow
+                ok={Boolean(content.trim()) && !fileError}
+                label="Isi dokumen"
+                detail={
+                  content.trim()
+                    ? `${charCount.toLocaleString("id-ID")} karakter siap`
+                    : "Belum ada teks atau file"
+                }
+              />
+              <CheckRow
+                ok={!tooLong}
+                label="Batas karakter"
+                detail={
+                  tooLong
+                    ? `${charCount.toLocaleString("id-ID")} dari ${limits.maxDocChars.toLocaleString("id-ID")}, lebih ${overBy.toLocaleString("id-ID")}`
+                    : `${charCount.toLocaleString("id-ID")} dari ${limits.maxDocChars.toLocaleString("id-ID")}`
+                }
+              />
+              {fileInfo && (
+                <CheckRow
+                  ok
+                  label="Format file"
+                  detail={
+                    fileInfo.kind === "pdf"
+                      ? `PDF, ${fileInfo.pages} halaman`
+                      : "File teks"
+                  }
+                />
+              )}
+              {fileInfo && (
+                <CheckRow
+                  ok={
+                    fileInfo.bytes <=
+                    (fileInfo.kind === "pdf" ? limits.maxPdfBytes : limits.maxTextBytes)
+                  }
+                  label="Ukuran file"
+                  detail={`${(fileInfo.bytes / (1024 * 1024)).toFixed(2)} MB dari ${Math.round(
+                    (fileInfo.kind === "pdf" ? limits.maxPdfBytes : limits.maxTextBytes) /
+                      (1024 * 1024)
+                  )} MB`}
+                />
+              )}
+              {fileError && (
+                <p className="flex items-start gap-1.5 text-xs text-destructive">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {fileError}
+                </p>
+              )}
+            </div>
+
+            {tooLong && !sourceContent && (
+              <div className="space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                <p className="text-xs">
+                  Isi {charCount.toLocaleString("id-ID")} karakter, melebihi batas{" "}
+                  {limits.maxDocChars.toLocaleString("id-ID")} sebanyak{" "}
+                  {overBy.toLocaleString("id-ID")} karakter.
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSourceContent(content);
+                    setActivePart(null);
+                  }}
+                >
+                  <Scissors className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                  Pecah menjadi {Math.ceil(charCount / limits.maxDocChars)} bagian
+                </Button>
+              </div>
+            )}
+
+            {sourceContent && splitParts.length > 0 && (
+              <div className="space-y-2 rounded-lg border p-3">
+                <p className="text-xs font-medium">
+                  Pilih bagian yang akan diunggah. Setiap bagian maksimal{" "}
+                  {limits.maxDocChars.toLocaleString("id-ID")} karakter.
+                </p>
+                {splitParts.map((part, index) => (
+                  <div
+                    key={`${part.title}-${index}`}
+                    className={`flex flex-col gap-2 rounded-lg border p-2.5 sm:flex-row sm:items-center sm:justify-between ${
+                      activePart === index ? "border-primary bg-primary/5" : ""
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-medium">{part.title}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {part.chars.toLocaleString("id-ID")} karakter
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={activePart === index ? "default" : "outline"}
+                      onClick={() => applyPart(index)}
+                    >
+                      Pakai bagian {index + 1}
+                    </Button>
+                  </div>
+                ))}
+                {activePart !== null && (
+                  <Button type="button" size="sm" variant="ghost" onClick={restoreFull}>
+                    <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                    Kembali ke dokumen penuh
+                  </Button>
+                )}
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2">
               <Button
                 data-testid="upload-submit"
                 onClick={submit}
-                disabled={processing || readingFile || !content.trim() || tooLong}
+                disabled={processing || readingFile || !content.trim() || tooLong || Boolean(fileError)}
               >
                 {processing ? (
                   <>

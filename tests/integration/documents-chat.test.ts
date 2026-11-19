@@ -78,7 +78,10 @@ describe("POST /api/documents", () => {
     );
     const body = (await res.json()) as { code: string };
     expect(res.status).toBe(413);
-    expect(body.code).toBe("doc_too_large");
+    expect(body.code).toBe("doc_too_long");
+    expect(body.charCount).toBe(9000);
+    expect(body.maxChars).toBe(8000);
+    expect(body.suggestedParts).toBe(2);
   });
 
   it("menyimpan dokumen, chunk, metadata, dan moderasi", async () => {

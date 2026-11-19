@@ -127,10 +127,15 @@ export async function POST(req: NextRequest) {
     const content = parsed.data.content;
 
     if (content.length > PLAN_LIMITS[plan].maxDocChars) {
+      const maxChars = PLAN_LIMITS[plan].maxDocChars;
       return NextResponse.json(
         {
-          error: `Dokumen paket ${plan === "premium" ? "Premium" : "Free"} maksimal ${PLAN_LIMITS[plan].maxDocChars.toLocaleString("id-ID")} karakter.`,
-          code: "doc_too_large",
+          error: `Dokumen paket ${plan === "premium" ? "Premium" : "Free"} maksimal ${maxChars.toLocaleString("id-ID")} karakter.`,
+          code: "doc_too_long",
+          charCount: content.length,
+          maxChars,
+          overBy: content.length - maxChars,
+          suggestedParts: Math.ceil(content.length / maxChars),
         },
         { status: 413 }
       );
