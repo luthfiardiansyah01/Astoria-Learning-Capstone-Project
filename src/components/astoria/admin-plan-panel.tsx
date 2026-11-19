@@ -321,6 +321,7 @@ export function AdminPlanPanel() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nama atau email…"
+              aria-label="Cari pengguna berdasarkan nama atau email"
               className="h-9 pl-8 text-sm"
             />
           </div>

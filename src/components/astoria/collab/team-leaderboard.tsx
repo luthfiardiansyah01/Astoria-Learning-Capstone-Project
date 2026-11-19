@@ -60,7 +60,7 @@ export function TeamLeaderboard() {
                     Lv.{team.level} · {team.xp} XP
                   </span>
                 </div>
-                <Progress value={progress.pct} className="h-1.5" />
+                <Progress value={progress.pct} className="h-1.5" aria-label={`Progres XP tim ${team.name}`} />
                 <TeamBadges badges={team.badges} />
               </div>
             );

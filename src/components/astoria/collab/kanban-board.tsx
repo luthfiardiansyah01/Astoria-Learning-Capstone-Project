@@ -250,6 +250,7 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
         <Input
           placeholder="Tambah tugas baru..."
           data-testid="task-new-title"
+          aria-label="Judul tugas baru"
           value={newTaskTitle}
           onChange={(e) => setNewTaskTitle(e.target.value)}
         />

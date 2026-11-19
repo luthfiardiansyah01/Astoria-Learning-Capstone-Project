@@ -173,3 +173,53 @@
 .astoria-scroll::-webkit-scrollbar-track { background: transparent; }
 .astoria-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 9999px; }
 .astoria-scroll::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+
+/* ── Aksesibilitas ── */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 100;
+  transform: translateY(-150%);
+  border-radius: 0.5rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform 0.15s ease;
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Fokus terlihat jelas untuk pengguna keyboard. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Target sentuh minimal untuk kontrol utama di layar kecil. */
+@media (max-width: 1023px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Hormati preferensi pengguna yang mengurangi animasi. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -40,9 +40,9 @@ export function ProjectList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">SOBAT ADI — Tim & Proyek Saya</h1>
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-bold">SOBAT ADI - Tim & Proyek Saya</h1>
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/collab/analytics"
             className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm hover:bg-muted transition-colors"

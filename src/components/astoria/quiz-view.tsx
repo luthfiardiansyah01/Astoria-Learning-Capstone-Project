@@ -332,6 +332,7 @@ export function QuizView() {
                     <Textarea
                       placeholder="Tulis jawabanmu dengan bahasamu sendiri…"
                       data-testid={`quiz-answer-${idx}`}
+                      aria-label={`Jawaban untuk soal ${idx + 1}`}
                       value={answers[q.id] ?? ""}
                       onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
                       rows={3}
@@ -378,7 +379,7 @@ export function QuizView() {
                       <span className="flex items-center gap-1 text-sm font-semibold text-amber-600 dark:text-amber-400">
                         <Trophy className="h-4 w-4" /> +{r.xpDiperoleh} XP
                       </span>
-                      <Progress value={r.skor} className="h-2 flex-1 min-w-24" />
+                      <Progress value={r.skor} className="h-2 flex-1 min-w-24" aria-label="Skor kuis" />
                     </div>
 
                     {/* Feedback motivasional */}

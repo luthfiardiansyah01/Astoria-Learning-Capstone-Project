@@ -48,7 +48,7 @@ export function AiQuotaBadge({ className = "" }: { className?: string }) {
           ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300"
           : low
             ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-            : "bg-primary/10 text-primary"
+            : "bg-primary/10 text-emerald-800 dark:text-emerald-300"
       } ${className}`}
     >
       <Sparkles className="h-3 w-3" />

@@ -8,6 +8,7 @@ const LEGAL_LINKS = [
   { href: "/legal/kebijakan-produk", label: "Kebijakan Produk" },
   { href: "/legal/kebijakan-pengembalian-dana", label: "Pengembalian Dana" },
   { href: "/legal/kebijakan-privasi", label: "Kebijakan Privasi" },
+  { href: "/legal/aksesibilitas", label: "Aksesibilitas" },
 ];
 
 export function LegalSection({
@@ -34,28 +35,31 @@ export function LegalPage({
   description,
   version = "1.0",
   effectiveDate = "4 November 2026",
+  kicker = "Dokumen Legal",
   children,
 }: {
   title: string;
   description: string;
   version?: string;
   effectiveDate?: string;
+  kicker?: string;
   children: ReactNode;
 }) {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-4xl items-center gap-3 px-4">
-          <Link href="/" className="flex items-center gap-2.5" aria-label="SOBAT ADI — beranda">
+          <Link href="/" className="flex items-center gap-2.5">
             <span className="rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 p-2 shadow-sm">
               <GraduationCap className="h-5 w-5 text-white" />
             </span>
             <span className="text-left">
               <span className="block text-sm font-bold leading-none tracking-tight">SOBAT ADI</span>
-              <span className="mt-1 block text-[9px] font-semibold uppercase leading-none tracking-[0.18em] text-primary/75">
+              <span className="mt-1 block text-[9px] font-semibold uppercase leading-none tracking-[0.18em] text-muted-foreground">
                 Belajar Tanpa Jarak
               </span>
             </span>
+            <span className="sr-only">Kembali ke beranda</span>
           </Link>
           <Link
             href="/produk"
@@ -69,7 +73,7 @@ export function LegalPage({
       <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:py-12">
         <div className="mb-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Dokumen Legal
+            {kicker}
           </p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{description}</p>
@@ -85,7 +89,7 @@ export function LegalPage({
         <footer className="mt-8 border-t pt-5 text-xs text-muted-foreground">
           <nav className="flex flex-wrap gap-x-4 gap-y-2" aria-label="Dokumen legal">
             {LEGAL_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className="hover:text-foreground hover:underline">
+              <Link key={link.href} href={link.href} className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline">
                 {link.label}
               </Link>
             ))}

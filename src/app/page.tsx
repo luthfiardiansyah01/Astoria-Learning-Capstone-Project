@@ -20,12 +20,15 @@ import {
   Users,
   LogOut,
   Settings,
+  HelpCircle,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { XP_LEVELS } from "@/lib/gamif";
 import { useAstoria, type ViewKey } from "@/components/astoria/store";
 import { HomeView } from "@/components/astoria/home-view";
+import { MobileNav } from "@/components/astoria/mobile-nav";
+import { AppGuide } from "@/components/astoria/app-guide";
 import { EmailVerificationBanner } from "@/components/astoria/email-verification-banner";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { AstoriaSessionProvider } from "@/components/providers/session-provider";
@@ -62,7 +65,7 @@ const AdminView = dynamic(viewLoaders.admin, {
 
 function ViewSkeleton() {
   return (
-    <div className="space-y-4" aria-busy="true" aria-label="Memuat tampilan">
+    <div className="space-y-4" role="status" aria-busy="true" aria-label="Memuat tampilan">
       <Skeleton className="h-28 w-full rounded-2xl" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
@@ -163,6 +166,7 @@ function AstoriaPage() {
   const isAdmin = session?.user?.role === "admin";
   const navItems = NAV.filter((n) => n.key !== "admin" || isAdmin);
   const [urlReady, setUrlReady] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
 
   useEffect(() => {
     const apply = () => {
@@ -237,14 +241,14 @@ function AstoriaPage() {
             <button
               onClick={() => setView("beranda")}
               className="flex shrink-0 items-center gap-2.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="SOBAT ADI — kembali ke beranda"
             >
+              <span className="sr-only">Kembali ke beranda</span>
               <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 p-2 shadow-sm ring-1 ring-inset ring-white/20">
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <div className="hidden text-left sm:block">
                 <p className="text-sm font-bold leading-none tracking-tight">SOBAT ADI</p>
-                <p className="mt-1 text-[9px] font-semibold uppercase leading-none tracking-[0.18em] text-primary/75">
+                <p className="mt-1 text-[9px] font-semibold uppercase leading-none tracking-[0.18em] text-muted-foreground">
                   Belajar Tanpa Jarak
                 </p>
               </div>
@@ -293,10 +297,22 @@ function AstoriaPage() {
                   </span>
                   <span>Lv. {level}</span>
                 </div>
-                <Progress value={pct} className="h-1.5" />
+                <Progress value={pct} className="h-1.5" aria-label={`Progres XP level ${level}`} />
               </div>
 
               <span className="mx-0.5 hidden h-5 w-px bg-border md:block" aria-hidden />
+
+              <button
+                type="button"
+                onClick={() => setGuideOpen(true)}
+                data-testid="open-guide"
+                className="hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:flex"
+                aria-label="Buka panduan aplikasi"
+                title="Panduan aplikasi"
+              >
+                <HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="hidden lg:inline">Panduan</span>
+              </button>
 
               <Link
                 href="/akun"
@@ -321,25 +337,19 @@ function AstoriaPage() {
               </button>
             </div>
           </div>
-
-          {/* Navigasi mobile/tablet */}
-          <div className="pb-2 lg:hidden">
-            <NavPills
-              items={navItems}
-              view={view}
-              onSelect={setView}
-              onPrefetch={prefetchView}
-              reduceMotion={reduceMotion}
-              layoutId="nav-pill-mobile"
-              className="flex w-fit max-w-full overflow-x-auto astoria-scroll"
-            />
-          </div>
         </div>
       </header>
 
       {/* ── Konten ── */}
-      <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-6">
+      <main
+        id="konten-utama"
+        tabIndex={-1}
+        className="flex-1 mx-auto w-full max-w-6xl px-4 py-6 pb-24 lg:pb-6"
+      >
         <EmailVerificationBanner />
+        <p aria-live="polite" className="sr-only">
+          {navItems.find((item) => item.key === view)?.label ?? "Beranda"} aktif
+        </p>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={view}
@@ -357,33 +367,45 @@ function AstoriaPage() {
         </AnimatePresence>
       </main>
 
+      <MobileNav
+        items={navItems}
+        view={view}
+        onSelect={setView}
+        isAdmin={isAdmin}
+        onOpenGuide={() => setGuideOpen(true)}
+      />
+      <AppGuide open={guideOpen} onOpenChange={setGuideOpen} onNavigate={setView} />
+
       {/* ── Footer (sticky bottom) ── */}
-      <footer className="mt-auto border-t bg-muted/40">
+      <footer className="mt-auto border-t bg-muted/40 pb-20 lg:pb-0">
         <div className="mx-auto max-w-6xl px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
           <p className="flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             SOBAT ADI — platform belajar bertenaga AI untuk mahasiswa PJJ Universitas Terbuka
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1" aria-label="Dokumen legal">
-            <Link href="/legal/syarat-ketentuan" className="hover:text-foreground hover:underline">
+            <Link href="/legal/syarat-ketentuan" className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline">
               Syarat & Ketentuan
             </Link>
             <Link
               href="/legal/kebijakan-pengembalian-dana"
-              className="hover:text-foreground hover:underline"
+              className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline"
             >
               Pengembalian Dana
             </Link>
-            <Link href="/legal/kebijakan-produk" className="hover:text-foreground hover:underline">
+            <Link href="/legal/kebijakan-produk" className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline">
               Kebijakan Produk
             </Link>
-            <Link href="/legal/kebijakan-privasi" className="hover:text-foreground hover:underline">
+            <Link href="/legal/kebijakan-privasi" className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline">
               Kebijakan Privasi
             </Link>
-            <Link href="/akun" className="hover:text-foreground hover:underline">
+            <Link href="/legal/aksesibilitas" className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline">
+              Aksesibilitas
+            </Link>
+            <Link href="/akun" className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline">
               Akun
             </Link>
-            <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-foreground hover:underline">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline">
               Kontak
             </a>
           </nav>

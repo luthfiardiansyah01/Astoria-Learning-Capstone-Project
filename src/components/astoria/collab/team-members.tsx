@@ -165,6 +165,7 @@ export function TeamMembers({
           <Input
             type="text"
             placeholder="Cari nama anggota baru"
+            aria-label="Cari nama anggota baru"
             value={name}
             onChange={(e) => {
               setName(e.target.value);

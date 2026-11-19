@@ -221,7 +221,7 @@ export function HomeView() {
                 </span>
                 <span className="font-semibold">{p.xpProgress.pct}%</span>
               </div>
-              <Progress value={p.xpProgress.pct} className="h-3" />
+              <Progress value={p.xpProgress.pct} className="h-3" aria-label="Progres XP" />
             </div>
 
             {/* Katalog badge */}
@@ -236,7 +236,7 @@ export function HomeView() {
                     className={`flex items-start gap-3 rounded-xl border p-3 transition-colors ${
                       b.earned
                         ? "border-amber-300 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-800"
-                        : "border-dashed opacity-70"
+                        : "border-dashed bg-muted/30"
                     }`}
                   >
                     <span className={`text-2xl ${b.earned ? "" : "grayscale opacity-50"}`}>{b.emoji}</span>

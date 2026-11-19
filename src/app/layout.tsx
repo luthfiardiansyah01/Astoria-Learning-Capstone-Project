@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -21,6 +21,12 @@ export const metadata: Metadata = {
   icons: { icon: "/logo.svg" },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0b5d3b",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,7 +37,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        {children}
+        <a href="#konten-utama" className="skip-link">
+          Lewati ke konten utama
+        </a>
+        <div id="konten-utama" tabIndex={-1}>
+          {children}
+        </div>
       </body>
     </html>
   );

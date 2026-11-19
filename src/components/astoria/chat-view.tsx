@@ -415,6 +415,7 @@ export function ChatView() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               data-testid="chat-input"
+              aria-label="Tulis pertanyaan untuk Mentor AI"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();

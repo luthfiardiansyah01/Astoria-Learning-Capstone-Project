@@ -1,0 +1,52 @@
+[
+  {
+    "page": "Login",
+    "url": "http://127.0.0.1:3100/login",
+    "violations": []
+  },
+  {
+    "page": "Beranda (desktop)",
+    "url": "http://127.0.0.1:3100/",
+    "violations": []
+  },
+  {
+    "page": "Beranda (mobile 375)",
+    "url": "http://127.0.0.1:3100/",
+    "violations": []
+  },
+  {
+    "page": "Mentor AI",
+    "url": "http://127.0.0.1:3100/?view=mentor",
+    "violations": []
+  },
+  {
+    "page": "Unggah",
+    "url": "http://127.0.0.1:3100/?view=unggah",
+    "violations": []
+  },
+  {
+    "page": "Kuis",
+    "url": "http://127.0.0.1:3100/?view=kuis",
+    "violations": []
+  },
+  {
+    "page": "Collab",
+    "url": "http://127.0.0.1:3100/collab",
+    "violations": []
+  },
+  {
+    "page": "Akun",
+    "url": "http://127.0.0.1:3100/akun",
+    "violations": []
+  },
+  {
+    "page": "Pernyataan Aksesibilitas",
+    "url": "http://127.0.0.1:3100/legal/aksesibilitas",
+    "violations": []
+  },
+  {
+    "page": "Kebijakan Privasi",
+    "url": "http://127.0.0.1:3100/legal/kebijakan-privasi",
+    "violations": []
+  }
+]

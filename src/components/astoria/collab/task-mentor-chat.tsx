@@ -148,6 +148,7 @@ export function TaskMentorChat({ taskId }: { taskId: string }) {
         <Input
           placeholder="Tanya mentor tentang task ini..."
           data-testid="task-mentor-input"
+          aria-label="Pertanyaan untuk mentor tugas"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           disabled={mutation.isPending}

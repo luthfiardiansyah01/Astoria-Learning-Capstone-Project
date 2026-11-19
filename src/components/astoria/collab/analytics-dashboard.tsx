@@ -130,7 +130,7 @@ export function AnalyticsDashboard() {
                     <span>{label}</span>
                     <span className="text-muted-foreground">{count}</span>
                   </div>
-                  <Progress value={s.totalTasks ? (count / s.totalTasks) * 100 : 0} className="h-1.5" />
+                  <Progress value={s.totalTasks ? (count / s.totalTasks) * 100 : 0} className="h-1.5" aria-label={`Distribusi tugas: ${label}`} />
                 </div>
               );
             })}
@@ -174,7 +174,7 @@ export function AnalyticsDashboard() {
                   <td className="pr-3">{m.aiQuestions}</td>
                   <td>
                     <div className="flex items-center gap-2">
-                      <Progress value={m.contributionPct} className="h-1.5 w-20" />
+                      <Progress value={m.contributionPct} className="h-1.5 w-20" aria-label={`Kontribusi ${m.name}`} />
                       <span className="text-xs text-muted-foreground">{m.contributionPct}%</span>
                     </div>
                   </td>

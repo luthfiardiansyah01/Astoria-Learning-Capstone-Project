@@ -362,6 +362,7 @@ export function UploadView() {
               <Input
                 placeholder="Nama dokumen (mis. modul-sim-bab4.pdf)"
                 data-testid="upload-filename"
+                aria-label="Nama dokumen"
                 value={fileName}
                 onChange={(e) => setFileName(e.target.value)}
               />
@@ -369,6 +370,7 @@ export function UploadView() {
                 <Textarea
                   placeholder="…atau tempel isi modul di sini, lalu klik Proses Dokumen"
                   data-testid="upload-content"
+                  aria-label="Isi modul"
                   value={content}
                   onChange={(e) => {
                     setContent(e.target.value);
