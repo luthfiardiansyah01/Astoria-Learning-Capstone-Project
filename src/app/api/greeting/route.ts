@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/greeting — sapaan mentor proaktif (Seksi 6.3 spesifikasi)
+// GET /api/greeting - sapaan mentor proaktif (Seksi 6.3 spesifikasi)
 // Data: nama, streak, last active, modul aktif, progress, waktu WIB
 
 import { NextResponse } from "next/server";
@@ -20,7 +20,7 @@ function localGreeting(nama: string, hour: number, streak: number): string {
     streak >= 3
       ? `Streak ${streak} hari kamu keren, pertahankan ya! 🔥`
       : streak > 1
-        ? `Sudah ${streak} hari berturut-turut belajar — lanjutkan!`
+        ? `Sudah ${streak} hari berturut-turut belajar - lanjutkan!`
         : "Yuk mulai sesi belajar hari ini!";
 
   return `${waktu}, ${nama.split(" ")[0]}! ${streakMsg}`;

@@ -226,7 +226,7 @@ export function AccountSettings() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="settings-email">Email</Label>
-            <Input id="settings-email" value={settings.email ?? "—"} readOnly disabled />
+            <Input id="settings-email" value={settings.email ?? "-"} readOnly disabled />
             <p className="text-xs text-muted-foreground">
               Email tidak dapat diubah di sini. Hubungi admin bila perlu mengganti email.
             </p>

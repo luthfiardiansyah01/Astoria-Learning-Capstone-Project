@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "SOBAT ADI — Solusi Belajar Terbaik, Asisten Digital Interaktif",
+    name: "SOBAT ADI - Solusi Belajar Terbaik, Asisten Digital Interaktif",
     short_name: "SOBAT ADI",
     description:
       "Platform belajar bertenaga AI untuk mahasiswa Pendidikan Jarak Jauh: Mentor AI berbasis modul, kuis otomatis, dan kolaborasi tim.",

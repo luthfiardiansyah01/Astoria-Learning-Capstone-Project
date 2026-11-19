@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// DELETE /api/collab/teams/[teamId]/members/[userId] — keluarkan anggota
+// DELETE /api/collab/teams/[teamId]/members/[userId] - keluarkan anggota
 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";

@@ -1,11 +1,11 @@
 import { logger } from "@/lib/logger";
-// POST /api/chat — Mentor AI RAG Chat (Seksi 3 spesifikasi):
+// POST /api/chat - Mentor AI RAG Chat (Seksi 3 spesifikasi):
 //   1. Mahasiswa pilih dokumen → retrieval chunk paling relevan
 //   2. System prompt = PLATFORM_IDENTITY + MENTOR_PROMPT + RAG_CONTEXT_INJECTION
 //   3. Riwayat chat maks 6 pesan terakhir + pertanyaan terbaru
 //   4. Deteksi out-of-context → fallback ramah
-// GET /api/chat?documentId= — riwayat chat
-// DELETE /api/chat?documentId= — bersihkan riwayat
+// GET /api/chat?documentId= - riwayat chat
+// DELETE /api/chat?documentId= - bersihkan riwayat
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

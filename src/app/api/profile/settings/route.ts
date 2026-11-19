@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET/PATCH /api/profile/settings — preferensi tampilan dan notifikasi pengguna.
+// GET/PATCH /api/profile/settings - preferensi tampilan dan notifikasi pengguna.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";

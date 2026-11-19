@@ -279,7 +279,7 @@ export function PlanBadge({ className = "" }: { className?: string }) {
             <DialogDescription>
               Paket aktif: <strong>{premium ? "Premium" : "Free"}</strong>
               {data?.planExpiresAt && premium
-                ? ` — berlaku sampai ${formatDate(data.planExpiresAt)}`
+                ? ` - berlaku sampai ${formatDate(data.planExpiresAt)}`
                 : ""}
             </DialogDescription>
           </DialogHeader>

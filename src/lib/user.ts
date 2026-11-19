@@ -62,7 +62,7 @@ export function formatLastActive(date: Date): string {
   return `${hari} hari lalu`;
 }
 
-/** Waktu WIB (UTC+7) saat ini — sesuai spesifikasi sapaan mentor. */
+/** Waktu WIB (UTC+7) saat ini - sesuai spesifikasi sapaan mentor. */
 export function wibNow(): { clock: string; hour: number; label: string } {
   const now = new Date();
   const wib = new Date(now.getTime() + (7 * 60 + now.getTimezoneOffset()) * 60000);

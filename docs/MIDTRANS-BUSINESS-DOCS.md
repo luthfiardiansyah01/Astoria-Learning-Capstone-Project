@@ -1,4 +1,4 @@
-# Business Supporting Document — Midtrans
+# Business Supporting Document - Midtrans
 
 Status: **koreksi dokumen / in review** (10 November 2026).
 
@@ -47,10 +47,10 @@ Halaman ini menampilkan:
 
 | Item | Dampak pada review | Tindakan |
 |---|---|---|
-| **Identitas badan usaha** (nama PT/CV/UD atau perorangan, alamat) | Tinggi — reviewer mencocokkan dengan dokumen legal | Isi setelah jalur entitas diputuskan |
-| **Nomor telepon/WhatsApp** | Sedang — banyak reviewer meminta kontak yang dapat dihubungi | Tambahkan nomor aktif |
-| **Domain sendiri** | Sedang — subdomain `*.vercel.app` sering dianggap belum layak merchant | Arahkan domain kustom ke Vercel |
-| **NPWP/NIB dan rekening** | Tinggi — syarat aggregator | Lihat bagian dokumen legal di bawah |
+| **Identitas badan usaha** (nama PT/CV/UD atau perorangan, alamat) | Tinggi - reviewer mencocokkan dengan dokumen legal | Isi setelah jalur entitas diputuskan |
+| **Nomor telepon/WhatsApp** | Sedang - banyak reviewer meminta kontak yang dapat dihubungi | Tambahkan nomor aktif |
+| **Domain sendiri** | Sedang - subdomain `*.vercel.app` sering dianggap belum layak merchant | Arahkan domain kustom ke Vercel |
+| **NPWP/NIB dan rekening** | Tinggi - syarat aggregator | Lihat bagian dokumen legal di bawah |
 
 Setelah item di atas selesai, unggah ulang melalui tautan **"this link"** pada
 email koreksi Midtrans (10 November 2026) untuk keempat metode.

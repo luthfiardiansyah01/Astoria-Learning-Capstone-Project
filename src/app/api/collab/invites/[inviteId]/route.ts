@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/collab/invites/[inviteId] — terima atau tolak undangan tim.
+// POST /api/collab/invites/[inviteId] - terima atau tolak undangan tim.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/current-user";
@@ -113,7 +113,7 @@ export async function POST(
   }
 }
 
-// DELETE /api/collab/invites/[inviteId] — owner membatalkan undangan pending.
+// DELETE /api/collab/invites/[inviteId] - owner membatalkan undangan pending.
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ inviteId: string }> }

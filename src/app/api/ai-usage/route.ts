@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/ai-usage — sisa kuota AI pengguna (per menit & per hari), tanpa menambah counter.
+// GET /api/ai-usage - sisa kuota AI pengguna (per menit & per hari), tanpa menambah counter.
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/current-user";
 import {

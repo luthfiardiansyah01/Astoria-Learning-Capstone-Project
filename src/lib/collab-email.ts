@@ -38,10 +38,10 @@ export interface DueTask {
 }
 
 export function dueTasksEmail(input: { name: string; tasks: DueTask[] }) {
-  const subject = "Ringkasan tenggat tugas — SOBAT ADI";
+  const subject = "Ringkasan tenggat tugas - SOBAT ADI";
   const lines = input.tasks.map(
     (t) =>
-      `- ${t.title} (${t.projectName}) — ${t.overdue ? "TERLAMBAT" : "mendekati"} ${t.dueDate.toLocaleDateString("id-ID")}`
+      `- ${t.title} (${t.projectName}) - ${t.overdue ? "TERLAMBAT" : "mendekati"} ${t.dueDate.toLocaleDateString("id-ID")}`
   );
   const text = `Halo ${input.name},\n\nBerikut tugas yang perlu perhatian:\n\n${lines.join("\n")}\n\nBuka ${appUrl()}/collab untuk detail.`;
   const html = `
@@ -52,7 +52,7 @@ export function dueTasksEmail(input: { name: string; tasks: DueTask[] }) {
         ${input.tasks
           .map(
             (t) =>
-              `<li><strong>${escapeHtml(t.title)}</strong> — ${escapeHtml(t.projectName)} · ${
+              `<li><strong>${escapeHtml(t.title)}</strong> - ${escapeHtml(t.projectName)} · ${
                 t.overdue ? "terlambat" : "mendekati"
               } ${escapeHtml(t.dueDate.toLocaleDateString("id-ID"))}</li>`
           )

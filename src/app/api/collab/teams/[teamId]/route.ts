@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger";
-// PATCH  /api/collab/teams/[teamId] — ubah nama tim (owner)
-// DELETE /api/collab/teams/[teamId] — hapus tim (owner)
+// PATCH  /api/collab/teams/[teamId] - ubah nama tim (owner)
+// DELETE /api/collab/teams/[teamId] - hapus tim (owner)
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

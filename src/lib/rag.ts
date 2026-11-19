@@ -1,7 +1,7 @@
 // src/lib/rag.ts
 // Retrieval-Augmented Generation sederhana:
 // - Chunking: sliding window ±500 token (±2000 karakter), overlap ±50 token (±200 karakter)
-// - Retrieval: skor kemiripan berbasis kata kunci (term frequency) — pengganti cosine
+// - Retrieval: skor kemiripan berbasis kata kunci (term frequency) - pengganti cosine
 //   similarity embedding saat embedding API tidak tersedia.
 // - MAX_CONTEXT_LENGTH = 6.000 karakter sesuai spesifikasi.
 

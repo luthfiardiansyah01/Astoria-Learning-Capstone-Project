@@ -1,4 +1,4 @@
-# SOBAT ADI — Rencana Implementasi (arsip)
+# SOBAT ADI - Rencana Implementasi (arsip)
 
 > **Dokumen arsip (Oktober 2026).** Isi di bawah adalah rencana awal dan catatan
 > keputusan saat itu; beberapa status sudah tidak berlaku (mis. "menunggu URL
@@ -48,14 +48,14 @@ Perubahan dari rencana awal yang **tetap berlaku**: tambah anggota lewat nama (e
 
 ## 4. Langkah kerja
 
-### Fase A — Bersihkan rahasia (WAJIB, sebelum push apa pun)
+### Fase A - Bersihkan rahasia (WAJIB, sebelum push apa pun)
 - `git rm --cached .env db/custom.db`; tambahkan `db/*.db` ke `.gitignore`.
 - Kembalikan `.z-ai-config.example` ke placeholder.
 - **Rotasi API key OpenRouter** (key lama pernah tertulis di berkas yang bisa ter-commit) dan buat `NEXTAUTH_SECRET` baru untuk produksi.
 - Buat `.env.example` berisi nama variabel tanpa nilai.
 - Periksa riwayat git: bila `.env` lama berisi rahasia, bersihkan atau anggap bocor.
 
-### Fase B — Database PostgreSQL
+### Fase B - Database PostgreSQL
 - `schema.prisma`: `provider = "postgresql"`, `url = env("DATABASE_URL")`, `directUrl = env("DIRECT_URL")`.
 - Buat proyek Supabase (atau Neon); pakai URL pooled untuk `DATABASE_URL`, URL langsung untuk `DIRECT_URL`.
 - Mulai riwayat migrasi sungguhan (`prisma migrate dev`, lalu `migrate deploy` di produksi), bukan `db push`.
@@ -63,22 +63,22 @@ Perubahan dari rencana awal yang **tetap berlaku**: tambah anggota lewat nama (e
 - Seed produksi: **tanpa akun demo berpassword publik**; admin dibuat sekali lewat env var.
 - Data lokal tidak dimigrasi (hanya data uji).
 
-### Fase C — AI di Vercel
+### Fase C - AI di Vercel
 - `ai.ts`: baca `AI_BASE_URL` + `AI_API_KEY` dari env (fallback ke `.z-ai-config` untuk lokal); panggil `fetch` ke `/chat/completions` dan `/embeddings` langsung. Logika retry, rotasi model, cache, dan `embedTexts` tetap.
 - Tambah `export const maxDuration` pada rute AI (`chat`, `quiz/*`, `documents`, `greeting`, `admin/analytics`, `collab/tasks/*/mentor`).
 
-### Fase D — Data per pengguna (halaman utama)
+### Fase D - Data per pengguna (halaman utama)
 - Tambah relasi pemilik pada dokumen, chat, dan percobaan kuis sudah ada via `uploaderId`/`userId`; ganti `getOrCreateUsers()` di `chat`, `documents`, `greeting`, `profile`, `quiz/submit` dengan `getCurrentUser()` dan filter berdasarkan pengguna.
 - Dokumen: milik pengguna atau berstatus `approved` (bisa dipakai bersama).
 - Halaman utama mengharuskan login (redirect ke `/login`); hapus fallback akun demo.
 
-### Fase E — Keamanan dasar
+### Fase E - Keamanan dasar
 - Rute `/api/admin/*` dan tampilan Admin: wajib `role === "admin"`.
 - Batasi laju (rate limit) pada `/api/auth/register`, login, dan rute AI agar kuota gratis tidak dihabiskan orang lain. Perlu penyimpanan bersama (mis. Upstash Redis) karena memori fungsi serverless tidak dibagi.
 - Validasi input dengan zod pada rute yang menerima body (zod sudah terpasang).
 - Uji akses: bukan anggota tim, bukan admin, dan belum login harus mendapat 401/403 di semua rute Collab dan admin.
 
-### Fase F — Konfigurasi dan deploy
+### Fase F - Konfigurasi dan deploy
 - Hapus `output: "standalone"` dan `ignoreBuildErrors`; perbaiki galat tipe yang muncul.
 - `package.json`: `"postinstall": "prisma generate"`, `"build": "prisma migrate deploy && next build"`.
 - Env var di Vercel: `DATABASE_URL`, `DIRECT_URL`, `NEXTAUTH_URL` (domain Vercel), `NEXTAUTH_SECRET`, `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL`, `AI_FALLBACK_MODELS`, `AI_EMBED_MODEL`.

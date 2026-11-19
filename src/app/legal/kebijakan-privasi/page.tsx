@@ -4,7 +4,7 @@ import { LegalList, LegalPage, LegalSection } from "@/components/legal/legal-pag
 import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
-  title: "Kebijakan Privasi — SOBAT ADI",
+  title: "Kebijakan Privasi - SOBAT ADI",
   description:
     "Kebijakan privasi SOBAT ADI: data yang dikumpulkan, tujuan pemrosesan, pemroses pihak ketiga, masa penyimpanan, dan hak pengguna atas data pribadinya.",
 };
@@ -106,13 +106,13 @@ export default function PrivacyPage() {
           yang diperlukan untuk menjalankan Layanan:
         </p>
         <LegalList>
-          <li><strong>Vercel</strong> — hosting aplikasi dan log teknis.</li>
-          <li><strong>Supabase</strong> — basis data PostgreSQL dan penyimpanan data aplikasi.</li>
-          <li><strong>Upstash</strong> — penghitung pembatasan laju berbasis Redis.</li>
-          <li><strong>Penyedia model AI</strong> — pemrosesan teks untuk jawaban, kuis, dan pencarian semantik.</li>
-          <li><strong>Resend</strong> — pengiriman email verifikasi dan pemberitahuan.</li>
-          <li><strong>Cloudflare Turnstile</strong> — verifikasi bahwa pendaftaran dilakukan manusia.</li>
-          <li><strong>Midtrans / Xendit</strong> — pemrosesan pembayaran.</li>
+          <li><strong>Vercel</strong> - hosting aplikasi dan log teknis.</li>
+          <li><strong>Supabase</strong> - basis data PostgreSQL dan penyimpanan data aplikasi.</li>
+          <li><strong>Upstash</strong> - penghitung pembatasan laju berbasis Redis.</li>
+          <li><strong>Penyedia model AI</strong> - pemrosesan teks untuk jawaban, kuis, dan pencarian semantik.</li>
+          <li><strong>Resend</strong> - pengiriman email verifikasi dan pemberitahuan.</li>
+          <li><strong>Cloudflare Turnstile</strong> - verifikasi bahwa pendaftaran dilakukan manusia.</li>
+          <li><strong>Midtrans / Xendit</strong> - pemrosesan pembayaran.</li>
         </LegalList>
         <p>
           Sebagian penyedia tersebut beroperasi di luar Indonesia, sehingga data dapat diproses

@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/billing/checkout — buat transaksi Premium di Midtrans/Xendit.
+// POST /api/billing/checkout - buat transaksi Premium di Midtrans/Xendit.
 // Bila kredensial belum diisi, mengembalikan 503 + code "billing_not_configured".
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET /api/billing/checkout — alias status paket + harga (memudahkan klien).
+// GET /api/billing/checkout - alias status paket + harga (memudahkan klien).
 export async function GET() {
   const auth = await requireUser();
   if (auth.res) return auth.res;

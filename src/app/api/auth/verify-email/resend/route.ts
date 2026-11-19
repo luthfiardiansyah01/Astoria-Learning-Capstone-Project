@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/auth/verify-email/resend — kirim ulang tautan verifikasi.
+// POST /api/auth/verify-email/resend - kirim ulang tautan verifikasi.
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/current-user";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";

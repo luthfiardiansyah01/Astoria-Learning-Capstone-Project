@@ -15,13 +15,13 @@ Jika Anda menggunakan layanan atas nama organisasi, Anda menyatakan berwenang me
 
 ## 2. Definisi
 
-- **Layanan** — platform belajar SOBAT ADI, termasuk Mentor AI, RAG dokumen, kuis, gamifikasi, dan kolaborasi tim.
-- **Akun** — akun pengguna yang terdaftar.
-- **Konten Pengguna** — dokumen, teks, pertanyaan, jawaban, tugas, dan materi lain yang Anda unggah.
-- **Paket Free** — paket tanpa biaya dengan batas penggunaan tertentu.
-- **Paket Premium** — paket berbayar dengan batas lebih tinggi.
-- **Trial** — masa uji Premium 7 hari yang diberikan sekali per akun.
-- **Pembayaran** — pembayaran Paket Premium melalui gateway pembayaran pihak ketiga.
+- **Layanan** - platform belajar SOBAT ADI, termasuk Mentor AI, RAG dokumen, kuis, gamifikasi, dan kolaborasi tim.
+- **Akun** - akun pengguna yang terdaftar.
+- **Konten Pengguna** - dokumen, teks, pertanyaan, jawaban, tugas, dan materi lain yang Anda unggah.
+- **Paket Free** - paket tanpa biaya dengan batas penggunaan tertentu.
+- **Paket Premium** - paket berbayar dengan batas lebih tinggi.
+- **Trial** - masa uji Premium 7 hari yang diberikan sekali per akun.
+- **Pembayaran** - pembayaran Paket Premium melalui gateway pembayaran pihak ketiga.
 
 ## 3. Kelayakan dan akun
 
@@ -92,7 +92,7 @@ Tanggung jawab kepatuhan terhadap aturan kampus tetap pada pengguna.
 
 ## 10. Kekayaan intelektual
 
-Selain Konten Pengguna, seluruh elemen Layanan — termasuk perangkat lunak, desain, merek, logo, teks, dan materi — dimiliki oleh Kami atau pemberi lisensinya dan dilindungi hukum.
+Selain Konten Pengguna, seluruh elemen Layanan - termasuk perangkat lunak, desain, merek, logo, teks, dan materi - dimiliki oleh Kami atau pemberi lisensinya dan dilindungi hukum.
 
 Anda tidak boleh menggunakan merek atau logo Kami tanpa izin tertulis.
 

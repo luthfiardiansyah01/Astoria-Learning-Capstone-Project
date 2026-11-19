@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger";
-// GET  /api/collab/teams — daftar tim milik user saat ini
-// POST /api/collab/teams — buat tim baru (pembuat jadi owner)
+// GET  /api/collab/teams - daftar tim milik user saat ini
+// POST /api/collab/teams - buat tim baru (pembuat jadi owner)
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

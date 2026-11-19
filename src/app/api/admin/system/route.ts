@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/admin/system — status fitur infrastruktur (khusus admin).
+// GET /api/admin/system - status fitur infrastruktur (khusus admin).
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/current-user";
 import { pgvectorAvailable } from "@/lib/pgvector";

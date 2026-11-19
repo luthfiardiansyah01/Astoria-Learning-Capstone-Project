@@ -14,7 +14,7 @@ import {
 import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
-  title: "SOBAT ADI Premium — Paket, Harga, dan Cara Berlangganan",
+  title: "SOBAT ADI Premium - Paket, Harga, dan Cara Berlangganan",
   description:
     "SOBAT ADI adalah platform belajar bertenaga AI untuk mahasiswa PJJ Universitas Terbuka. Lihat fitur, harga Premium Rp19.000/30 hari, dan cara berlangganan.",
   keywords: ["SOBAT ADI", "Premium", "Mentor AI", "PJJ", "Universitas Terbuka"],
@@ -238,7 +238,7 @@ export default function ProdukPage() {
 
           <div className="mt-4 flex flex-col gap-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <p>
-              SOBAT ADI — platform belajar bertenaga AI untuk seluruh jenjang pendidikan yang ingin
+              SOBAT ADI - platform belajar bertenaga AI untuk seluruh jenjang pendidikan yang ingin
               belajar jarak jauh.
             </p>
             <div className="flex flex-wrap items-center gap-3">

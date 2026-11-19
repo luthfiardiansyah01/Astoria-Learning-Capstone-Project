@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger";
-// GET /api/documents/[id] — detail dokumen + metadata AI + preview chunks
-// DELETE /api/documents/[id] — hapus dokumen (admin / pemilik)
+// GET /api/documents/[id] - detail dokumen + metadata AI + preview chunks
+// DELETE /api/documents/[id] - hapus dokumen (admin / pemilik)
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

@@ -4,7 +4,7 @@ import { LoginForm } from "@/components/astoria/auth/login-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Masuk — SOBAT ADI",
+  title: "Masuk - SOBAT ADI",
   description: "Masuk ke SOBAT ADI untuk melanjutkan belajar bersama Mentor AI.",
 };
 

@@ -1,4 +1,4 @@
-// PATCH /api/admin/payments/[paymentId] — konfirmasi manual pembayaran.
+// PATCH /api/admin/payments/[paymentId] - konfirmasi manual pembayaran.
 // Dipakai untuk transfer manual saat payment gateway belum dikonfigurasi.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

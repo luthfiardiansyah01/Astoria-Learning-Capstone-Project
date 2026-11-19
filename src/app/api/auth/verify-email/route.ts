@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/auth/verify-email — verifikasi token email sekali pakai.
+// POST /api/auth/verify-email - verifikasi token email sekali pakai.
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { readBody } from "@/lib/validation";

@@ -1,4 +1,4 @@
-// DELETE /api/billing/payments/[paymentId] — batalkan pesanan pending milik sendiri.
+// DELETE /api/billing/payments/[paymentId] - batalkan pesanan pending milik sendiri.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";

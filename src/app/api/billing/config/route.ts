@@ -1,4 +1,4 @@
-// GET /api/billing/config — status konfigurasi payment gateway (data publik).
+// GET /api/billing/config - status konfigurasi payment gateway (data publik).
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/current-user";
 import { billingConfig } from "@/lib/billing";

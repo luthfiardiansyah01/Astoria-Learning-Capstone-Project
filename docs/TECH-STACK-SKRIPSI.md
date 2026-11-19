@@ -1,8 +1,8 @@
-# Tech Stack SOBAT ADI — Draf Bab Skripsi
+# Tech Stack SOBAT ADI - Draf Bab Skripsi
 
 Dokumen ini merapikan daftar teknologi aplikasi **SOBAT ADI (Astoria Collab)**
 menjadi format akademik, siap dipindahkan ke Bab III (Metodologi/Perancangan)
-atau Bab IV (Hasil dan Pembahasan). Nomor subbab memakai awalan `3.` —
+atau Bab IV (Hasil dan Pembahasan). Nomor subbab memakai awalan `3.` -
 sesuaikan dengan penomoran naskah.
 
 Versi yang dicantumkan adalah **versi terpasang** (`node_modules`), bukan rentang
@@ -19,10 +19,10 @@ fungsi serverless pada platform Vercel.
 
 Secara logis sistem dibagi menjadi empat lapisan:
 
-1. **Lapisan presentasi** — React Server Components dan Client Components.
-2. **Lapisan aplikasi** — Route Handlers `/api/*` dan Server Actions.
-3. **Lapisan data** — Prisma ORM dengan basis data PostgreSQL.
-4. **Lapisan layanan eksternal** — penyedia model bahasa (AI), Redis untuk
+1. **Lapisan presentasi** - React Server Components dan Client Components.
+2. **Lapisan aplikasi** - Route Handlers `/api/*` dan Server Actions.
+3. **Lapisan data** - Prisma ORM dengan basis data PostgreSQL.
+4. **Lapisan layanan eksternal** - penyedia model bahasa (AI), Redis untuk
    pembatasan laju, layanan surel, CAPTCHA, dan payment gateway.
 
 Pemisahan ini memudahkan pengujian: lapisan aplikasi diuji melalui pengujian
@@ -40,7 +40,7 @@ flowchart TB
   RH --> AU["NextAuth (JWT, Credentials)"]
   RH --> RL["Pembatasan laju (Upstash Redis)"]
   RH --> PR["Prisma ORM"]
-  PR --> DB[("PostgreSQL 16 — Supabase, RLS aktif")]
+  PR --> DB[("PostgreSQL 16 - Supabase, RLS aktif")]
   RH --> AIC["API AI kompatibel OpenAI"]
   RH --> MAIL["Resend (verifikasi email)"]
   RH --> CAP["Cloudflare Turnstile"]
@@ -89,7 +89,7 @@ Vercel (hnd1) ── Next.js 16 App Router
 | 2 | Next.js | 16.4.3 | Kerangka kerja full-stack (App Router, SSR, routing API) |
 | 3 | TypeScript | 5.9.3 | Bahasa pemrograman bertipe statis |
 | 4 | Tailwind CSS | 4.1.18 | Kerangka kerja utilitas tata letak |
-| 5 | shadcn/ui + Radix UI | — | Komponen antarmuka aksesibel (dialog, select, tooltip, dll.) |
+| 5 | shadcn/ui + Radix UI | - | Komponen antarmuka aksesibel (dialog, select, tooltip, dll.) |
 | 6 | lucide-react | 0.525.0 | Pustaka ikon |
 | 7 | Framer Motion | 12.26.2 | Animasi dan transisi |
 | 8 | TanStack Query | 5.90.19 | Manajemen state server dan cache |
@@ -107,14 +107,14 @@ Vercel (hnd1) ── Next.js 16 App Router
 | 1 | Next.js Route Handlers | 16.4.3 | 42 endpoint REST internal |
 | 2 | Prisma ORM | 6.19.2 | Pemetaan objek-relasional, migrasi, transaksi |
 | 3 | PostgreSQL | 16 | Basis data relasional |
-| 4 | Supabase | — | Penyedia PostgreSQL terkelola + Row Level Security |
+| 4 | Supabase | - | Penyedia PostgreSQL terkelola + Row Level Security |
 | 5 | NextAuth.js | 4.24.15 | Autentikasi (Credentials, sesi JWT) |
 | 6 | bcryptjs | 3.0.3 | Hash kata sandi (cost 12) |
-| 7 | Upstash Redis | — | Pembatasan laju terdistribusi |
-| 8 | Cloudflare Turnstile | — | CAPTCHA |
-| 9 | Resend | — | Pengiriman surel verifikasi |
-| 10 | Midtrans Snap / Xendit | — | Payment gateway langganan Premium |
-| 11 | API AI kompatibel OpenAI | — | Model bahasa untuk asisten, kuis, dan RAG |
+| 7 | Upstash Redis | - | Pembatasan laju terdistribusi |
+| 8 | Cloudflare Turnstile | - | CAPTCHA |
+| 9 | Resend | - | Pengiriman surel verifikasi |
+| 10 | Midtrans Snap / Xendit | - | Payment gateway langganan Premium |
+| 11 | API AI kompatibel OpenAI | - | Model bahasa untuk asisten, kuis, dan RAG |
 
 ### Tabel 3.3 Perkakas Pengembangan dan Pengujian
 
@@ -125,9 +125,9 @@ Vercel (hnd1) ── Next.js 16 App Router
 | 3 | Vitest | 5.1.0 | Pengujian unit dan integrasi |
 | 4 | Testing Library + jsdom | 16.3.3 / 30.x | Pengujian komponen |
 | 5 | Playwright | 1.64.1 | Pengujian end-to-end |
-| 6 | Docker Compose | — | PostgreSQL lokal (dev dan uji) |
-| 7 | GitHub Actions | — | Integrasi berkelanjutan |
-| 8 | Vercel | — | Deployment produksi |
+| 6 | Docker Compose | - | PostgreSQL lokal (dev dan uji) |
+| 7 | GitHub Actions | - | Integrasi berkelanjutan |
+| 8 | Vercel | - | Deployment produksi |
 
 ---
 
@@ -199,11 +199,11 @@ integrasi, dan 13 end-to-end (lihat `MONITORING-LOG.md`).
 |---|---|---|
 | Runtime aplikasi | `next dev` (port 3000) | Vercel, region `hnd1` |
 | Basis data | PostgreSQL 16 via Docker (`sobadi-dev-db`, port 5432) | Supabase (pooler transaksi 6543, sesi 5432) |
-| Basis data pengujian | `sobadi-test-db` (port 5434, penyimpanan sementara) | — |
+| Basis data pengujian | `sobadi-test-db` (port 5434, penyimpanan sementara) | - |
 | Reverse proxy lokal | Caddy (port 81) | Vercel Edge Network |
 | Variabel rahasia | `.env` (tidak di-commit) | Environment Variables Vercel |
 | Pembatasan laju | Fallback memori | Redis, `RATE_LIMIT_FAIL_CLOSED=true` |
-| Integrasi berkelanjutan | — | GitHub Actions (`ci.yml`) |
+| Integrasi berkelanjutan | - | GitHub Actions (`ci.yml`) |
 
 ---
 

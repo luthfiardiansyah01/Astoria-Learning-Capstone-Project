@@ -2,7 +2,7 @@
 
 **Perihal:** Uji coba pendamping belajar berbasis AI untuk mahasiswa PJJ  
 **Diajukan kepada:** [Nama Program Studi / Fakultas]  
-**Pengusul:** [Nama] — [Program Studi] — [Email/WhatsApp]  
+**Pengusul:** [Nama] - [Program Studi] - [Email/WhatsApp]  
 **Tanggal:** [Tanggal]
 
 ---
@@ -111,5 +111,5 @@ Setelah pilot, jika kampus ingin melanjutkan, tersedia paket berbayar per progra
 
 Kami mengusulkan **rapat singkat 30 menit** untuk membahas ruang lingkup, jadwal, dan kesiapan kelas. Setelah itu, pilot dapat dimulai dalam **1–2 minggu**.
 
-**Kontak:** [Nama] — [Email] — [WhatsApp]  
+**Kontak:** [Nama] - [Email] - [WhatsApp]  
 **Demo:** https://astoria-learning-capstone-project.vercel.app

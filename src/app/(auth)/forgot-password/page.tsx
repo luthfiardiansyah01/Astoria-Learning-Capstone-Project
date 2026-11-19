@@ -4,7 +4,7 @@ import { ForgotPasswordForm } from "@/components/astoria/auth/forgot-password-fo
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Lupa Password — SOBAT ADI",
+  title: "Lupa Password - SOBAT ADI",
   description: "Minta tautan reset password untuk akun SOBAT ADI.",
 };
 

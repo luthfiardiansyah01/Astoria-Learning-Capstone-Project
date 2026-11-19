@@ -1,4 +1,4 @@
-# Rencana Implementasi — Kualitas Kode & Pengujian
+# Rencana Implementasi - Kualitas Kode & Pengujian
 
 Dokumen ini melengkapi `docs/RENCANA-IMPLEMENTASI.md` (kesiapan produksi). Fokus di sini: membuat kode **terverifikasi otomatis** dan **aman diubah**, bukan menambah fitur.
 
@@ -6,13 +6,13 @@ Dokumen ini melengkapi `docs/RENCANA-IMPLEMENTASI.md` (kesiapan produksi). Fokus
 
 | Fase | Status | Bukti |
 |---|---|---|
-| Fase 0 — Fondasi tooling | **Selesai** | `vitest.config.mts`, `tests/setup.ts`, script `typecheck`/`test`/`test:unit`/`test:coverage`/`verify` |
-| Fase 1 — Standar tipe & lint | **Selesai (gelombang 1)** | `noImplicitAny: true`, `reactStrictMode: true`, aturan `prefer-const`, `no-unused-vars`, `no-empty`, `no-unreachable`, `no-redeclare`, `no-case-declarations` aktif; `eslint .` bersih |
-| Fase 2 — Unit test logika murni | **Selesai** | 132 test di `tests/unit`, 8 file; coverage 76% statement / 78% baris / 78% fungsi / 66% cabang |
-| Fase 3 — Integration test API | **Selesai** | 107 test di `tests/integration` dengan PostgreSQL uji (`db-test`); coverage API 76% baris / 71% statement |
-| Fase 4 — E2E Playwright | **Selesai** | 10 skenario di `tests/e2e` dengan mock AI, database uji, trace/screenshot; lulus 3× berturut-turut |
-| Fase 5 — CI | **Selesai** | `.github/workflows/ci.yml`: typecheck, lint, unit + coverage, integration + coverage, build, E2E Playwright |
-| Fase 6 — Observability & pembersihan | **Selesai** | Logger JSON + redaksi, `error.tsx`/`global-error.tsx`/`not-found.tsx`/`loading.tsx`, artefak scaffold dipindahkan/dihapus, `no-console` aktif, audit `knip` dijalankan |
+| Fase 0 - Fondasi tooling | **Selesai** | `vitest.config.mts`, `tests/setup.ts`, script `typecheck`/`test`/`test:unit`/`test:coverage`/`verify` |
+| Fase 1 - Standar tipe & lint | **Selesai (gelombang 1)** | `noImplicitAny: true`, `reactStrictMode: true`, aturan `prefer-const`, `no-unused-vars`, `no-empty`, `no-unreachable`, `no-redeclare`, `no-case-declarations` aktif; `eslint .` bersih |
+| Fase 2 - Unit test logika murni | **Selesai** | 132 test di `tests/unit`, 8 file; coverage 76% statement / 78% baris / 78% fungsi / 66% cabang |
+| Fase 3 - Integration test API | **Selesai** | 107 test di `tests/integration` dengan PostgreSQL uji (`db-test`); coverage API 76% baris / 71% statement |
+| Fase 4 - E2E Playwright | **Selesai** | 10 skenario di `tests/e2e` dengan mock AI, database uji, trace/screenshot; lulus 3× berturut-turut |
+| Fase 5 - CI | **Selesai** | `.github/workflows/ci.yml`: typecheck, lint, unit + coverage, integration + coverage, build, E2E Playwright |
+| Fase 6 - Observability & pembersihan | **Selesai** | Logger JSON + redaksi, `error.tsx`/`global-error.tsx`/`not-found.tsx`/`loading.tsx`, artefak scaffold dipindahkan/dihapus, `no-console` aktif, audit `knip` dijalankan |
 
 ### Menjalankan E2E
 
@@ -40,7 +40,7 @@ Laporan HTML: `bun run test:e2e:report`. Trace dan screenshot kegagalan tersimpa
 | E2E | Hanya `scripts/smoke.ps1` manual | Regresi alur utama tidak terdeteksi sebelum demo |
 | CI | **Tidak ada** `.github/workflows` | Tidak ada gerbang kualitas; `main` bisa menerima kode rusak |
 | Coverage | **0%** | Tidak ada ukuran kemajuan |
-| `any` eksplisit | **0** dari 128 file `src` | Baik — pertahankan |
+| `any` eksplisit | **0** dari 128 file `src` | Baik - pertahankan |
 | `console.*` | **44** pemanggilan di kode server | Log tidak terstruktur, berpotensi membocorkan data |
 | TODO/FIXME nyata | **0** (kata "todo" yang terdeteksi hanyalah status Kanban) | Baik |
 | Batas error UI | Belum ada `error.tsx` / `not-found.tsx` / `loading.tsx` | Satu error server = layar putih |
@@ -67,7 +67,7 @@ Laporan HTML: `bun run test:e2e:report`. Trace dan screenshot kegagalan tersimpa
 
 ---
 
-## 2. Fase 0 — Fondasi tooling (≈0,5 hari)
+## 2. Fase 0 - Fondasi tooling (≈0,5 hari)
 
 **Tujuan:** satu perintah untuk memasang, mengecek tipe, dan menjalankan test.
 
@@ -128,7 +128,7 @@ Laporan HTML: `bun run test:e2e:report`. Trace dan screenshot kegagalan tersimpa
 
 ---
 
-## 3. Fase 1 — Naikkan standar tipe & lint (≈1 hari)
+## 3. Fase 1 - Naikkan standar tipe & lint (≈1 hari)
 
 Lakukan **satu commit per kelompok aturan** agar mudah di-bisect.
 
@@ -144,7 +144,7 @@ Aktifkan bertahap, mulai dari yang paling murah:
 |---|---|---|
 | 1 | `prefer-const`, `no-unused-vars`, `no-empty`, `no-unreachable`, `no-redeclare` | Kecil, mekanis |
 | 2 | `@typescript-eslint/no-explicit-any`, `ban-ts-comment` | 0 (sudah bersih) |
-| 3 | `react-hooks/exhaustive-deps` (mulai `warn`) | Sedang — perbaiki dependency array |
+| 3 | `react-hooks/exhaustive-deps` (mulai `warn`) | Sedang - perbaiki dependency array |
 | 4 | `no-console` (setelah Fase 6 punya logger) | 44 |
 | 5 | `@next/next/no-img-element`, `no-unescaped-entities` | Kecil |
 
@@ -158,7 +158,7 @@ Aturan yang tetap dimatikan **wajib** diberi komentar alasan, misalnya:
 
 ---
 
-## 4. Fase 2 — Unit test logika murni (≈1,5 hari)
+## 4. Fase 2 - Unit test logika murni (≈1,5 hari)
 
 Ini investasi dengan rasio manfaat/biaya terbaik: cepat, tanpa DB, stabil.
 
@@ -180,7 +180,7 @@ Target: **≥90% baris & cabang** untuk modul di tabel.
 
 ---
 
-## 5. Fase 3 — Ekstraksi service + integration test API (≈2 hari)
+## 5. Fase 3 - Ekstraksi service + integration test API (≈2 hari)
 
 ### 5.1 Pecah route gemuk
 Route terbesar: `api/documents/route.ts` (200 baris), `api/quiz/submit/route.ts` (189), `api/chat/route.ts` (161). Pola yang dituju:
@@ -219,7 +219,7 @@ Target: **≥70% baris** untuk `src/app/api/**` + `src/lib/services/**`; setiap 
 
 ---
 
-## 6. Fase 4 — E2E Playwright (≈1,5 hari)
+## 6. Fase 4 - E2E Playwright (≈1,5 hari)
 
 ### 6.1 AI tiruan (kunci stabilitas)
 Buat `tests/e2e/mock-ai.ts`: server HTTP kecil yang meniru `POST /v1/chat/completions` dan `/v1/embeddings` dengan respons tetap (termasuk JSON kuis yang valid). Jalankan bersama `webServer` Playwright, lalu set:
@@ -247,7 +247,7 @@ Gunakan `data-testid` pada elemen kunci, bukan selector teks (teks bisa berubah)
 
 ---
 
-## 7. Fase 5 — CI dan gerbang kualitas (≈1 hari)
+## 7. Fase 5 - CI dan gerbang kualitas (≈1 hari)
 
 Buat `.github/workflows/ci.yml`:
 
@@ -307,7 +307,7 @@ Tambahan:
 
 ---
 
-## 8. Fase 6 — Observability, ketahanan UI, dan pembersihan (≈1 hari)
+## 8. Fase 6 - Observability, ketahanan UI, dan pembersihan (≈1 hari)
 
 1. **Logger terstruktur** `src/lib/logger.ts`:
    - Level via `LOG_LEVEL`; JSON di produksi.
@@ -317,7 +317,7 @@ Tambahan:
 3. **Bersihkan artefak scaffold** yang mengotori repo:
    - `scripts/contrast-*.png`, `scripts/verify-*.png`, `scripts/unggah-*.png` → hapus atau pindahkan ke `docs/assets/`.
    - `tests/database-runtime-build.sh`, `python-runtime-*.sh` bukan test aplikasi → hapus atau pindahkan ke `docs/legacy/` dengan catatan.
-4. **Deteksi kode/dependensi mati:** `bunx knip` (sekali jalan, periksa manual). Banyak paket Radix/shadcn kemungkinan tidak terpakai — hapus hanya setelah `knip` + `tsc` + E2E hijau.
+4. **Deteksi kode/dependensi mati:** `bunx knip` (sekali jalan, periksa manual). Banyak paket Radix/shadcn kemungkinan tidak terpakai - hapus hanya setelah `knip` + `tsc` + E2E hijau.
 5. **Rapikan konstanta ajaib:** `MAX_CONTEXT_LENGTH`, ambang badge/XP, dan limit rate limit dikumpulkan per domain agar mudah diuji.
 
 ---
@@ -340,7 +340,7 @@ Tambahan:
 
 | Fase | Estimasi | Ketergantungan |
 |---|---|---|
-| 0. Fondasi tooling | 0,5 hari | — |
+| 0. Fondasi tooling | 0,5 hari | - |
 | 1. Type & lint | 1 hari | Fase 0 |
 | 2. Unit test lib murni | 1,5 hari | Fase 0 |
 | 3. Service + integration test | 2 hari | Fase 0, DB Docker/Supabase test |

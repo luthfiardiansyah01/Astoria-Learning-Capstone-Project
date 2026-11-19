@@ -38,7 +38,7 @@ export function receiptEmail(input: ReceiptInput) {
   const expiresAt = tanggal(input.expiresAt);
   const method = providerLabel(input.provider);
 
-  const subject = `Kuitansi Premium SOBAT ADI — ${input.orderId}`;
+  const subject = `Kuitansi Premium SOBAT ADI - ${input.orderId}`;
   const text = [
     `Halo ${input.name},`,
     "",

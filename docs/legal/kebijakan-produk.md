@@ -10,11 +10,11 @@ Dokumen ini menjelaskan produk, paket, batas penggunaan, dan aturan operasional 
 
 SOBAT ADI adalah platform pendamping belajar berbasis AI untuk mahasiswa, terutama mahasiswa Pendidikan Jarak Jauh. Fitur utama:
 
-- **Mentor AI berbasis dokumen (RAG)** — menjawab pertanyaan berdasarkan modul yang diunggah dan menampilkan referensi bagian.
-- **Pemrosesan dokumen** — mengekstrak struktur, topik, dan kata kunci; moderasi konten.
-- **Kuis otomatis** — soal, penilaian, XP, level, dan lencana.
-- **Kolaborasi** — tim, proyek, papan Kanban, tugas, tenggat, dan Mentor AI per tugas.
-- **Panel admin** — moderasi dokumen, analitik, dan pengelolaan paket pengguna.
+- **Mentor AI berbasis dokumen (RAG)** - menjawab pertanyaan berdasarkan modul yang diunggah dan menampilkan referensi bagian.
+- **Pemrosesan dokumen** - mengekstrak struktur, topik, dan kata kunci; moderasi konten.
+- **Kuis otomatis** - soal, penilaian, XP, level, dan lencana.
+- **Kolaborasi** - tim, proyek, papan Kanban, tugas, tenggat, dan Mentor AI per tugas.
+- **Panel admin** - moderasi dokumen, analitik, dan pengelolaan paket pengguna.
 
 ## 2. Paket dan harga
 

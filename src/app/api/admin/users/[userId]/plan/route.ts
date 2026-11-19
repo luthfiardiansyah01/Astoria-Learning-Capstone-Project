@@ -1,4 +1,4 @@
-// PATCH /api/admin/users/[userId]/plan — ubah paket pengguna (khusus admin).
+// PATCH /api/admin/users/[userId]/plan - ubah paket pengguna (khusus admin).
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/current-user";

@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST/DELETE /api/push/subscribe — kelola langganan Web Push perangkat.
+// POST/DELETE /api/push/subscribe - kelola langganan Web Push perangkat.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";

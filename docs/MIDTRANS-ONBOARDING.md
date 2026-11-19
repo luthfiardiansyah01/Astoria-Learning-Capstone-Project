@@ -1,4 +1,4 @@
-# Onboarding Midtrans — SOBAT ADI
+# Onboarding Midtrans - SOBAT ADI
 
 Status: **koreksi dokumen / in review** (10 November 2026).
 
@@ -19,7 +19,7 @@ Dokumen ini merangkum jawaban formulir "Data Tambahan / Data Susulan Onboarding"
 Midtrans. Artefak yang berisi akun dummy **tidak disimpan di repo**; salinannya
 ada di `%TEMP%\opencode\midtrans-review\`.
 
-## Poin 1 — Katalog produk/layanan
+## Poin 1 - Katalog produk/layanan
 
 Unggah **`KATALOG-PRODUK-SOBAT-ADI.pdf`**.
 
@@ -31,7 +31,7 @@ Isi katalog:
 - Fitur: Mentor AI, kuis, unggah modul, kolaborasi tim, analitik
 - Screenshot dialog paket di aplikasi
 
-## Poin 2 — End-to-end process
+## Poin 2 - End-to-end process
 
 Pelanggan membuka https://astoria-learning-capstone-project.vercel.app/login
 dan masuk. Setelah login, pelanggan membuka dialog **Paket SOBAT ADI** dari
@@ -45,13 +45,13 @@ memperpanjang Premium 30 hari secara idempoten. Status pembayaran dan masa
 aktif dapat dilihat di aplikasi. Produk adalah langganan digital, tanpa
 pengiriman barang.
 
-## Poin 3 — Range harga
+## Poin 3 - Range harga
 
 ```text
 19000
 ```
 
-## Poin 4 — Dokumen tambahan
+## Poin 4 - Dokumen tambahan
 
 Unggah **`ALUR-TRANSAKSI-DAN-AKUN-DUMMY.pdf`**.
 

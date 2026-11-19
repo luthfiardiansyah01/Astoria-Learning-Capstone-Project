@@ -1,4 +1,4 @@
-// Panel Admin — Manajemen & Moderasi Dokumen (Seksi 5 spesifikasi)
+// Panel Admin - Manajemen & Moderasi Dokumen (Seksi 5 spesifikasi)
 // - Antrian moderasi dengan keputusan admin (aktifkan/review/tolak)
 // - Dashboard analitik + AI Analytics Summarizer
 "use client";

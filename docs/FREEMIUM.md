@@ -1,4 +1,4 @@
-# Paket Freemium SOBAT ADI — Matriks Implementasi
+# Paket Freemium SOBAT ADI - Matriks Implementasi
 
 Dokumen ini mencatat apa yang **benar-benar ditegakkan di server**, apa yang hanya
 berupa validasi UI, dan hal yang perlu diperhatikan sebelum peluncuran publik.

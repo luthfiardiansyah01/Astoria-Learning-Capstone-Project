@@ -130,7 +130,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 | 2026-11-18 | P4 | Kesiapan publik | Selesai | Reset password, ekspor/hapus akun, kuitansi email, refund+alasan, consent S&K, CSP enforced, rotasi kredensial admin |
 | 2026-11-18 | P5 | Skala & produk | Selesai | Kanban per-kolom (390→44,6 KB), cache analitik persisten, bundle 700→609 KB, email undangan + cron, audit log, pgvector 2048+HNSW (backfill 225), load test 667 RPS |
 
-## Detail Fase P0 — 7 November 2026
+## Detail Fase P0 - 7 November 2026
 
 **Perubahan**
 - Rotasi password database melalui Supabase Management API.
@@ -155,7 +155,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Channel pembayaran Midtrans belum aktif; alur manual tetap tersedia.
 - Layanan eksternal di luar repo yang masih memakai password DB lama perlu diperbarui.
 
-## Detail Fase P1 — 7 November 2026
+## Detail Fase P1 - 7 November 2026
 
 **Perubahan**
 - Middleware batas body: 1 MB untuk API umum, 256 KB untuk webhook.
@@ -179,7 +179,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - CI `733a6a7` sukses; deployment Production Ready.
 
 **Sisa risiko (saat P1 awal)**
-- Verifikasi email dan CAPTCHA saat itu belum aktif; kemudian diaktifkan —
+- Verifikasi email dan CAPTCHA saat itu belum aktif; kemudian diaktifkan -
   lihat bagian **Detail entri P1 lanjutan**.
 - Batas anggota tim saat itu masih hitung-lalu-buat; kemudian dibuat atomik di P2.
 - Admin legacy `admin@sobat-adi.id` masih aktif.
@@ -189,7 +189,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Sediakan `RESEND_API_KEY`/SMTP dan kunci Turnstile untuk P1 lanjutan.
 - Atomickan batas anggota tim dan pertimbangkan undangan via email.
 
-## Detail Fase P1 — Verifikasi Email & CAPTCHA (7 November 2026)
+## Detail Fase P1 - Verifikasi Email & CAPTCHA (7 November 2026)
 
 **Perubahan**
 - Tambah `User.emailVerifiedAt` dan model `EmailVerificationToken` (hash SHA-256,
@@ -225,7 +225,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Resend dan Turnstile adalah dependensi eksternal; outage dapat menunda
   registrasi/verifikasi.
 
-## Detail Fase P2 — 7 November 2026
+## Detail Fase P2 - 7 November 2026
 
 **Perubahan**
 - Semua cek batas paket (tim, proyek, tugas, anggota) memakai transaksi +
@@ -266,7 +266,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   agar tidak memotong kuota.
 - Komponen UI lama dan dependency tak terpakai sudah dibersihkan di P3.
 
-## Detail Fase P3 — 7 November 2026
+## Detail Fase P3 - 7 November 2026
 
 **Perubahan**
 - Migrasi `20261107030000_p3_constraints_indexes`:
@@ -299,7 +299,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   melalui proses arsip/soft-delete.
 - Backup tim orphan hanya di temp; hapus setelah yakin tidak diperlukan.
 
-## Detail Fase Dokumentasi — 8 November 2026
+## Detail Fase Dokumentasi - 8 November 2026
 
 **Perubahan**
 - Tambah `docs/README.md` sebagai indeks seluruh dokumentasi.
@@ -320,7 +320,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - `docs/README.md` menjadi pintu masuk dokumentasi.
 - Artefak Midtrans berisi akun dummy tetap di luar repo.
 
-## Detail Fase Dokumentasi — 14 & 16 November 2026
+## Detail Fase Dokumentasi - 14 & 16 November 2026
 
 **Perubahan**
 
@@ -405,7 +405,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   `PAYMENT_MANUAL_ONLY=false`, sehingga pembayaran otomatis bergantung pada
   persetujuan Midtrans dan pembayaran nyata belum bisa diproses lewat aplikasi.
 
-## Detail Perbaikan Stabilitas — 18 November 2026
+## Detail Perbaikan Stabilitas - 18 November 2026
 
 **Perubahan**
 
@@ -433,7 +433,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 **Verifikasi**
 
 - `tsc --noEmit`, `eslint .`, dan `bun run build` → **0 error**.
-- Unit **155**, integration **141**, E2E **13** — semuanya lulus.
+- Unit **155**, integration **141**, E2E **13** - semuanya lulus.
 - Build dengan Next 16.4.6 selesai tanpa `SecurityFatalError`.
 - `bun audit`: tidak ada advisory pada paket runtime utama
   (`next`, `sharp`, `lodash`, `postcss`, `nanoid`, `source-map-js`).
@@ -449,7 +449,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 
 
 
-## Detail Optimasi Perf-1 — 18 November 2026
+## Detail Optimasi Perf-1 - 18 November 2026
 
 **Perubahan**
 
@@ -483,7 +483,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Project detail masih mengirim ±390 KB untuk 1.000 tugas.
 - Belum ada cache header khusus untuk halaman statis.
 
-## Detail Optimasi Perf-2 — 18 November 2026
+## Detail Optimasi Perf-2 - 18 November 2026
 
 **Perubahan**
 
@@ -510,7 +510,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
   realistis tanpa pagination per kolom (dijadwalkan P3).
 - Cache header mengandalkan CDN Vercel; perilaku lokal tidak mewakili.
 
-## Detail P4 — Kesiapan Publik (18 November 2026)
+## Detail P4 - Kesiapan Publik (18 November 2026)
 
 **Perubahan**
 
@@ -549,7 +549,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 - Email kuitansi bergantung pada Resend; kegagalan dicatat di log.
 - Penghapusan akun dengan riwayat pembayaran masih manual oleh admin.
 
-## Detail P5 — Skala & Produk (18 November 2026)
+## Detail P5 - Skala & Produk (18 November 2026)
 
 **Perubahan**
 
@@ -582,7 +582,7 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 Salin template ini ke bagian paling bawah **Log tahapan** dan isi:
 
 ```markdown
-### YYYY-MM-DD — P1 — <judul>
+### YYYY-MM-DD - P1 - <judul>
 
 **Perubahan**
 - ...

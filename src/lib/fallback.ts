@@ -1,5 +1,5 @@
 // src/lib/fallback.ts
-// Seksi 7 — Error Handling & Fallback Prompts (dari spesifikasi)
+// Seksi 7 - Error Handling & Fallback Prompts (dari spesifikasi)
 
 export const FALLBACK_RESPONSES = {
   // Ketika dokumen belum diunggah
@@ -20,7 +20,7 @@ export const FALLBACK_RESPONSES = {
   // Ketika konten tidak layak dideteksi
   inappropriate:
     "Hmm, saya tidak bisa membantu dengan pertanyaan itu. " +
-    "Yuk fokus ke materi kuliah — ada yang mau ditanyakan dari modul kamu?",
+    "Yuk fokus ke materi kuliah - ada yang mau ditanyakan dari modul kamu?",
 
   // Ketika dokumen terlalu besar
   doc_too_large:
@@ -42,7 +42,7 @@ export function isOutOfContext(reply: string): boolean {
 // Pre-processing input mahasiswa (Seksi 3.3)
 export function preprocessUserInput(text: string): string {
   text = text.trim();
-  if (text.length < 3) throw new Error("Pertanyaan terlalu pendek — minimal 3 karakter ya!");
+  if (text.length < 3) throw new Error("Pertanyaan terlalu pendek - minimal 3 karakter ya!");
   if (text.length > 800) text = text.slice(0, 800) + "...";
   return text;
 }

@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/auth/register — buat akun mahasiswa baru untuk Astoria Collab
+// POST /api/auth/register - buat akun mahasiswa baru untuk Astoria Collab
 
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";

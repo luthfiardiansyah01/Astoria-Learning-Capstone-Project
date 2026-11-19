@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/billing/webhook/midtrans — notifikasi transaksi Midtrans.
+// POST /api/billing/webhook/midtrans - notifikasi transaksi Midtrans.
 // Verifikasi signature SHA512 lalu aktifkan Premium (idempoten).
 import { NextRequest, NextResponse } from "next/server";
 import {

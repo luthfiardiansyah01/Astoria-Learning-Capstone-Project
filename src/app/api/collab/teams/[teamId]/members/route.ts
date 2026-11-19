@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/collab/teams/[teamId]/members — tambah anggota lewat nama
+// POST /api/collab/teams/[teamId]/members - tambah anggota lewat nama
 // CATATAN: sementara pakai nama (bukan unik); pencarian lewat email menyusul.
 
 import { NextRequest, NextResponse } from "next/server";

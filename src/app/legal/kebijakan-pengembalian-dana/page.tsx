@@ -3,7 +3,7 @@ import { LegalList, LegalPage, LegalSection } from "@/components/legal/legal-pag
 import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
-  title: "Kebijakan Pengembalian Dana — SOBAT ADI",
+  title: "Kebijakan Pengembalian Dana - SOBAT ADI",
   description:
     "Kebijakan pengembalian dana Paket Premium SOBAT ADI: kondisi yang dapat diajukan, proses, waktu, dan pengecualian.",
 };
@@ -57,7 +57,7 @@ export default function RefundPage() {
           <a href={`mailto:${CONTACT_EMAIL}`} className="underline hover:text-foreground">
             {CONTACT_EMAIL}
           </a>{" "}
-          dengan subjek <strong>Refund — [Order ID]</strong> dan sertakan:
+          dengan subjek <strong>Refund - [Order ID]</strong> dan sertakan:
         </p>
         <LegalList>
           <li>nama dan email akun;</li>

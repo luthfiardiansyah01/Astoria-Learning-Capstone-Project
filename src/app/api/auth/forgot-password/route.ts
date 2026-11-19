@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/auth/forgot-password — kirim tautan reset password.
+// POST /api/auth/forgot-password - kirim tautan reset password.
 // Selalu memberi respons generik agar tidak membocorkan keberadaan email.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

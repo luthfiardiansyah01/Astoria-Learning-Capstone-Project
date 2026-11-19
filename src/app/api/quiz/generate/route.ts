@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/quiz/generate — buat 5 soal dari dokumen (basis kuis gamifikasi)
+// POST /api/quiz/generate - buat 5 soal dari dokumen (basis kuis gamifikasi)
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

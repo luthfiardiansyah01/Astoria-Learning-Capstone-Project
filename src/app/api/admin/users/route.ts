@@ -1,4 +1,4 @@
-// GET /api/admin/users — daftar pengguna + paket aktif (khusus admin).
+// GET /api/admin/users - daftar pengguna + paket aktif (khusus admin).
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";

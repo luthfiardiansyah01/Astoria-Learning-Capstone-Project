@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger";
-// GET  /api/collab/notifications — daftar notifikasi + jumlah belum dibaca (juga memindai tenggat tugas)
-// POST /api/collab/notifications — tandai dibaca: { ids?: string[] } (tanpa ids = semua)
+// GET  /api/collab/notifications - daftar notifikasi + jumlah belum dibaca (juga memindai tenggat tugas)
+// POST /api/collab/notifications - tandai dibaca: { ids?: string[] } (tanpa ids = semua)
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

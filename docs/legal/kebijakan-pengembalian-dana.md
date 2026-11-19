@@ -20,11 +20,11 @@ Pengajuan sebaiknya dilakukan maksimal **7 hari kalender** setelah pembayaran. U
 
 Pengajuan dapat dipertimbangkan jika:
 
-1. **Pembayaran ganda** — pengguna tertagih lebih dari sekali untuk pesanan yang sama.
-2. **Pembayaran berhasil tetapi Premium tidak aktif** — setelah 1×24 jam dan pengguna telah memberikan bukti pembayaran, Kami tidak dapat mengaktifkan Premium.
-3. **Transaksi tidak sah** — transaksi dilakukan tanpa izin pemilik metode pembayaran, setelah verifikasi.
-4. **Gangguan material** — Layanan Premium tidak dapat digunakan secara material selama lebih dari 72 jam dalam 7 hari pertama dan Kami tidak dapat memberikan perbaikan atau alternatif yang wajar.
-5. **Kewajiban hukum** — hukum yang berlaku mewajibkan pengembalian.
+1. **Pembayaran ganda** - pengguna tertagih lebih dari sekali untuk pesanan yang sama.
+2. **Pembayaran berhasil tetapi Premium tidak aktif** - setelah 1×24 jam dan pengguna telah memberikan bukti pembayaran, Kami tidak dapat mengaktifkan Premium.
+3. **Transaksi tidak sah** - transaksi dilakukan tanpa izin pemilik metode pembayaran, setelah verifikasi.
+4. **Gangguan material** - Layanan Premium tidak dapat digunakan secara material selama lebih dari 72 jam dalam 7 hari pertama dan Kami tidak dapat memberikan perbaikan atau alternatif yang wajar.
+5. **Kewajiban hukum** - hukum yang berlaku mewajibkan pengembalian.
 
 ## 3. Kondisi yang umumnya tidak dapat dikembalikan
 
@@ -41,7 +41,7 @@ Pengajuan dapat dipertimbangkan jika:
 Kirim email ke **admin1@moedatrace.com** dengan subjek:
 
 ```text
-Refund — [Order ID]
+Refund - [Order ID]
 ```
 
 Sertakan:

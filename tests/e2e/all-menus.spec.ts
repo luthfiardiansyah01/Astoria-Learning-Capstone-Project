@@ -69,7 +69,7 @@ test("menu admin tersedia untuk admin", async ({ page }) => {
   await expect(adminNav).toBeVisible();
   await adminNav.click();
   await expect(page.getByText("Manajemen & Moderasi Dokumen")).toBeVisible();
-  await expect(page.getByText("Siaran notifikasi")).toBeVisible();
+  await expect(page.getByText("Siaran notifikasi", { exact: true })).toBeVisible();
 
   await page.getByLabel("Judul").fill("Uji siaran");
   await page.getByLabel("Isi pesan").fill("Pesan uji dari E2E.");

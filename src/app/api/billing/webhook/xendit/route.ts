@@ -1,4 +1,4 @@
-// POST /api/billing/webhook/xendit — callback invoice Xendit.
+// POST /api/billing/webhook/xendit - callback invoice Xendit.
 // Verifikasi header x-callback-token lalu aktifkan Premium (idempoten).
 import { NextRequest, NextResponse } from "next/server";
 import { updatePaymentStatus, verifyXenditCallback, xenditStatus } from "@/lib/billing";

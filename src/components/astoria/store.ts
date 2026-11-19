@@ -50,7 +50,7 @@ export const useAstoria = create<AstoriaState>((set) => ({
         },
       });
     } catch {
-      // diamkan — statistik akan dimuat ulang saat aksi berikutnya
+      // diamkan - statistik akan dimuat ulang saat aksi berikutnya
     }
   },
 }));

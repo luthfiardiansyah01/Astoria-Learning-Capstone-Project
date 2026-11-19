@@ -1,4 +1,4 @@
-// GET /api/admin/payments — transaksi pembayaran + status konfigurasi gateway.
+// GET /api/admin/payments - transaksi pembayaran + status konfigurasi gateway.
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/current-user";

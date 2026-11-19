@@ -11,7 +11,7 @@ export function TeamBadges({ badges, showEmpty }: { badges: string[]; showEmpty?
         return (
           <span
             key={name}
-            title={meta ? `${name} — ${meta.desc}` : name}
+            title={meta ? `${name} - ${meta.desc}` : name}
             className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
           >
             <span aria-hidden>{meta?.emoji ?? "🏅"}</span>

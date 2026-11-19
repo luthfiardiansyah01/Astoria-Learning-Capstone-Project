@@ -1,4 +1,4 @@
-// Beranda — sapaan mentor proaktif (Seksi 6.3), statistik, katalog badge, aktivitas
+// Beranda - sapaan mentor proaktif (Seksi 6.3), statistik, katalog badge, aktivitas
 "use client";
 
 import { useEffect } from "react";
@@ -14,6 +14,7 @@ import {
   MessageCircle,
   GraduationCap,
   Clock3,
+  Target,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -160,8 +161,8 @@ export function HomeView() {
             {data.greeting}
           </h1>
           <p className="mt-2 text-white font-medium max-w-xl">
-            Halo <strong>{p.nama}</strong>! Teruslah bertanya, menjawab kuis, dan raih lencana —
-            belajar jarak jauh kini terasa dekat bersama Mentor AI SOBAT ADI.
+            Halo, <strong>{p.nama}</strong>. Unggah modul, tanya Mentor AI, lalu uji pemahaman
+            dengan kuis. Semua dalam satu tempat.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Button
@@ -177,7 +178,17 @@ export function HomeView() {
             >
               <Upload className="mr-2 h-4 w-4" /> Unggah Modul
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => setView("kuis")}
+              className="border-white/60 bg-transparent text-white shadow-none hover:bg-white/15 hover:text-white"
+            >
+              <Target className="mr-2 h-4 w-4" /> Latihan Kuis
+            </Button>
           </div>
+          <p className="mt-3 text-xs text-emerald-100/85">
+            Alur belajar: unggah modul, tanya Mentor AI, lalu kerjakan kuis.
+          </p>
         </div>
       </motion.section>
 
@@ -229,6 +240,9 @@ export function HomeView() {
               <p className="text-sm font-semibold mb-3 flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-amber-600 dark:text-amber-400" /> Lencana ({p.badgeCatalog.filter((b) => b.earned).length}/4)
               </p>
+              <p className="mb-3 text-xs text-muted-foreground">
+                Kumpulkan lencana dengan belajar dan menjaga kebiasaan.
+              </p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {p.badgeCatalog.map((b) => (
                   <div
@@ -257,6 +271,7 @@ export function HomeView() {
             <CardTitle className="flex items-center gap-2 text-base">
               <Clock3 className="h-4 w-4 text-muted-foreground" /> Aktivitas Terakhir
             </CardTitle>
+            <p className="text-xs text-muted-foreground">Riwayat kuis terbaru kamu.</p>
           </CardHeader>
           <CardContent>
             {p.recentAttempts.length === 0 ? (

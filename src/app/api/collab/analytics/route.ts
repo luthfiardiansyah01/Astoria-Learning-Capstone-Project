@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/collab/analytics — dashboard analitik tim.
+// GET /api/collab/analytics - dashboard analitik tim.
 // Admin/dosen: semua tim. Mahasiswa: hanya tim yang diikuti.
 
 import { NextResponse } from "next/server";

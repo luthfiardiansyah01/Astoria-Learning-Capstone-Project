@@ -1,4 +1,4 @@
-// Unggah Dokumen — pemrosesan dokumen (Seksi 4) + status moderasi (Seksi 5.1)
+// Unggah Dokumen - pemrosesan dokumen (Seksi 4) + status moderasi (Seksi 5.1)
 "use client";
 
 import { useRef, useState } from "react";

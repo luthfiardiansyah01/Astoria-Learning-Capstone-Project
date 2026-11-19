@@ -1,4 +1,4 @@
-# Pemetaan User & Role — SOBAT ADI
+# Pemetaan User & Role - SOBAT ADI
 
 Dokumen ini memetakan jenis pengguna, role, paket, dan hak aksesnya di aplikasi.
 Terakhir diperbarui: 16 November 2026 (snapshot database produksi).
@@ -31,7 +31,7 @@ pembayaran; perbarui dengan query di bagian akhir dokumen ini.
 > Ada 15 user dengan `plan = premium` yang `planExpiresAt`-nya sudah lewat;
 > `effectivePlan()` mengembalikan **free** untuk mereka. Karena itu jangan
 > menyimpulkan jumlah pengguna Premium dari kolom `plan` saja. Aplikasi tidak
-> menurunkan nilai kolom saat kedaluwarsa — status dihitung saat dibaca.
+> menurunkan nilai kolom saat kedaluwarsa - status dihitung saat dibaca.
 
 ## 1. Role utama
 
@@ -105,7 +105,7 @@ Catatan:
 | Fitur | Guest | Mahasiswa Free | Mahasiswa Premium | Admin |
 |---|---|---|---|---|
 | Landing produk `/produk` | ✅ | ✅ | ✅ | ✅ |
-| Login/register | ✅ | — | — | — |
+| Login/register | ✅ | - | - | - |
 | Beranda | ❌ | ✅ | ✅ | ✅ |
 | Mentor AI / chat | ❌ | ✅ (kuota Free) | ✅ (kuota Premium) | ✅ |
 | Unggah dokumen | ❌ | ✅ (8.000 char) | ✅ (20.000 char) | ✅ |
@@ -188,4 +188,4 @@ SELECT status, count(*)::int FROM "Payment" GROUP BY status;
 ```
 
 Aturan: tulis **tanggal snapshot** setiap kali memperbarui, dan jangan pernah
-menyalin email, hash password, atau ID user ke dokumen ini — cukup agregat.
+menyalin email, hash password, atau ID user ke dokumen ini - cukup agregat.

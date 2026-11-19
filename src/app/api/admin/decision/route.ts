@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/admin/decision — keputusan admin: aktifkan / review / tolak dokumen
+// POST /api/admin/decision - keputusan admin: aktifkan / review / tolak dokumen
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

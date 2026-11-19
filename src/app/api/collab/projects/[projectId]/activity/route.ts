@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/collab/projects/[projectId]/activity — activity feed proyek (paginasi sederhana)
+// GET /api/collab/projects/[projectId]/activity - activity feed proyek (paginasi sederhana)
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

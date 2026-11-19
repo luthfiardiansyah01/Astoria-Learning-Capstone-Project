@@ -53,7 +53,7 @@ export function fallbackDocMetadata(fileName: string, content: string): Fallback
     .filter(
       (line) =>
         /^(bab|bagian|chapter|unit|modul|\d+[.)])\s+/i.test(line) ||
-        (line.length <= 90 && /^[A-Z0-9\s:–—-]{5,}$/.test(line))
+        (line.length <= 90 && /^[A-Z0-9\s:.,"'’\-]{5,}$/.test(line))
     )
     .slice(0, 8);
 

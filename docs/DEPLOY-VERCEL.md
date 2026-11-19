@@ -68,10 +68,10 @@ Buka **Project → Settings → Environment Variables**, lalu isi untuk environm
 | `MIDTRANS_SERVER_KEY` | tidak | Dashboard Midtrans | `Mid-server-…` untuk produksi |
 | `MIDTRANS_CLIENT_KEY` | tidak | Dashboard Midtrans | Dipakai Snap di sisi klien |
 | `MIDTRANS_IS_PRODUCTION` | tidak | `true` | Kosong/`false` = sandbox |
-| `MIDTRANS_SNAP_URL` | tidak | — | Hanya untuk override endpoint |
+| `MIDTRANS_SNAP_URL` | tidak | - | Hanya untuk override endpoint |
 | `XENDIT_SECRET_KEY` | tidak | Dashboard Xendit | Dipakai bila Xendit yang aktif |
 | `XENDIT_CALLBACK_TOKEN` | tidak | Dashboard Xendit | Verifikasi webhook |
-| `XENDIT_INVOICE_URL` | tidak | — | Hanya untuk override endpoint |
+| `XENDIT_INVOICE_URL` | tidak | - | Hanya untuk override endpoint |
 | `PAYMENT_PREMIUM_PRICE_IDR` | tidak | default `19000` | Harga langganan |
 | `PAYMENT_PREMIUM_DAYS` | tidak | default `30` | Durasi Premium per transaksi |
 | `PAYMENT_MANUAL_ONLY` | tidak | `false` (default) | `true` = checkout transfer manual, tanpa memanggil gateway |
@@ -210,7 +210,7 @@ Jika `DIRECT_URL` kosong saat Production, build sengaja **gagal lebih awal** den
 ## 8. Keamanan
 
 - `.env` dan `.env.supabase` tidak boleh masuk repository.
-- Rotasi `NEXTAUTH_SECRET` akan membuat semua sesi lama logout — lakukan bila curiga bocor.
+- Rotasi `NEXTAUTH_SECRET` akan membuat semua sesi lama logout - lakukan bila curiga bocor.
 - Rotasi API key OpenRouter dan token Upstash secara berkala.
 - Bila sebuah rahasia pernah ter-commit, mengubah nilainya di Vercel **tidak** menghapusnya dari riwayat Git; rotasi nilai tersebut adalah wajib.
 - CSP kini dikirim sebagai **`Content-Security-Policy`** (enforced). Jika ada

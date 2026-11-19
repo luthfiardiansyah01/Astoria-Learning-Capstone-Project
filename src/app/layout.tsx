@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SOBAT ADI — Solusi Belajar Terbaik, Asisten Digital Interaktif",
+  title: "SOBAT ADI - Solusi Belajar Terbaik, Asisten Digital Interaktif",
   description:
-    "SOBAT ADI — Solusi Belajar Terbaik, Asisten Digital Interaktif: platform belajar bertenaga AI dan kolaborasi tim untuk mahasiswa pendidikan jarak jauh (PJJ) Universitas Terbuka.",
+    "SOBAT ADI - Solusi Belajar Terbaik, Asisten Digital Interaktif: platform belajar bertenaga AI dan kolaborasi tim untuk mahasiswa pendidikan jarak jauh (PJJ) Universitas Terbuka.",
   keywords: ["SOBAT ADI", "Universitas Terbuka", "PJJ", "Mentor AI", "RAG", "gamifikasi"],
   authors: [{ name: "SOBAT ADI Team" }],
   icons: { icon: "/logo.svg" },

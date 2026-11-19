@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger";
-// GET  /api/plan — paket aktif, limit, dan status trial.
-// POST /api/plan — aktifkan trial Premium 7 hari (sekali per akun, tanpa pembayaran).
+// GET  /api/plan - paket aktif, limit, dan status trial.
+// POST /api/plan - aktifkan trial Premium 7 hari (sekali per akun, tanpa pembayaran).
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";

@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/collab/invites — daftar undangan tim yang masih pending untuk pengguna.
+// GET /api/collab/invites - daftar undangan tim yang masih pending untuk pengguna.
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/current-user";

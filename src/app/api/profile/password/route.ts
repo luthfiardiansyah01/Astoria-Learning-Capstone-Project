@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/profile/password — ganti password dengan verifikasi password lama.
+// POST /api/profile/password - ganti password dengan verifikasi password lama.
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

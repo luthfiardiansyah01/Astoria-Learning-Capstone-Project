@@ -1,4 +1,4 @@
-// SOBAT ADI — halaman utama (single-page app dengan 5 view)
+// SOBAT ADI - halaman utama (single-page app dengan 5 view)
 "use client";
 
 import { useEffect, useState, type ElementType } from "react";
@@ -93,6 +93,25 @@ const NAV: { key: ViewKey; label: string; icon: React.ElementType }[] = [
 ];
 
 const XP_LEVELS_CLIENT = XP_LEVELS;
+
+const VIEW_INFO: Partial<Record<ViewKey, { title: string; description: string }>> = {
+  mentor: {
+    title: "Mentor AI",
+    description: "Tanya jawab berdasarkan modul yang kamu unggah, lengkap dengan rujukan.",
+  },
+  unggah: {
+    title: "Unggah Modul",
+    description: "Tambahkan PDF atau teks modul sebagai sumber jawaban dan kuis.",
+  },
+  kuis: {
+    title: "Kuis",
+    description: "Uji pemahaman dengan soal otomatis dari modul pilihanmu.",
+  },
+  admin: {
+    title: "Panel Admin",
+    description: "Kelola dokumen, pengguna, pembayaran, dan siaran notifikasi.",
+  },
+};
 
 function NavPills({
   items,
@@ -293,7 +312,7 @@ function AstoriaPage() {
                 {stats?.streak ?? 0}
               </div>
 
-              <div className="hidden w-28 xl:block" title={`${xp} XP — Level ${level}`}>
+              <div className="hidden w-28 xl:block" title={`${xp} XP - Level ${level}`}>
                 <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Zap className="h-3 w-3 text-amber-600 dark:text-amber-400" /> {xp} XP
@@ -351,6 +370,12 @@ function AstoriaPage() {
       >
         <EmailVerificationBanner />
         <PushOptIn />
+        {view !== "beranda" && VIEW_INFO[view] && (
+          <div className="mb-4">
+            <h1 className="text-xl font-bold sm:text-2xl">{VIEW_INFO[view]!.title}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{VIEW_INFO[view]!.description}</p>
+          </div>
+        )}
         <p aria-live="polite" className="sr-only">
           {navItems.find((item) => item.key === view)?.label ?? "Beranda"} aktif
         </p>
@@ -385,7 +410,7 @@ function AstoriaPage() {
         <div className="mx-auto max-w-6xl px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
           <p className="flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            SOBAT ADI — platform belajar bertenaga AI untuk seluruh jenjang pendidikan yang ingin
+            SOBAT ADI - platform belajar bertenaga AI untuk seluruh jenjang pendidikan yang ingin
             belajar jarak jauh
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1" aria-label="Dokumen legal">
@@ -410,6 +435,13 @@ function AstoriaPage() {
             <Link href="/akun" className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline">
               Akun
             </Link>
+            <button
+              type="button"
+              onClick={() => setGuideOpen(true)}
+              className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline"
+            >
+              Panduan
+            </button>
             <a href={`mailto:${CONTACT_EMAIL}`} className="inline-flex min-h-6 items-center rounded px-1 hover:text-foreground hover:underline">
               Kontak
             </a>

@@ -1,4 +1,4 @@
-# Baseline Performa SOBAT ADI — 18 November 2026
+# Baseline Performa SOBAT ADI - 18 November 2026
 
 Dokumen ini mencatat **kondisi awal terukur** sebelum optimasi. Semua angka
 diambil pada commit `522253e` (Next 16.4.6) dengan skrip di `scripts/perf/`.
@@ -32,14 +32,14 @@ bun scripts/perf/bench-prod.ts
 
 Tiga temuan utama:
 
-1. **`GET /api/documents` tidak terbatas** — 5.002 dokumen menghasilkan respons
+1. **`GET /api/documents` tidak terbatas** - 5.002 dokumen menghasilkan respons
    **1,01 MB** dan **198 ms** (p95 253 ms). Penyebab: seluruh kolom termasuk
    `content` (7,2 MB) diambil, lalu semua baris dikirim.
-2. **Analitik memuat data berlebih** — `/api/collab/analytics` naik dari 24 ms
+2. **Analitik memuat data berlebih** - `/api/collab/analytics` naik dari 24 ms
    menjadi **89 ms** (p95 103 ms) karena memuat seluruh tim, proyek, tugas, dan
    aktivitas. `/api/admin/analytics` naik 11 ms → **44 ms** karena memuat semua
    dokumen untuk dihitung di JavaScript.
-3. **Tracing menyeret seluruh proyek** — peringatan Turbopack menunjukkan
+3. **Tracing menyeret seluruh proyek** - peringatan Turbopack menunjukkan
    `src/lib/ai.ts` membaca file konfigurasi secara dinamis. Akibatnya manifes
    fungsi `api/chat` mereferensikan **391 file non-`node_modules`**, termasuk
    `.z-ai-config`, `coverage/`, `docs/`, dan berkas proyek lain. Ini memperbesar
@@ -53,8 +53,8 @@ Tiga temuan utama:
 |---|---:|
 | Waktu build (cache hangat) | **12,8 detik** |
 | Output server total (`.next/server`) | **31,6 MB** |
-| — Source map | 24,3 MB |
-| — Kode executable (tanpa map) | **7,3 MB** |
+| - Source map | 24,3 MB |
+| - Kode executable (tanpa map) | **7,3 MB** |
 | Output statis (`.next/static`) | **2,5 MB** |
 | File non-`node_modules` di manifes `api/chat` | **391** |
 | Halaman statis | 8 |
@@ -91,7 +91,7 @@ Tiga temuan utama:
 | `GET project activity` | 12 ms | 15 ms | 20 ms | 8,8 KB | stabil |
 | **`GET /api/collab/analytics`** | **89 ms** | **103 ms** | 404 ms | 2 KB | **3,7× lebih lambat** |
 
-Catatan: `max` yang jauh di atas p95 (355–404 ms) menandakan **jitter** —
+Catatan: `max` yang jauh di atas p95 (355–404 ms) menandakan **jitter** -
 kemungkinan garbage collection atau serialisasi payload besar.
 
 ## 5. Berat aset frontend
@@ -114,10 +114,10 @@ code-splitting.
 | Baris `Document` | 5.002 |
 | Ukuran tabel `Document` | 10,2 MB |
 | Total kolom `content` | **7,2 MB** (rata-rata 1.481 B/baris) |
-| Query dokumen (semua kolom, urut `createdAt`) | 2,1 ms — **Seq Scan + Sort** |
-| Query dokumen (kolom minimal, `LIMIT 50`) | 1,7 ms — masih Seq Scan + Sort |
-| Query 1.000 task per proyek | 0,9 ms — Seq Scan (tabel kecil) |
-| Activity feed (`LIMIT 20`) | **0,04 ms** — Index Scan |
+| Query dokumen (semua kolom, urut `createdAt`) | 2,1 ms - **Seq Scan + Sort** |
+| Query dokumen (kolom minimal, `LIMIT 50`) | 1,7 ms - masih Seq Scan + Sort |
+| Query 1.000 task per proyek | 0,9 ms - Seq Scan (tabel kecil) |
+| Activity feed (`LIMIT 20`) | **0,04 ms** - Index Scan |
 
 Kesimpulan: **database bukan bottleneck**. Waktu 198 ms pada `/api/documents`
 berasal dari pengambilan 7,2 MB kolom `content`, hidrasi Prisma, dan
@@ -138,7 +138,7 @@ Angka ini sudah termasuk jaringan, jadi wajar lebih tinggi dari lokal.
 
 Diurutkan berdasarkan rasio dampak/risiko.
 
-### Perf-1 — dampak besar, risiko rendah
+### Perf-1 - dampak besar, risiko rendah
 
 | # | Perbaikan | Target terukur |
 |---|---|---|
@@ -147,7 +147,7 @@ Diurutkan berdasarkan rasio dampak/risiko.
 | 3 | `/api/admin/analytics`: `groupBy` status, hitung total di SQL, top-3 populer lewat query terbatas | 44 ms → **< 15 ms**, tidak lagi memuat semua dokumen |
 | 4 | Hapus pembacaan file dinamis di `ai.ts` (env saja) | file non-`node_modules` di manifes → **0**; executable tetap < 10 MB |
 
-### Perf-2 — dampak sedang
+### Perf-2 - dampak sedang
 
 | # | Perbaikan | Target |
 |---|---|---|
@@ -155,7 +155,7 @@ Diurutkan berdasarkan rasio dampak/risiko.
 | 6 | Project detail: pisahkan tugas `done` atau pagination per kolom Kanban | 327 KB → **< 120 KB** |
 | 7 | Cache header untuk halaman statis (`/produk`, legal) | TTFB produksi turun |
 
-### Perf-3 — perlu pengukuran tambahan
+### Perf-3 - perlu pengukuran tambahan
 
 | # | Perbaikan | Catatan |
 |---|---|---|
@@ -180,7 +180,7 @@ Optimasi dianggap berhasil bila, pada data dan metode yang sama:
    mereferensikan file proyek (0 file non-`node_modules` selain chunk internal).
 5. Semua tes (unit, integrasi, E2E) tetap lulus.
 
-## 11. Hasil Perf-1 — 18 November 2026
+## 11. Hasil Perf-1 - 18 November 2026
 
 Perubahan yang diterapkan:
 
@@ -233,7 +233,7 @@ Konfigurasi `.z-ai-config` lokal dipindahkan ke `.env`
 (`AI_BASE_URL`, `AI_API_KEY`) tanpa mencetak nilainya. Produksi tidak terpengaruh
 karena sejak awal memakai environment Vercel.
 
-## 12. Hasil Perf-2 — 18 November 2026
+## 12. Hasil Perf-2 - 18 November 2026
 
 Perubahan:
 
@@ -256,7 +256,7 @@ Perubahan:
 | Endpoint | P1 | P2 (cold) | P2 (warm) |
 |---|---:|---:|---:|
 | `GET /api/collab/analytics` | 70 ms (p95 165) | 65 ms (p95 89) | **6 ms (p95 9)** |
-| `GET project detail` | 37 ms / **390 KB** | 30 ms / **176 KB** | — |
+| `GET project detail` | 37 ms / **390 KB** | 30 ms / **176 KB** | - |
 | `GET /login` (kontrol) | 2 ms | 3 ms | 3 ms |
 
 Catatan: “warm” berarti cache 30 detik aktif. Permintaan pertama setelah cache
@@ -274,7 +274,7 @@ Target 120 KB tidak realistis untuk 1.000 tugas aktif: payload minimum untuk
 tugas aktif saja sudah ±165 KB. Opsi lanjutan (Perf-3) adalah pagination per kolom
 Kanban atau memuat detail tugas saat kartu dibuka.
 
-## 13. Hasil P5 — 18 November 2026
+## 13. Hasil P5 - 18 November 2026
 
 | Metrik | Sebelum | Sesudah |
 |---|---:|---:|

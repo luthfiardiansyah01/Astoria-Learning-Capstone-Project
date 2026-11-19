@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// POST /api/auth/reset-password — tukar token reset dengan password baru.
+// POST /api/auth/reset-password - tukar token reset dengan password baru.
 import { NextRequest, NextResponse } from "next/server";
 import { readBody, resetPasswordSchema } from "@/lib/validation";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";

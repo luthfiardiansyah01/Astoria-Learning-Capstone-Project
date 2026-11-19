@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/admin/audit — 100 aksi admin terakhir.
+// GET /api/admin/audit - 100 aksi admin terakhir.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/current-user";

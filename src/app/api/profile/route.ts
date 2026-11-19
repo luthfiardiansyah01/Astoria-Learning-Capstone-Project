@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger";
-// GET /api/profile — statistik mahasiswa, lencana, aktivitas kuis terakhir
-// DELETE /api/profile — hapus akun (dengan konfirmasi password)
+// GET /api/profile - statistik mahasiswa, lencana, aktivitas kuis terakhir
+// DELETE /api/profile - hapus akun (dengan konfirmasi password)
 
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";

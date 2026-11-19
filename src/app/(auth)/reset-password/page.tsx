@@ -4,7 +4,7 @@ import { ResetPasswordForm } from "@/components/astoria/auth/reset-password-form
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Atur Password Baru — SOBAT ADI",
+  title: "Atur Password Baru - SOBAT ADI",
   description: "Atur password baru untuk akun SOBAT ADI.",
 };
 

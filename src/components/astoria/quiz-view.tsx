@@ -196,7 +196,7 @@ export function QuizView() {
       if (r.badgeBaru) {
         toast({
           title: `${r.badgeEmoji ?? "🏅"} Lencana baru: ${r.badgeBaru}!`,
-          description: "Kerja hebat — lencana ini baru saja kamu raih!",
+          description: "Kerja hebat - lencana ini baru saja kamu raih!",
         });
       }
       if (r.levelNaik) {

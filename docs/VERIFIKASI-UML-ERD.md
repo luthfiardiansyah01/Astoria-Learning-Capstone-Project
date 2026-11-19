@@ -27,7 +27,7 @@
 | **ERD** | **Perlu revisi besar** | Dari 12 entitas: 9 ada (sebagian field berbeda), **3 tidak ada di kode**; **6 model kode tidak ada di ERD**; tipe ID, enum, dan kardinalitas berbeda |
 | **Narasi teks** | **Perlu disinkronkan** | Mengikuti ERD lama, sehingga ikut menyebut tabel yang tidak ada |
 
-**Kesimpulan:** dokumen ini **valid sebagai rancangan konseptual tingkat tinggi**, tetapi **belum valid sebagai dokumentasi implementasi**—terutama ERD. Jika dipakai untuk bab perancangan skripsi/laporan, ERD dan beberapa alur harus direvisi agar tidak menimbulkan pertanyaan saat sidang atau saat penguji membandingkan dengan aplikasi.
+**Kesimpulan:** dokumen ini **valid sebagai rancangan konseptual tingkat tinggi**, tetapi **belum valid sebagai dokumentasi implementasi**-terutama ERD. Jika dipakai untuk bab perancangan skripsi/laporan, ERD dan beberapa alur harus direvisi agar tidak menimbulkan pertanyaan saat sidang atau saat penguji membandingkan dengan aplikasi.
 
 **5 temuan paling kritis:**
 
@@ -114,7 +114,7 @@
 | **“Anggota melaporkan hasil”** | **Tidak sesuai** | Tidak ada fitur/laporan; penyelesaian hanya memindahkan kartu ke `done` |
 | **“Pembuat tim memperbarui status tugas”** | **Tidak sesuai** | Semua anggota boleh memindahkan status (`tasks/[taskId]/route.ts:25`) |
 | Memilih modul untuk Mentor AI | **Sebagian** | Daftar berisi dokumen milik sendiri **dan dokumen `approved`** milik orang lain (`documents/route.ts:50`; filter `rejected` di `chat-view.tsx:58-60`) |
-| AI membuat lima soal esai | **Sesuai** | `quiz.soal.slice(0, 5)` (`quiz/generate/route.ts:67`) — maksimal 5, jumlah aktual mengikuti respons AI |
+| AI membuat lima soal esai | **Sesuai** | `quiz.soal.slice(0, 5)` (`quiz/generate/route.ts:67`) - maksimal 5, jumlah aktual mengikuti respons AI |
 | AI menilai jawaban | **Sesuai** | `QUIZ_EVALUATOR_PROMPT` (`quiz/submit/route.ts:84-104`) |
 | Menampilkan nilai, umpan balik, XP | **Sesuai** | `quiz/submit/route.ts:167-180` |
 | Admin: manajemen/moderasi dokumen | **Sesuai** | `AdminView` + `/api/admin/decision` |
@@ -137,16 +137,16 @@
 
 | Alur (dokumen) | Status | Bukti / catatan |
 |---|---|---|
-| **Login** — kirim kredensial → periksa akun & peran | **Sebagian** | Pemeriksaan akun/peran benar (`auth.ts`), tetapi UI **tidak** mengarahkan admin ke dashboard admin |
-| **Beranda** — ambil info dashboard sesuai akun | **Sesuai** | `/api/greeting` + `/api/profile` berbasis sesi |
-| **Unggah Modul** — unggah → proses AI → simpan | **Sesuai** | `documents/route.ts`; diagram tidak menampilkan chunking + embedding, tetapi tidak salah |
-| **Mentor AI** — pilih modul → tanya → jawaban dari modul | **Sebagian** | Bisa memakai dokumen `approved` milik pengguna lain, bukan hanya “modul milik pengguna” (`chat/route.ts:85`, `canUseDocument`) |
-| **Kuis** — minta kuis → 5 soal → jawab → nilai/feedback/XP | **Sesuai** | `quiz/generate` + `quiz/submit` |
-| **Kolaborasi Tim** — buat tim & pilih anggota → simpan → notifikasi | **Sebagian** | Pembuatan tim tidak menerima daftar anggota; anggota ditambahkan setelahnya, owner-only. Notifikasi memang dikirim (`members/route.ts:62-76`) |
-| **Pengelolaan Tugas** — pembuat tim membuat/menetapkan → anggota mengerjakan/melaporkan → pembuat memperbarui status | **Sebagian** | Tugas dibuat/dipindahkan oleh **semua anggota**; **tidak ada laporan hasil**; assignee hanya via API |
-| **Analitik & Notifikasi** — lihat ringkasan & notifikasi | **Sesuai** | `/api/collab/analytics`, `/api/collab/notifications` |
-| **Admin** — akses info platform & manajemen/moderasi | **Sebagian** | Statistik & insight ada; **keputusan moderasi tidak digambarkan** di sequence |
-| **Logout** — akhiri sesi | **Sesuai** | `signOut` |
+| **Login** - kirim kredensial → periksa akun & peran | **Sebagian** | Pemeriksaan akun/peran benar (`auth.ts`), tetapi UI **tidak** mengarahkan admin ke dashboard admin |
+| **Beranda** - ambil info dashboard sesuai akun | **Sesuai** | `/api/greeting` + `/api/profile` berbasis sesi |
+| **Unggah Modul** - unggah → proses AI → simpan | **Sesuai** | `documents/route.ts`; diagram tidak menampilkan chunking + embedding, tetapi tidak salah |
+| **Mentor AI** - pilih modul → tanya → jawaban dari modul | **Sebagian** | Bisa memakai dokumen `approved` milik pengguna lain, bukan hanya “modul milik pengguna” (`chat/route.ts:85`, `canUseDocument`) |
+| **Kuis** - minta kuis → 5 soal → jawab → nilai/feedback/XP | **Sesuai** | `quiz/generate` + `quiz/submit` |
+| **Kolaborasi Tim** - buat tim & pilih anggota → simpan → notifikasi | **Sebagian** | Pembuatan tim tidak menerima daftar anggota; anggota ditambahkan setelahnya, owner-only. Notifikasi memang dikirim (`members/route.ts:62-76`) |
+| **Pengelolaan Tugas** - pembuat tim membuat/menetapkan → anggota mengerjakan/melaporkan → pembuat memperbarui status | **Sebagian** | Tugas dibuat/dipindahkan oleh **semua anggota**; **tidak ada laporan hasil**; assignee hanya via API |
+| **Analitik & Notifikasi** - lihat ringkasan & notifikasi | **Sesuai** | `/api/collab/analytics`, `/api/collab/notifications` |
+| **Admin** - akses info platform & manajemen/moderasi | **Sebagian** | Statistik & insight ada; **keputusan moderasi tidak digambarkan** di sequence |
+| **Logout** - akhiri sesi | **Sesuai** | `signOut` |
 | **Registrasi** | **Belum tercatat** | `/api/auth/register` + `/register` |
 | **Pembuatan proyek** | **Belum tercatat** | `POST /api/collab/projects` |
 | **Moderasi admin (keputusan)** | **Belum tercatat** | `POST /api/admin/decision` |
@@ -170,14 +170,14 @@
 | Pengguna | `User` | **Sebagian** | ID `String cuid`, bukan `INT`; `email`/`passwordHash` nullable; `role` String, bukan enum; XP/level/streak **inline** |
 | Modul | `Document` | **Sebagian** | Field berbeda: `fileName`, `content`, `wordCount`, `metadata`, `moderation`, `status`, `uploaderId` |
 | Pesan Mentor | `ChatMessage` | **Sebagian** | `role`, `content`; `documentId` **nullable**; tidak ada kolom `referensi_bagian` |
-| **Kuis** | — | **Tidak ada** | Tidak ada tabel sesi kuis; `QuizQuestion` langsung milik `Document` |
+| **Kuis** | - | **Tidak ada** | Tidak ada tabel sesi kuis; `QuizQuestion` langsung milik `Document` |
 | Pertanyaan Kuis | `QuizQuestion` | **Sebagian** | Punya `kunci`, `tingkat`, `createdAt`; induknya `Document`, bukan `Kuis` |
 | Jawaban Kuis | `QuizAttempt` | **Sebagian** | `skor` Int (bukan DECIMAL), ada `xpDiperoleh`, `badgeBaru`, `feedback`, `koreksi`, `documentId` |
-| **Progres Pengguna** | — (menyatu di `User`) | **Tidak ada** | `xp`, `level`, `streakDays` ada di `User` |
+| **Progres Pengguna** | - (menyatu di `User`) | **Tidak ada** | `xp`, `level`, `streakDays` ada di `User` |
 | Tim | `Team` | **Sebagian** | Tidak ada `id_pembuat`; pembuat = `TeamMember.role = "owner"` |
 | Anggota Tim | `TeamMember` | **Sebagian** | Ada `id` sendiri + `role` (`owner/member`); unique `(teamId,userId)` |
 | Tugas | `Task` | **Sebagian** | Milik `Project`, bukan `Team`; tidak ada `id_pembuat`; `assigneeId` nullable; ada `order`, `xpReward`, `documentId`, `aiSuggestions` |
-| **Laporan Tugas** | — | **Tidak ada** | Tidak ada model/route/field laporan |
+| **Laporan Tugas** | - | **Tidak ada** | Tidak ada model/route/field laporan |
 | Notifikasi | `Notification` | **Sebagian** | Hanya penerima (`userId`); tidak ada `id_pembuat`/`id_tim`; ada `type`, `title`, `body`, `link`, `dedupeKey`, `readAt` |
 
 **Entity-level:** 9 dari 12 entitas ERD punya padanan (75%), tetapi 3 tidak ada. Dari 15 model kode, hanya 9 terwakili (60%).
@@ -198,7 +198,7 @@
 | Entitas | Dokumen | Implementasi | Dampak |
 |---|---|---|---|
 | Pengguna | `oid_pengguna INT`, `kata_sandi VARCHAR`, `peran ENUM` | `id String cuid`, `passwordHash String?`, `role String` default `mahasiswa` | Tipe & nullability berbeda; enum tidak ditegakkan DB |
-| Pengguna | — | `xp`, `level`, `streakDays`, `lastActive`, `createdAt`, `updatedAt` | Progres tidak terlihat di entitas Pengguna |
+| Pengguna | - | `xp`, `level`, `streakDays`, `lastActive`, `createdAt`, `updatedAt` | Progres tidak terlihat di entitas Pengguna |
 | Modul | `nama_modul`, `isi_modul`, `status_moderasi`, `tanggal_unggah` | `fileName`, `content`, `wordCount`, `metadata` (JSON), `moderation` (JSON), `status`, `createdAt`, `updatedAt` | Hasil AI (metadata & moderasi) tidak terwakili |
 | Pesan Mentor | `jenis_pengirim`, `isi_pesan`, `referensi_bagian`, `waktu_kirim` | `role`, `content`, `createdAt`; **tanpa** `referensi_bagian` | Sitasi hanya ada di dalam teks jawaban, tidak terstruktur |
 | Pertanyaan Kuis | `isi_pertanyaan` | `soal`, `kunci`, `tingkat` | Kunci jawaban & tingkat kesulitan tidak terlihat |
@@ -212,19 +212,19 @@
 
 | Relasi di dokumen | Implementasi sebenarnya |
 |---|---|
-| Tim 1—N Tugas | **Tim 1—N Project 1—N Task** (tidak langsung) |
-| Pengguna 1—N Tugas (pembuat) | **Tidak ada** kolom pembuat di `Task`; pelaku dicatat di `ActivityEvent.userId` |
-| Pengguna 1—N Tugas (penerima) | `Task.assigneeId` **nullable** (bisa belum ditugaskan) |
-| Modul 1—N Kuis | Tidak ada `Kuis`; `Document 1—N QuizQuestion` |
-| Kuis 1—N Pertanyaan | Tidak ada; `QuizQuestion` langsung milik `Document` |
-| Pengguna 1—1 Progres | Tidak ada relasi; field menyatu di `User` |
-| Tim 1—N Notifikasi | Tidak ada `teamId` di `Notification`; hanya `link` |
-| Pengguna 1—N Notifikasi (pembuat) | Tidak ada; notifikasi hanya punya penerima |
-| Tugas 1—N Laporan | Tidak ada |
-| Modul 1—N Pesan Mentor | `ChatMessage.documentId` **nullable** (opsional) |
-| Modul 1—N Tugas | Ada `Task.documentId?` (opsional) — tidak digambar |
+| Tim 1-N Tugas | **Tim 1-N Project 1-N Task** (tidak langsung) |
+| Pengguna 1-N Tugas (pembuat) | **Tidak ada** kolom pembuat di `Task`; pelaku dicatat di `ActivityEvent.userId` |
+| Pengguna 1-N Tugas (penerima) | `Task.assigneeId` **nullable** (bisa belum ditugaskan) |
+| Modul 1-N Kuis | Tidak ada `Kuis`; `Document 1-N QuizQuestion` |
+| Kuis 1-N Pertanyaan | Tidak ada; `QuizQuestion` langsung milik `Document` |
+| Pengguna 1-1 Progres | Tidak ada relasi; field menyatu di `User` |
+| Tim 1-N Notifikasi | Tidak ada `teamId` di `Notification`; hanya `link` |
+| Pengguna 1-N Notifikasi (pembuat) | Tidak ada; notifikasi hanya punya penerima |
+| Tugas 1-N Laporan | Tidak ada |
+| Modul 1-N Pesan Mentor | `ChatMessage.documentId` **nullable** (opsional) |
+| Modul 1-N Tugas | Ada `Task.documentId?` (opsional) - tidak digambar |
 
-Relasi yang **hilang** dari ERD: `User—Badge`, `Team—TeamBadge`, `User/Team/Project/Task—ActivityEvent`, `Task—TaskChatMessage`, `Document—Chunk`, `Document—Task`, `Document—QuizAttempt`.
+Relasi yang **hilang** dari ERD: `User-Badge`, `Team-TeamBadge`, `User/Team/Project/Task-ActivityEvent`, `Task-TaskChatMessage`, `Document-Chunk`, `Document-Task`, `Document-QuizAttempt`.
 
 ### 4.5 Tipe data, constraint, dan integritas
 
@@ -270,16 +270,16 @@ Relasi yang **hilang** dari ERD: `User—Badge`, `Team—TeamBadge`, `User/Team/
 
 ## 6. Daftar temuan prioritas
 
-### P0 — harus diperbaiki sebelum dokumen dijadikan acuan implementasi
+### P0 - harus diperbaiki sebelum dokumen dijadikan acuan implementasi
 
 1. **Hapus atau implementasikan** use case “Melaporkan Hasil Tugas” + entitas “Laporan Tugas”.
-2. **Ganti entitas “Kuis”** menjadi relasi `Document 1—N QuizQuestion` (atau tambahkan tabel `Quiz` bila memang ingin sesi kuis).
+2. **Ganti entitas “Kuis”** menjadi relasi `Document 1-N QuizQuestion` (atau tambahkan tabel `Quiz` bila memang ingin sesi kuis).
 3. **Hapus “Progres Pengguna”** sebagai tabel; pindahkan `xp`, `level`, `streak` ke `Pengguna` (atau nyatakan sebagai *view*/agregat).
 4. **Tambahkan `Project`** dan ubah `Tugas.id_tim` → `Tugas.id_proyek`.
 5. **Tambahkan `Chunk`, `Badge`, `TeamBadge`, `ActivityEvent`, `TaskChatMessage`**.
 6. **Perbaiki `Notifikasi`**: hanya penerima; tambahkan `type/title/body/link/read_at`, hapus `id_pembuat`/`id_tim` (kecuali fitur itu akan dibuat).
 
-### P1 — koreksi perilaku dan kelengkapan
+### P1 - koreksi perilaku dan kelengkapan
 
 7. Perbaiki alur login: semua peran ke Beranda; admin melihat tab Admin (bukan halaman terpisah).
 8. Pisahkan “Membuat Tim” dan “Menambahkan Anggota”; tandai owner-only dan opsional.
@@ -288,7 +288,7 @@ Relasi yang **hilang** dari ERD: `User—Badge`, `Team—TeamBadge`, `User/Team/
 11. Tambahkan alur moderasi admin dan registrasi ke sequence diagram.
 12. Perjelas bahwa Mentor AI dapat memakai dokumen `approved` milik pengguna lain.
 
-### P2 — kualitas dokumentasi
+### P2 - kualitas dokumentasi
 
 13. Samakan tipe ID (`String cuid`), enum vs String, dan nullability.
 14. Tambahkan unique constraint, index, cascade, dan timestamp yang relevan.
@@ -538,20 +538,20 @@ sequenceDiagram
 1. **Use case dan activity diagram** secara umum menggambarkan produk dengan benar, tetapi mengandung **empat klaim perilaku yang tidak sesuai** dan **belum memuat 10 use case** yang nyata dipakai.
 2. **Sequence diagram** benar pada arsitektur besar (UI–sistem–DB–AI), tetapi **tidak menunjukkan registrasi, pembuatan proyek, dan moderasi admin**, serta salah menggambarkan alur tim dan tugas.
 3. **ERD adalah bagian yang paling perlu diperbaiki.** Dokumen menggambarkan 12 entitas, sedangkan implementasi memiliki 15 model. Tiga entitas dokumen tidak ada, enam model kode tidak tercatat, dan sebagian besar field/kardinalitas berbeda. ERD saat ini **belum dapat dipakai sebagai dokumentasi struktur basis data aplikasi**.
-4. **Rekomendasi utama:** ganti ERD dengan versi pada Bagian 7, tambahkan use case pada Bagian 8, dan sesuaikan activity/sequence dengan koreksi pada Bagian 2–3. Jika dokumen harus dipertahankan apa adanya, maka aplikasi yang harus diubah—bukan sebaliknya—tetapi itu berarti menambah fitur laporan tugas, sesi kuis, progres terpisah, dan notifikasi dengan pengirim/tim.
+4. **Rekomendasi utama:** ganti ERD dengan versi pada Bagian 7, tambahkan use case pada Bagian 8, dan sesuaikan activity/sequence dengan koreksi pada Bagian 2–3. Jika dokumen harus dipertahankan apa adanya, maka aplikasi yang harus diubah-bukan sebaliknya-tetapi itu berarti menambah fitur laporan tugas, sesi kuis, progres terpisah, dan notifikasi dengan pengirim/tim.
 
 ### Verdict akhir
 
 | Pertanyaan | Jawaban |
 |---|---|
-| Apakah dokumen sesuai dengan aplikasi? | **Sebagian**—konsepnya sesuai, detail implementasinya belum |
-| Apakah ERD dapat dijadikan acuan database? | **Belum**—perlu revisi besar |
-| Apakah diagram perilaku dapat dijadikan acuan pengujian? | **Belum sepenuhnya**—perlu koreksi 6 titik activity dan penambahan 4 alur sequence |
+| Apakah dokumen sesuai dengan aplikasi? | **Sebagian**-konsepnya sesuai, detail implementasinya belum |
+| Apakah ERD dapat dijadikan acuan database? | **Belum**-perlu revisi besar |
+| Apakah diagram perilaku dapat dijadikan acuan pengujian? | **Belum sepenuhnya**-perlu koreksi 6 titik activity dan penambahan 4 alur sequence |
 | Apakah dokumen layak dilampirkan sebagai rancangan konseptual? | **Ya**, dengan catatan bahwa ia bukan deskripsi implementasi final |
 
 ---
 
-## Lampiran A — Bukti kode utama
+## Lampiran A - Bukti kode utama
 
 | Klaim | Bukti |
 |---|---|
@@ -578,7 +578,7 @@ sequenceDiagram
 | Activity feed | `src/components/astoria/collab/activity-feed.tsx` |
 | Mentor per tugas | `src/app/api/collab/tasks/[taskId]/mentor/route.ts` |
 
-## Lampiran B — Checklist revisi dokumen
+## Lampiran B - Checklist revisi dokumen
 
 - [ ] Ganti ERD dengan Bagian 7.
 - [ ] Hapus “Laporan Tugas” dan “Melaporkan Hasil Tugas” (atau implementasikan fiturnya).

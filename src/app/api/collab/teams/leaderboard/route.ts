@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/collab/teams/leaderboard — peringkat tim berdasarkan XP kolektif
+// GET /api/collab/teams/leaderboard - peringkat tim berdasarkan XP kolektif
 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";

@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger";
-// GET  /api/collab/tasks/[taskId]/mentor — riwayat chat mentor untuk task ini
-// POST /api/collab/tasks/[taskId]/mentor — kirim pertanyaan ke Mentor AI kontekstual
+// GET  /api/collab/tasks/[taskId]/mentor - riwayat chat mentor untuk task ini
+// POST /api/collab/tasks/[taskId]/mentor - kirim pertanyaan ke Mentor AI kontekstual
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

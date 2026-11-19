@@ -3,7 +3,7 @@ import { LegalList, LegalPage, LegalSection } from "@/components/legal/legal-pag
 import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
-  title: "Kebijakan Produk dan Langganan — SOBAT ADI",
+  title: "Kebijakan Produk dan Langganan - SOBAT ADI",
   description:
     "Deskripsi produk, paket Free/Premium, trial 7 hari, kuota AI harian, masa aktif, dan kebijakan penggunaan SOBAT ADI.",
 };

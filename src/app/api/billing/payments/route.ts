@@ -1,4 +1,4 @@
-// GET /api/billing/payments — riwayat pembayaran pengguna saat ini.
+// GET /api/billing/payments - riwayat pembayaran pengguna saat ini.
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";

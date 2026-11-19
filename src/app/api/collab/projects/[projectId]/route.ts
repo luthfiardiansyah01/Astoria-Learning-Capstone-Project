@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger";
-// GET   /api/collab/projects/[projectId] — proyek + tugas + tim + anggota
-// PATCH /api/collab/projects/[projectId] — ubah nama/deskripsi
+// GET   /api/collab/projects/[projectId] - proyek + tugas + tim + anggota
+// PATCH /api/collab/projects/[projectId] - ubah nama/deskripsi
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

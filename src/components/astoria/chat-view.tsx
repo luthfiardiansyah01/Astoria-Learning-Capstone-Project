@@ -1,4 +1,4 @@
-// Mentor AI — RAG Chat (Seksi 3 spesifikasi)
+// Mentor AI - RAG Chat (Seksi 3 spesifikasi)
 // Mahasiswa memilih dokumen → retrieval → jawaban bersitasi + fallback ramah
 "use client";
 
@@ -311,7 +311,7 @@ export function ChatView() {
                 <p className="text-sm text-muted-foreground mt-2">
                   {activeDoc
                     ? "Tanya apa saja tentang isi modul ini. Jawabanku selalu bersumber dari dokumen, lengkap dengan referensi bagian."
-                    : "Pilih dokumen modul di panel kiri, atau unggah modul baru. Aku hanya menjawab berdasarkan dokumen yang kamu unggah — akurat dan bersitasi."}
+                    : "Pilih dokumen modul di panel kiri, atau unggah modul baru. Aku hanya menjawab berdasarkan dokumen yang kamu unggah - akurat dan bersitasi."}
                 </p>
                 {activeDoc && (
                   <div className="mt-5 grid gap-2">
@@ -436,7 +436,7 @@ export function ChatView() {
             </Button>
           </div>
           <p className="text-[11px] text-muted-foreground mt-2 px-1">
-            Mentor AI hanya menjawab berdasarkan isi dokumen terpilih — tidak mengarang informasi.
+            Mentor AI hanya menjawab berdasarkan isi dokumen terpilih - tidak mengarang informasi.
           </p>
         </div>
       </Card>

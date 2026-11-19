@@ -1,4 +1,4 @@
-# Checklist Operasional Uji Pengguna & SUS — SOBAT ADI
+# Checklist Operasional Uji Pengguna & SUS - SOBAT ADI
 
 Dokumen pelengkap `Panduan-Uji-Pengguna-SUS.docx`. Fokus: **5–8 peserta**, satu sesi ±75 menit, kuota AI **$5** dengan model berbayar murah.
 
@@ -198,18 +198,18 @@ Skala 1 = sangat tidak setuju, 5 = sangat setuju.
 
 ---
 
-## Lampiran A — Naskah pengarahan moderator
+## Lampiran A - Naskah pengarahan moderator
 
 > “Terima kasih sudah membantu. Kami menguji aplikasi, bukan menguji Anda; tidak ada jawaban benar atau salah. Silakan bersuara selama memakai aplikasi (think aloud). Saya tidak akan membantu kecuali Anda benar-benar buntu. Anda boleh berhenti kapan saja. Data dicatat dengan kode peserta dan hanya dipakai untuk evaluasi tugas.”
 
-## Lampiran B — Pertanyaan wawancara singkat
+## Lampiran B - Pertanyaan wawancara singkat
 
 1. Bagian mana yang paling mudah?
 2. Bagian mana yang paling membingungkan?
 3. Apakah informasi waktu jawaban dan sisa kuota AI membantu?
 4. Jika boleh memperbaiki satu hal, apa itu?
 
-## Lampiran C — Consent singkat
+## Lampiran C - Consent singkat
 
 > Saya bersedia mengikuti uji kegunaan SOBAT ADI. Saya memahami bahwa yang diuji adalah aplikasi, saya boleh berhenti kapan saja, dan data saya dicatat dengan kode peserta untuk keperluan evaluasi tugas kuliah.
 

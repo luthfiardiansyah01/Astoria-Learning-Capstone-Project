@@ -13,7 +13,7 @@ Terakhir diperbarui: 18 November 2026.
 | **P0–P5** | Keamanan, integritas, kesiapan publik, skala produk | Fase |
 | **Perf-1, Perf-2** | Optimasi terukur (latensi, payload, artefak deploy) | Tahap optimasi |
 
-Catatan sejarah: `RENCANA-IMPLEMENTASI.md` memakai istilah "Poin 4 — kesiapan
+Catatan sejarah: `RENCANA-IMPLEMENTASI.md` memakai istilah "Poin 4 - kesiapan
 produksi + deploy". Itu **sudah selesai** dan bukan "P4" dalam roadmap ini.
 
 ## 2. Ringkasan status
@@ -31,37 +31,37 @@ produksi + deploy". Itu **sudah selesai** dan bukan "P4" dalam roadmap ini.
 
 ## 3. Fase yang sudah selesai
 
-### P0 — Keamanan dasar
+### P0 - Keamanan dasar
 Kriteria selesai: password DB dirotasi, rate limit per IP aktif dengan
 fail-closed, akun admin diamankan, alur Midtrans internal teruji.
 
-### P1 — Anti-abuse
+### P1 - Anti-abuse
 Kriteria: body limit 1 MB (webhook 256 KB), moderasi seluruh teks tanpa
 auto-approve, undangan tim wajib diterima, verifikasi email + CAPTCHA aktif,
 trial hanya setelah verifikasi.
 
-### P2 — Integritas data & UX
+### P2 - Integritas data & UX
 Kriteria: batas paket atomik dengan row lock, view tersimpan di URL, sesi kuis
 per pengguna, XP sekali per soal, toast terpadu, Kanban dapat dioperasikan
 keyboard.
 
-### P3 — Hardening skema & pembersihan
+### P3 - Hardening skema & pembersihan
 Kriteria: migrasi constraint/index, unique urutan tugas, CHECK status/role/plan,
 `Payment` ON DELETE RESTRICT, 23 komponen/dependency dihapus, CSP report-only.
 
-### Perf-1 — Dokumen & analitik
+### Perf-1 - Dokumen & analitik
 Kriteria: `/api/documents` terpaginasi dan tidak lagi mengambil kolom `content`;
 index `Document(createdAt)`; analitik admin memakai agregasi SQL; manifes fungsi
 tidak lagi menyeret file proyek. Hasil: 198 ms → 11 ms, 1,01 MB → 10 KB.
 
-### Perf-2 — Analitik kolaborasi & payload
+### Perf-2 - Analitik kolaborasi & payload
 Kriteria: aktivitas diagregasi di SQL, tren 14 hari dihitung di database, cache
 30 detik, tugas selesai dibatasi 50 dengan tombol "Muat semua", header cache
 halaman statis. Hasil: 6 ms (hangat), 390 KB → 176 KB.
 
-## 4. P4 — Kesiapan publik
+## 4. P4 - Kesiapan publik
 
-**Status: ✅ Selesai — 18 November 2026.**
+**Status: ✅ Selesai - 18 November 2026.**
 
 | # | Item | Prioritas | Implementasi |
 |---|---|---|---|
@@ -82,7 +82,7 @@ Verifikasi P4: unit 158, integrasi 153, E2E 13 lulus; migrasi
 > manager dan `.env.supabase` (tidak di-track). Prosedur rotasi ada di
 > [`OPERATIONS-RUNBOOK.md`](./OPERATIONS-RUNBOOK.md) bagian 1.1.
 
-## 5. P5 — Skala & produk
+## 5. P5 - Skala & produk
 
 | # | Item | Status | Catatan |
 |---|---|---|---|

@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/cron/reminders — ringkasan tenggat tugas via email (sekali per hari).
+// GET /api/cron/reminders - ringkasan tenggat tugas via email (sekali per hari).
 // Dipanggil oleh Vercel Cron dengan header Authorization: Bearer <CRON_SECRET>.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";

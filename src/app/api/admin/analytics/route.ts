@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/admin/analytics — statistik platform.
+// GET /api/admin/analytics - statistik platform.
 // Insight AI hanya dibuat saat diminta (?insight=1) agar buka panel admin tetap cepat.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
           `3. Rata-rata skor kuis: ${avgQuiz}. Dokumen menunggu review: ${statusBreakdown.pending}.`,
           "4. Rekomendasi: tinjau dokumen berstatus review, lengkapi materi pada topik tersibuk, dan dorong mahasiswa menyelesaikan kuis.",
           "",
-          "_Ringkasan lokal — layanan AI sedang tidak tersedia (kuota/limit)._",
+          "_Ringkasan lokal - layanan AI sedang tidak tersedia (kuota/limit)._",
         ].join("\n");
       }
     }

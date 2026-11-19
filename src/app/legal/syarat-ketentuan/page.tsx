@@ -4,7 +4,7 @@ import { LegalList, LegalPage, LegalSection } from "@/components/legal/legal-pag
 import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
-  title: "Syarat & Ketentuan — SOBAT ADI",
+  title: "Syarat & Ketentuan - SOBAT ADI",
   description:
     "Syarat dan ketentuan penggunaan SOBAT ADI, termasuk akun, trial Premium, pembayaran, konten pengguna, dan batasan layanan AI.",
 };
@@ -95,8 +95,8 @@ export default function TermsPage() {
 
       <LegalSection title="8. Kekayaan intelektual">
         <p>
-          Selain konten pengguna, seluruh elemen Layanan — perangkat lunak, desain, merek, logo,
-          teks, dan materi — dimiliki oleh kami atau pemberi lisensinya dan dilindungi hukum. Merek
+          Selain konten pengguna, seluruh elemen Layanan - perangkat lunak, desain, merek, logo,
+          teks, dan materi - dimiliki oleh kami atau pemberi lisensinya dan dilindungi hukum. Merek
           dan logo tidak boleh digunakan tanpa izin tertulis.
         </p>
       </LegalSection>

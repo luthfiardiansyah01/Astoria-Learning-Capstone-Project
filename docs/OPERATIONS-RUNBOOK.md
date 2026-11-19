@@ -91,7 +91,7 @@ Rate limit memakai Upstash Redis REST (`UPSTASH_REDIS_REST_URL`,
 
 Variabel tambahan:
 
-- `RATE_LIMIT_FAIL_CLOSED=true` — bila Redis tidak tersedia, login, register,
+- `RATE_LIMIT_FAIL_CLOSED=true` - bila Redis tidak tersedia, login, register,
   checkout, upload, dan AI **ditolak** alih-alih memakai memori per-instance.
   Ini mencegah bypass rate limit di serverless. Bila sedang outage Upstash dan
   login harus tetap dibuka, set ke `false` lalu redeploy.
@@ -146,7 +146,7 @@ Downtime singkat mungkin terjadi antara rotasi dan deploy selesai. Lakukan di
 luar jam sibuk.
 
 Riwayat rotasi:
-- 7 November 2026 — password database dirotasi lewat Supabase Management API
+- 7 November 2026 - password database dirotasi lewat Supabase Management API
   (`PATCH /v1/projects/{ref}/database/password`), lalu `DATABASE_URL` dan
   `DIRECT_URL` diperbarui di Vercel Production. Koneksi baru diverifikasi
   sebelum token akses dihapus.
@@ -157,13 +157,13 @@ Midtrans production sudah terkonfigurasi, tetapi kanal pembayaran masih menunggu
 **business review**. Akibatnya Snap bisa gagal membuat transaksi. Sampai kanal
 disetujui, aktivasi Premium dilakukan manual dengan **dua jalur**:
 
-- **Jalur B (utama)** — konfirmasi transaksi yang tercatat. Ada jejak pembayaran
+- **Jalur B (utama)** - konfirmasi transaksi yang tercatat. Ada jejak pembayaran
   dan masuk statistik pendapatan. Pakai ini untuk pembayaran nyata.
-- **Jalur A (cadangan)** — aktivasi langsung dari panel pengguna. Tidak ada baris
+- **Jalur A (cadangan)** - aktivasi langsung dari panel pengguna. Tidak ada baris
   `Payment`, jadi tidak masuk statistik. Pakai untuk kompensasi, demo, atau uji
   internal.
 
-### 4.1 Jalur B — konfirmasi transaksi (utama)
+### 4.1 Jalur B - konfirmasi transaksi (utama)
 
 Jalur ini memerlukan **gateway terkonfigurasi** (provider bukan `none`), karena
 baris `Payment` dibuat oleh `POST /api/billing/checkout`. Bila tidak ada
@@ -214,7 +214,7 @@ satu-satunya pilihan adalah Jalur A.
   30/90/365 di panel pengguna.
 - Akun admin tidak bisa diaktifkan/diubah dari panel; role admin selalu Premium.
 
-### 4.2 Jalur A — aktivasi langsung (cadangan)
+### 4.2 Jalur A - aktivasi langsung (cadangan)
 
 1. Buka **Admin → "Paket & Pembayaran"** → cari pengguna.
 2. Pilih `Premium` dan durasi `30 / 90 / 365 hari`.

@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/profile/export — unduh seluruh data pribadi pengguna (JSON).
+// GET /api/profile/export - unduh seluruh data pribadi pengguna (JSON).
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/current-user";

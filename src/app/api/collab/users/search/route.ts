@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET /api/collab/users/search?q=&teamId= — saran nama pengguna untuk menambah anggota tim.
+// GET /api/collab/users/search?q=&teamId= - saran nama pengguna untuk menambah anggota tim.
 // Hanya owner tim; hanya mengembalikan id + nama (tanpa email), tanpa anggota yang sudah ada.
 
 import { NextRequest, NextResponse } from "next/server";

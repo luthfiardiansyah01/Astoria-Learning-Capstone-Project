@@ -4,7 +4,7 @@ import { LegalList, LegalPage, LegalSection } from "@/components/legal/legal-pag
 import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
-  title: "Pernyataan Aksesibilitas — SOBAT ADI",
+  title: "Pernyataan Aksesibilitas - SOBAT ADI",
   description:
     "Komitmen SOBAT ADI terhadap aksesibilitas: standar WCAG 2.2 AA, fitur yang tersedia, keterbatasan yang diketahui, dan cara menyampaikan umpan balik.",
 };

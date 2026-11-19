@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-// GET/POST /api/admin/broadcast — statistik dan siaran notifikasi ke semua pengguna.
+// GET/POST /api/admin/broadcast - statistik dan siaran notifikasi ke semua pengguna.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/current-user";

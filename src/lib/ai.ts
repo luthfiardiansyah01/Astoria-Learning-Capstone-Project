@@ -114,7 +114,7 @@ function cacheKey(messages: ChatMessageForAI[], params?: RoleParams) {
 
 /**
  * Panggil chat completion dengan retry, rotasi model fallback, dan cache
- * jawaban opt-in (options.cache) — dipakai untuk chat mentor, bukan kuis/greeting.
+ * jawaban opt-in (options.cache) - dipakai untuk chat mentor, bukan kuis/greeting.
  */
 export async function chatComplete(
   messages: ChatMessageForAI[],
