@@ -24,6 +24,7 @@ export function AdminBroadcast() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +45,7 @@ export function AdminBroadcast() {
       const res = await fetch("/api/admin/broadcast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, body }),
+        body: JSON.stringify({ title, body, password }),
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
@@ -63,6 +64,7 @@ export function AdminBroadcast() {
       );
       setTitle("");
       setBody("");
+      setPassword("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal mengirim siaran.");
     } finally {
@@ -146,9 +148,21 @@ export function AdminBroadcast() {
                 mengaktifkan notifikasi.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
+            <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">
+              <div className="w-full space-y-1.5 sm:mr-auto sm:max-w-xs">
+                <Label htmlFor="broadcast-password">Password admin</Label>
+                <Input
+                  id="broadcast-password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Verifikasi ulang"
+                />
+              </div>
               <AlertDialogCancel>Batal</AlertDialogCancel>
               <AlertDialogAction
+                disabled={!password}
                 onClick={() => {
                   setConfirmOpen(false);
                   void send();

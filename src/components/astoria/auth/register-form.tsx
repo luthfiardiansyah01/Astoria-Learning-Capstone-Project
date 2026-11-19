@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { getDeviceId } from "@/lib/device-id";
 import { TurnstileWidget } from "./turnstile-widget";
 
 export function RegisterForm() {
@@ -33,7 +34,7 @@ export function RegisterForm() {
         return;
       }
 
-      const signInRes = await signIn("credentials", { email, password, redirect: false });
+      const signInRes = await signIn("credentials", { email, password, deviceId: getDeviceId(), redirect: false });
       if (data.verificationRequired) {
         toast.success("Akun dibuat. Cek email untuk verifikasi dan aktifkan trial Premium.");
       }

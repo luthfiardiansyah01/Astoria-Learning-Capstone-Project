@@ -7,6 +7,7 @@ import { sendPushToAll } from "@/lib/push";
 import { broadcastSchema, readBody } from "@/lib/validation";
 import { rateLimit } from "@/lib/rate-limit";
 import { logAdminAction } from "@/lib/audit";
+import bcrypt from "bcryptjs";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,17 @@ export async function POST(req: NextRequest) {
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
     const { title, body, url } = parsed.data;
+    if (!auth.user.passwordHash) {
+      return NextResponse.json(
+        { error: "Akun admin ini tidak memakai password." },
+        { status: 400 }
+      );
+    }
+    const passwordOk = await bcrypt.compare(parsed.data.password, auth.user.passwordHash);
+    if (!passwordOk) {
+      return NextResponse.json({ error: "Password admin salah." }, { status: 403 });
+    }
+
     const recipients = await db.user.findMany({
       where: { role: { not: "admin" } },
       select: { id: true },

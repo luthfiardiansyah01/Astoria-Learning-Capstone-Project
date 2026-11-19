@@ -25,6 +25,7 @@ model User {
   activeSessionId  String?
   activeSessionAt  DateTime?
   activeDevice     String?
+  activeDeviceId   String?
   sessionConflictCount Int           @default(0)
   sessionConflictAt    DateTime?
   passwordHash     String?

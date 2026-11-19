@@ -1,7 +1,17 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { createUser, jsonRequest, resetDb, setAuthUser } from "./helpers";
 import * as broadcastRoute from "@/app/api/admin/broadcast/route";
+
+const PASSWORD = "admin-pass-123";
+
+async function adminUser() {
+  return createUser({
+    role: "admin",
+    passwordHash: await bcrypt.hash(PASSWORD, 10),
+  });
+}
 
 beforeEach(async () => {
   await resetDb();
@@ -15,13 +25,17 @@ describe("siaran notifikasi admin", () => {
 
     expect((await broadcastRoute.GET()).status).toBe(403);
     const res = await broadcastRoute.POST(
-      jsonRequest("/api/admin/broadcast", "POST", { title: "Halo", body: "Pesan" })
+      jsonRequest("/api/admin/broadcast", "POST", {
+        title: "Halo",
+        body: "Pesan",
+        password: PASSWORD,
+      })
     );
     expect(res.status).toBe(403);
   });
 
   it("melaporkan statistik perangkat", async () => {
-    const admin = await createUser({ role: "admin" });
+    const admin = await adminUser();
     const student = await createUser({ role: "mahasiswa" });
     await db.pushSubscription.create({
       data: { userId: student.id, endpoint: "https://push.example.com/a", p256dh: "k", auth: "a" },
@@ -37,7 +51,7 @@ describe("siaran notifikasi admin", () => {
   });
 
   it("membuat notifikasi untuk seluruh mahasiswa", async () => {
-    const admin = await createUser({ role: "admin" });
+    const admin = await adminUser();
     const a = await createUser({ role: "mahasiswa" });
     const b = await createUser({ role: "mahasiswa" });
     setAuthUser(admin);
@@ -46,6 +60,7 @@ describe("siaran notifikasi admin", () => {
       jsonRequest("/api/admin/broadcast", "POST", {
         title: "Pemeliharaan",
         body: "Layanan berhenti pukul 23.00.",
+        password: PASSWORD,
       })
     );
     expect(res.status).toBe(200);
@@ -66,11 +81,27 @@ describe("siaran notifikasi admin", () => {
     expect(log?.detail).toMatchObject({ title: "Pemeliharaan", users: 2 });
   });
 
+  it("menolak password admin yang salah", async () => {
+    const admin = await adminUser();
+    await createUser({ role: "mahasiswa" });
+    setAuthUser(admin);
+
+    const res = await broadcastRoute.POST(
+      jsonRequest("/api/admin/broadcast", "POST", {
+        title: "Pemeliharaan",
+        body: "Pesan",
+        password: "salah",
+      })
+    );
+    expect(res.status).toBe(403);
+    expect(await db.notification.count()).toBe(0);
+  });
+
   it("menolak judul kosong", async () => {
-    const admin = await createUser({ role: "admin" });
+    const admin = await adminUser();
     setAuthUser(admin);
     const res = await broadcastRoute.POST(
-      jsonRequest("/api/admin/broadcast", "POST", { title: "", body: "" })
+      jsonRequest("/api/admin/broadcast", "POST", { title: "", body: "", password: PASSWORD })
     );
     expect(res.status).toBe(400);
   });

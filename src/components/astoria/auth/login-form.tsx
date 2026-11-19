@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { getDeviceId } from "@/lib/device-id";
 
 export function LoginForm() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export function LoginForm() {
     const res = await signIn("credentials", {
       email,
       password,
+      deviceId: getDeviceId(),
       redirect: false,
     });
     setLoading(false);

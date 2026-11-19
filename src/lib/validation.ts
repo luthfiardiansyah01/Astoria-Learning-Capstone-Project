@@ -197,6 +197,7 @@ export const broadcastSchema = z.object({
   title: wajib("Judul", 80),
   body: wajib("Isi", 200),
   url: z.string().trim().max(300).optional(),
+  password: z.string().min(1, "Password wajib diisi untuk verifikasi.").max(200),
 });
 
 export const checkoutSchema = z.object({

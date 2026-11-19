@@ -17,6 +17,9 @@ export async function getCurrentUser() {
   if (user.activeSessionId && session.user.sessionId !== user.activeSessionId) {
     return null;
   }
+  if (user.activeDeviceId && session.user.deviceId !== user.activeDeviceId) {
+    return null;
+  }
   return user;
 }
 

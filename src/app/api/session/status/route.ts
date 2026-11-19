@@ -17,6 +17,7 @@ export async function GET() {
       activeSessionId: true,
       activeSessionAt: true,
       activeDevice: true,
+      activeDeviceId: true,
       sessionConflictCount: true,
     },
   });
@@ -24,7 +25,9 @@ export async function GET() {
     return NextResponse.json({ authenticated: false, valid: false });
   }
 
-  const valid = !user.activeSessionId || session.user.sessionId === user.activeSessionId;
+  const validSession = !user.activeSessionId || session.user.sessionId === user.activeSessionId;
+  const validDevice = !user.activeDeviceId || session.user.deviceId === user.activeDeviceId;
+  const valid = validSession && validDevice;
 
   return NextResponse.json({
     authenticated: true,

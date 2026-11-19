@@ -33,7 +33,29 @@ Jika sesi tidak valid, muncul dialog:
 Tombol **Masuk lagi** mengakhiri sesi lokal dan membuka halaman login dengan
 pesan `reason=sesi-berakhir`.
 
-## 3. Data
+## 3. Device ID
+
+- Peramban menyimpan `sobat-device-id` acak di localStorage.
+- ID dikirim saat login dan disimpan pada `User.activeDeviceId`.
+- Token JWT memuat `sessionId` dan `deviceId`.
+- Sesi dianggap tidak valid jika salah satu tidak cocok.
+
+Device ID ini bukan pengenal perangkat keras. Menghapus data situs akan membuat
+ID baru dan memicu login baru.
+
+## 4. Email login baru
+
+Jika login berasal dari device ID berbeda dan email pengguna terverifikasi,
+sistem mengirim email "Login baru di SOBAT ADI" berisi waktu dan perangkat.
+Email keamanan ini tidak mengikuti toggle pengingat email.
+
+## 5. Verifikasi ulang aksi sensitif
+
+Siaran admin wajib menyertakan password admin. Password diverifikasi ulang di
+server sebelum notifikasi dibuat. Password salah menghasilkan 403 dan tidak ada
+siaran yang dikirim.
+
+## 6. Data
 
 Kolom baru pada `User`:
 
@@ -41,11 +63,12 @@ Kolom baru pada `User`:
 activeSessionId      String?
 activeSessionAt      DateTime?
 activeDevice         String?
+activeDeviceId       String?
 sessionConflictCount Int      @default(0)
 sessionConflictAt    DateTime?
 ```
 
-Migrasi: `20261119090000_single_session`.
+Migrasi: `20261119090000_single_session` dan `20261119100000_device_binding`.
 
 `sessionConflictCount` bertambah setiap login menggantikan sesi lain, berguna
 untuk pemantauan indikasi sharing akun.
