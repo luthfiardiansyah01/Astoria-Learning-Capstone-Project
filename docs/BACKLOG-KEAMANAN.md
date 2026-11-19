@@ -108,9 +108,49 @@ Kriteria selesai:
 - Ambang dapat diubah lewat konfigurasi.
 - Tindakan admin tercatat di audit log.
 
+## 6. Perketat CSP tanpa `unsafe-inline` dan `unsafe-eval`
+
+**Prioritas:** tinggi
+**Tujuan:** mengurangi risiko XSS pada produksi.
+
+Ruang lingkup:
+
+- Gunakan nonce per permintaan untuk script Next.js.
+- Hapus `unsafe-inline` dan `unsafe-eval` dari `script-src`.
+- Kecualikan hanya domain yang benar-benar perlu, misalnya Cloudflare Turnstile.
+- Jalankan mode `Content-Security-Policy-Report-Only` sebelum enforcement.
+- Pastikan service worker, halaman auth, dan pembayaran tetap berjalan.
+
+Kriteria selesai:
+
+- Header produksi tidak lagi memuat `unsafe-inline` dan `unsafe-eval` pada script.
+- Tidak ada pelanggaran CSP pada halaman utama, login, unggah, chat, kuis, dan Collab.
+- Ada laporan pelanggaran sebelum enforcement penuh.
+- Tes E2E dan audit aksesibilitas tetap lulus.
+
+## 7. Pemantauan uptime dan error
+
+**Prioritas:** tinggi
+**Tujuan:** mengetahui gangguan sebelum pengguna melaporkan.
+
+Ruang lingkup:
+
+- Health check eksternal setiap 5 menit untuk `/`, `/login`, dan `/api/session/status`.
+- Alert ke email admin dan kanal operasional.
+- Pelacakan error runtime, misalnya Sentry atau layanan setara.
+- Endpoint kesehatan internal yang memeriksa database dan konfigurasi penting.
+- Checklist rilis: uji kirim email, uji push, cek migrasi, cek halaman kunci.
+
+Kriteria selesai:
+
+- Gangguan terdeteksi dan diberitahukan dalam waktu kurang dari 10 menit.
+- Error runtime memiliki jejak dan konteks.
+- Ada runbook singkat untuk merespons alert.
+
 ## Catatan penerapan
 
-- Kerjakan berurutan: 2FA, kelola sesi, verifikasi admin, masa sesi, pemantauan.
+- Urutan prioritas terbaru: perketat CSP, 2FA, pemantauan uptime, kelola sesi, verifikasi admin, masa sesi, pemantauan konflik.
+- Item 2FA sudah tercatat pada bagian 1 dan tetap menjadi prioritas tinggi.
 - Setiap perubahan skema harus aditif dan punya jalur mundur.
 - Jangan mengikat sesi ke IP karena alamat IP mudah berubah dan tidak mewakili perangkat.
 - Perbarui `docs/SESI-TUNGGAL.md` dan `docs/NOTIFIKASI.md` saat item terkait selesai.
