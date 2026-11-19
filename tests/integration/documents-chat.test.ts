@@ -76,7 +76,12 @@ describe("POST /api/documents", () => {
         content: "a".repeat(9_000),
       })
     );
-    const body = (await res.json()) as { code: string };
+    const body = (await res.json()) as {
+      code: string;
+      charCount: number;
+      maxChars: number;
+      suggestedParts: number;
+    };
     expect(res.status).toBe(413);
     expect(body.code).toBe("doc_too_long");
     expect(body.charCount).toBe(9000);
