@@ -22,6 +22,11 @@ model User {
   fontScale        String            @default("normal") // small | normal | large | xlarge
   reducedMotion    Boolean           @default(false)
   emailReminders   Boolean           @default(true)
+  activeSessionId  String?
+  activeSessionAt  DateTime?
+  activeDevice     String?
+  sessionConflictCount Int           @default(0)
+  sessionConflictAt    DateTime?
   passwordHash     String?
   xp               Int               @default(0)
   level            Int               @default(1)

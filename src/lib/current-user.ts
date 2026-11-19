@@ -10,7 +10,14 @@ import { db } from "./db";
 export async function getCurrentUser() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
-  return db.user.findUnique({ where: { id: session.user.id } });
+  const user = await db.user.findUnique({ where: { id: session.user.id } });
+  if (!user) return null;
+
+  // Tolak token lama bila akun sudah punya sesi aktif yang berbeda.
+  if (user.activeSessionId && session.user.sessionId !== user.activeSessionId) {
+    return null;
+  }
+  return user;
 }
 
 export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;

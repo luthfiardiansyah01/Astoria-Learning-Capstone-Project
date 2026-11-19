@@ -4,6 +4,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { randomUUID } from "node:crypto";
 import { db } from "./db";
 import { clientIp, LIMITS, rateLimit } from "./rate-limit";
 
@@ -50,7 +51,29 @@ export const authOptions: NextAuthOptions = {
         const valid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!valid) return null;
 
-        return { id: user.id, name: user.name, email: user.email, role: user.role };
+        // Satu akun hanya boleh punya satu sesi aktif. Login baru mengakhiri sesi lama.
+        const sessionId = randomUUID();
+        const device =
+          (req?.headers?.["user-agent"] as string | undefined)?.slice(0, 200) ??
+          "Perangkat tidak dikenal";
+        const conflict = Boolean(user.activeSessionId && user.activeSessionId !== sessionId);
+
+        await db.user.update({
+          where: { id: user.id },
+          data: {
+            activeSessionId: sessionId,
+            activeSessionAt: new Date(),
+            activeDevice: device,
+            ...(conflict
+              ? {
+                  sessionConflictCount: { increment: 1 },
+                  sessionConflictAt: new Date(),
+                }
+              : {}),
+          },
+        });
+
+        return { id: user.id, name: user.name, email: user.email, role: user.role, sessionId };
       },
     }),
   ],
@@ -60,6 +83,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "mahasiswa";
         token.name = user.name;
+        token.sessionId = (user as { sessionId?: string }).sessionId;
       }
       if (trigger === "update") {
         const nextName = (session as { name?: unknown } | null)?.name;
@@ -73,6 +97,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.sessionId = token.sessionId as string | undefined;
       }
       return session;
     },

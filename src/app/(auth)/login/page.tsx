@@ -8,7 +8,12 @@ export const metadata: Metadata = {
   description: "Masuk ke SOBAT ADI untuk melanjutkan belajar bersama Mentor AI.",
 };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string }>;
+}) {
+  const { reason } = await searchParams;
   return (
     <main className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-sm">
@@ -16,6 +21,15 @@ export default function LoginPage() {
           <CardTitle>Masuk ke SOBAT ADI</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {reason === "sesi-berakhir" && (
+            <div
+              role="alert"
+              className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+            >
+              Sesi Anda diakhiri karena akun ini baru saja masuk di perangkat lain. Satu akun hanya
+              dapat digunakan pada satu perangkat.
+            </div>
+          )}
           <LoginForm />
           <p className="text-center text-sm">
             <Link href="/forgot-password" className="text-primary underline hover:text-primary/80">

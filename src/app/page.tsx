@@ -30,6 +30,7 @@ import { HomeView } from "@/components/astoria/home-view";
 import { MobileNav } from "@/components/astoria/mobile-nav";
 import { AppGuide } from "@/components/astoria/app-guide";
 import { PushOptIn } from "@/components/astoria/push-optin";
+import { SessionGuard } from "@/components/astoria/session-guard";
 import { EmailVerificationBanner } from "@/components/astoria/email-verification-banner";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { PreferencesProvider } from "@/components/providers/preferences-provider";
@@ -404,6 +405,7 @@ function AstoriaPage() {
         onOpenGuide={() => setGuideOpen(true)}
       />
       <AppGuide open={guideOpen} onOpenChange={setGuideOpen} onNavigate={setView} />
+      <SessionGuard />
 
       {/* ── Footer (sticky bottom) ── */}
       <footer className="mt-auto border-t bg-muted/40 pb-20 lg:pb-0">
