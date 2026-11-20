@@ -85,7 +85,12 @@ function CheckRow({
 export function UploadView() {  const { toast } = useToast();
   const { setActiveDocument, setView } = useAstoria();
   const queryClient = useQueryClient();
-  const { data: planData } = useQuery<{ plan: "free" | "premium"; limits: typeof PLAN_LIMITS.free }>({
+  const { data: planData } = useQuery<{
+    plan: "free" | "premium";
+    limits: typeof PLAN_LIMITS.free;
+    emailVerified?: boolean;
+    emailVerificationRequired?: boolean;
+  }>({
     queryKey: ["plan"],
     queryFn: async () => {
       const res = await fetch("/api/plan");
@@ -106,7 +111,14 @@ export function UploadView() {  const { toast } = useToast();
   const [activePart, setActivePart] = useState<number | null>(null);
   const [result, setResult] = useState<UploadResult["document"] | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [emailBlocked, setEmailBlocked] = useState(false);
+  const [resendBusy, setResendBusy] = useState(false);
+  const [devVerifyUrl, setDevVerifyUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const needsVerification =
+    emailBlocked ||
+    Boolean(planData?.emailVerificationRequired && !planData.emailVerified);
 
   const charCount = content.length;
   const tooLong = charCount > limits.maxDocChars;
@@ -256,6 +268,16 @@ export function UploadView() {  const { toast } = useToast();
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.code === "email_unverified") {
+          setEmailBlocked(true);
+          toast({
+            title: "Email belum diverifikasi",
+            description:
+              "Dokumen belum diproses. Verifikasi email dulu, lalu coba unggah lagi.",
+            variant: "destructive",
+          });
+          return;
+        }
         if (data.code === "doc_too_long" && typeof data.charCount === "number") {
           setSourceContent(content);
           setActivePart(null);
@@ -324,6 +346,34 @@ export function UploadView() {  const { toast } = useToast();
     setActivePart(null);
   };
 
+  const resendVerification = async () => {
+    setResendBusy(true);
+    setDevVerifyUrl(null);
+    try {
+      const res = await fetch("/api/auth/verify-email/resend", { method: "POST" });
+      const body = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        verificationUrl?: string;
+      };
+      if (!res.ok) throw new Error(body.error || "Gagal mengirim email verifikasi.");
+      if (body.verificationUrl) setDevVerifyUrl(body.verificationUrl);
+      toast({
+        title: "Email verifikasi dikirim",
+        description: body.verificationUrl
+          ? "Mode development: buka tautan verifikasi di bawah."
+          : "Periksa inbox dan folder spam.",
+      });
+    } catch (e) {
+      toast({
+        title: "Gagal mengirim verifikasi",
+        description: e instanceof Error ? e.message : "Coba lagi beberapa saat.",
+        variant: "destructive",
+      });
+    } finally {
+      setResendBusy(false);
+    }
+  };
+
   const deleteUploaded = async () => {
     if (!result) return;
     if (!window.confirm(`Hapus dokumen "${result.fileName}" beserta cache/indeksnya?`)) return;
@@ -359,6 +409,41 @@ export function UploadView() {  const { toast } = useToast();
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {needsVerification && (
+              <div
+                role="alert"
+                className="space-y-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+              >
+                <p className="flex items-start gap-2">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>
+                    Email belum diverifikasi. Dokumen belum bisa diproses dan fitur AI lain
+                    terkunci sampai email diverifikasi.
+                  </span>
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={resendVerification}
+                    disabled={resendBusy}
+                    className="border-amber-400 bg-transparent text-amber-900 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-900/40"
+                  >
+                    {resendBusy ? "Mengirim..." : "Kirim ulang email verifikasi"}
+                  </Button>
+                  {devVerifyUrl && (
+                    <a
+                      href={devVerifyUrl}
+                      className="text-xs underline hover:text-foreground"
+                    >
+                      Buka tautan verifikasi (development)
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Dropzone */}
             <div
               role="button"
@@ -600,7 +685,14 @@ export function UploadView() {  const { toast } = useToast();
               <Button
                 data-testid="upload-submit"
                 onClick={submit}
-                disabled={processing || readingFile || !content.trim() || tooLong || Boolean(fileError)}
+                disabled={
+                  processing ||
+                  readingFile ||
+                  !content.trim() ||
+                  tooLong ||
+                  Boolean(fileError) ||
+                  needsVerification
+                }
               >                {processing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Menganalisis dokumen…

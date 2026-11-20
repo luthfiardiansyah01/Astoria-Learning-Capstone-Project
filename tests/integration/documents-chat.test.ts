@@ -58,6 +58,24 @@ describe("POST /api/documents", () => {
     expect(res.status).toBe(401);
   });
 
+  it("menolak unggah sebelum verifikasi email dengan respons jelas", async () => {
+    process.env.EMAIL_VERIFICATION_ENABLED = "true";
+    try {
+      const user = await createUser({ emailVerifiedAt: null });
+      setAuthUser(user);
+
+      const res = await documentsRoute.POST(
+        jsonRequest("/api/documents", "POST", { fileName: "a.txt", content: "Materi modul" })
+      );
+      expect(res.status).toBe(403);
+      const body = (await res.json()) as { code?: string; error?: string };
+      expect(body.code).toBe("email_unverified");
+      expect(body.error).toMatch(/Verifikasi email/i);
+    } finally {
+      delete process.env.EMAIL_VERIFICATION_ENABLED;
+    }
+  });
+
   it("menolak konten kosong", async () => {
     const user = await createUser();
     setAuthUser(user);
