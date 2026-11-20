@@ -211,6 +211,13 @@ export function tooManyRequests(result: RateLimitResult) {
   );
 }
 
+function memoryRelease(name: string, id: string) {
+  const key = `sobadi:rl:${name}:${id}`;
+  const entry = memory.get(key);
+  if (!entry || entry.reset <= Date.now() || entry.count <= 0) return;
+  entry.count -= 1;
+}
+
 function memoryStatus(key: string, max: number, windowSec: number): RateLimitStatus {
   const now = Date.now();
   const entry = memory.get(key);
@@ -223,6 +230,61 @@ function memoryStatus(key: string, max: number, windowSec: number): RateLimitSta
     limit: max,
     resetAt: entry.reset,
   };
+}
+
+/**
+ * Kembalikan satu jatah AI yang sudah direservasi guardAi.
+ * Dipakai saat request gagal sebelum AI benar-benar memberi jawaban, agar
+ * kuota pengguna tidak habis karena gangguan penyedia atau validasi.
+ */
+export async function releaseAiQuota(
+  userId: string,
+  _plan: Plan = "free",
+  at = new Date()
+): Promise<void> {
+  const targets = [
+    { name: "ai-minute", windowSec: 60 },
+    { name: aiDayCounterName(at), windowSec: secondsUntilWibMidnight(at) },
+  ];
+
+  const cfg = redisConfig();
+  if (!cfg) {
+    for (const target of targets) memoryRelease(target.name, userId);
+    return;
+  }
+
+  // DECR hanya bila counter ada dan masih > 0, supaya tidak membuat key baru
+  // atau membuat nilai negatif. TTL key lama tetap dipertahankan.
+  const script =
+    "local v=redis.call('GET',KEYS[1]); if not v then return -1 end; " +
+    "if tonumber(v)>0 then return redis.call('DECR',KEYS[1]) end; return 0";
+
+  try {
+    const res = await fetch(`${cfg.url}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${cfg.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(
+        targets.map((target) => [
+          "EVAL",
+          script,
+          1,
+          `sobadi:rl:${target.name}:${userId}`,
+        ])
+      ),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`Upstash ${res.status}`);
+    const data = (await res.json()) as { result?: unknown; error?: string }[];
+    if (data.some((d) => d.error)) throw new Error(data.find((d) => d.error)?.error);
+  } catch (e) {
+    logger.error("[rate-limit] gagal mengembalikan kuota AI:", {
+      error: e instanceof Error ? e.message : e,
+    });
+    for (const target of targets) memoryRelease(target.name, userId);
+  }
 }
 
 /** Baca pemakaian saat ini tanpa menambah counter. */
@@ -255,7 +317,21 @@ export async function getRateLimitStatus(
     if (data.some((d) => d.error)) throw new Error(data.find((d) => d.error)?.error);
 
     const used = Number(data[0]?.result ?? 0);
-    const ttl = Number(data[1]?.result ?? 0);
+    let ttl = Number(data[1]?.result ?? 0);
+    // Key lama tanpa TTL (mis. dibuat versi sebelumnya) tidak akan pernah
+    // kedaluwarsa. Pasang TTL agar kuota kembali normal tanpa menunggu deploy.
+    if (ttl === -1) {
+      await fetch(`${cfg.url}/pipeline`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${cfg.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify([["EXPIRE", key, windowSec, "NX"]]),
+        cache: "no-store",
+      }).catch(() => null);
+      ttl = windowSec;
+    }
     return {
       used,
       remaining: Math.max(0, max - used),

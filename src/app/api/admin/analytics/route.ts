@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { ANALYTICS_SUMMARIZER_PROMPT, PARAMS } from "@/lib/prompts";
 import { chatComplete } from "@/lib/ai";
 import { requireAdmin } from "@/lib/current-user";
-import { guardAi } from "@/lib/rate-limit";
+import { guardAi, releaseAiQuota } from "@/lib/rate-limit";
 import { effectivePlan } from "@/lib/plans";
 
 export const maxDuration = 60;
@@ -110,6 +110,7 @@ export async function GET(req: NextRequest) {
           PARAMS.admin_ops
         );
       } catch (e) {
+        await releaseAiQuota(auth.user.id, effectivePlan(auth.user));
         logger.error("[/api/admin/analytics] summarizer gagal:", { error: e });
         const topDoc = popular[0]?.fileName ?? "belum ada";
         const topTopic = topTopics[0]?.kata ?? "belum ada";

@@ -20,7 +20,7 @@ import {
 } from "@/lib/gamif";
 import { updateStreak } from "@/lib/user";
 import { requireUser, canUseDocument, forbidden } from "@/lib/current-user";
-import { guardAi } from "@/lib/rate-limit";
+import { guardAi, releaseAiQuota } from "@/lib/rate-limit";
 import { effectivePlan } from "@/lib/plans";
 import { quizSubmitSchema, readBody } from "@/lib/validation";
 
@@ -40,8 +40,6 @@ export async function POST(req: NextRequest) {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const student = auth.user;
-    const limited = await guardAi(student.id, effectivePlan(student), student);
-    if (limited) return limited;
     const parsed = await readBody(req, quizSubmitSchema);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const { questionId, jawaban } = parsed.data;
@@ -80,6 +78,10 @@ export async function POST(req: NextRequest) {
     const isFirstLanjut = question.tingkat === "Lanjut" && !firstLanjutDone;
     const streakDays = updateStreak(student.lastActive, student.streakDays);
 
+    const plan = effectivePlan(student);
+    const limited = await guardAi(student.id, plan, student);
+    if (limited) return limited;
+
     // ── AI Quiz Evaluator (Seksi 6.1) ──
     let result: EvalResult;
     try {
@@ -105,6 +107,7 @@ export async function POST(req: NextRequest) {
         PARAMS.gamif_eval
       );
     } catch (e) {
+      await releaseAiQuota(student.id, plan);
       logger.error("[/api/quiz/submit] evaluator gagal:", { error: e });
       if (isAiQuotaError(e)) {
         return NextResponse.json({ error: aiQuotaMessage(), code: "ai_quota" }, { status: 503 });

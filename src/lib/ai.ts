@@ -28,7 +28,7 @@ const CACHE_MAX = 100;
 const answerCache = new Map<string, { value: string; expires: number }>();
 
 const QUOTA_MESSAGE =
-  "Kuota AI gratis sedang habis. Coba lagi setelah reset harian atau gunakan API key berbayar.";
+  "Penyedia AI sedang membatasi permintaan (bukan kuota aplikasi). Kuota aplikasimu tidak berkurang karena permintaan gagal; coba lagi beberapa saat.";
 let quotaBlockedUntil = 0;
 
 function isQuotaError(message: string) {

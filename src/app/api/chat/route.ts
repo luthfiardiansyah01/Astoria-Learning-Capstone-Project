@@ -14,7 +14,7 @@ import { retrieveForDocument } from "@/lib/rag-semantic";
 import { chatComplete, isAiQuotaError, aiQuotaMessage, type ChatMessageForAI } from "@/lib/ai";
 import { FALLBACK_RESPONSES, isOutOfContext, preprocessUserInput } from "@/lib/fallback";
 import { requireUser, canUseDocument, forbidden } from "@/lib/current-user";
-import { guardAi } from "@/lib/rate-limit";
+import { guardAi, releaseAiQuota } from "@/lib/rate-limit";
 import { effectivePlan } from "@/lib/plans";
 import { chatSchema, readBody } from "@/lib/validation";
 
@@ -56,8 +56,6 @@ export async function POST(req: NextRequest) {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const user = auth.user;
-    const limited = await guardAi(user.id, effectivePlan(user), user);
-    if (limited) return limited;
     const parsed = await readBody(req, chatSchema);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const documentId: string | null = parsed.data.documentId ?? null;
@@ -120,10 +118,16 @@ export async function POST(req: NextRequest) {
     ];
 
     // ── 4. Panggil AI (fallback: api_error) ──
+    // Reservasi kuota baru dilakukan setelah input dan dokumen valid, supaya
+    // request yang tidak pernah sampai ke AI tidak memotong jatah pengguna.
+    const plan = effectivePlan(user);
+    const limited = await guardAi(user.id, plan, user);
+    if (limited) return limited;
     let reply: string;
     try {
       reply = await chatComplete(messages, PARAMS.user_mentor, { cache: true });
     } catch (e) {
+      await releaseAiQuota(user.id, plan);
       logger.error("[/api/chat] AI gagal:", { error: e });
       if (isAiQuotaError(e)) {
         return NextResponse.json(

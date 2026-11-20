@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { chatComplete, chatJSON } from "@/lib/ai";
+import { aiDayCounterName, getRateLimitStatus } from "@/lib/rate-limit";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import {
   createDocument,
@@ -300,6 +301,35 @@ describe("POST /api/chat", () => {
     expect(res.status).toBe(200);
     expect(body.reply).toContain("Jawaban mock");
     expect(await db.chatMessage.count({ where: { userId: user.id, documentId: doc.id } })).toBe(2);
+  });
+
+  it("mengembalikan kuota AI bila penyedia gagal menjawab", async () => {
+    const user = await createUser();
+    const doc = await createDocument(user.id, { status: "approved" });
+    setAuthUser(user);
+    vi.mocked(chatComplete).mockRejectedValueOnce(new Error("API request failed with status 500"));
+
+    const res = await chatRoute.POST(
+      jsonRequest("/api/chat", "POST", { documentId: doc.id, question: "Apa itu permintaan?" })
+    );
+    expect(res.status).toBe(200);
+
+    const status = await getRateLimitStatus(aiDayCounterName(), user.id, 30, 60);
+    expect(status.used).toBe(0);
+    expect(status.remaining).toBe(30);
+  });
+
+  it("tidak memotong kuota untuk request tanpa dokumen", async () => {
+    const user = await createUser();
+    setAuthUser(user);
+
+    const res = await chatRoute.POST(
+      jsonRequest("/api/chat", "POST", { question: "Apa itu ekonomi?" })
+    );
+    expect(res.status).toBe(200);
+
+    const status = await getRateLimitStatus(aiDayCounterName(), user.id, 30, 60);
+    expect(status.used).toBe(0);
   });
 
   it("membatasi riwayat yang dikirim ke AI menjadi 6 pesan terakhir", async () => {

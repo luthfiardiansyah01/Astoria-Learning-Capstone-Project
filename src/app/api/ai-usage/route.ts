@@ -29,7 +29,7 @@ export async function GET() {
       getRateLimitStatus("ai-minute", auth.user.id, limits.aiPerMinute, 60),
     ]);
 
-    return NextResponse.json({ plan, daily, minute });
+    return NextResponse.json({ plan, daily, minute, updatedAt: Date.now() });
   } catch (e) {
     logger.error("[/api/ai-usage]", { error: e });
     return NextResponse.json({ error: "Gagal memuat kuota AI" }, { status: 500 });

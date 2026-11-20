@@ -20,8 +20,8 @@ import { chatJSON } from "@/lib/ai";
 import { fallbackDocMetadata, fallbackModeration } from "@/lib/doc-fallback";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { requireUser } from "@/lib/current-user";
-import { guardAi, LIMITS, rateLimit, tooManyRequests } from "@/lib/rate-limit";
-import { effectivePlan, PLAN_LIMITS } from "@/lib/plans";
+import { guardAi, LIMITS, rateLimit, releaseAiQuota, tooManyRequests } from "@/lib/rate-limit";
+import { effectivePlan, PLAN_LIMITS, type Plan } from "@/lib/plans";
 import { documentUploadSchema, readBody } from "@/lib/validation";
 
 export const maxDuration = 60;
@@ -110,13 +110,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  let reservation: { userId: string; plan: Plan } | null = null;
   try {
     const auth = await requireUser();
     if (auth.res) return auth.res;
     const student = auth.user;
     const plan = effectivePlan(student);
-    const limited = await guardAi(student.id, plan, student);
-    if (limited) return limited;
     const uploadLimit = await rateLimit("upload", student.id, LIMITS.upload.max, LIMITS.upload.windowSec, {
       failClosed: true,
     });
@@ -140,6 +139,12 @@ export async function POST(req: NextRequest) {
         { status: 413 }
       );
     }
+
+    // Reservasi kuota AI setelah input lolos validasi. Bila kedua panggilan AI
+    // gagal, kuota dikembalikan karena tidak ada hasil AI yang diberikan.
+    const limited = await guardAi(student.id, plan, student);
+    if (limited) return limited;
+    reservation = { userId: student.id, plan };
 
     const wordCount = countWords(content);
 
@@ -193,6 +198,13 @@ export async function POST(req: NextRequest) {
       ),
     ]);
 
+    if (metadataResult.status === "rejected" && moderationResult.status === "rejected") {
+      await releaseAiQuota(student.id, plan);
+    }
+    // Apa pun hasilnya, jangan kembalikan kuota lagi lewat catch: satu request
+    // hanya boleh mengembalikan satu reservasi.
+    reservation = null;
+
     const metadata =
       metadataResult.status === "fulfilled"
         ? metadataResult.value
@@ -240,6 +252,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (e) {
+    if (reservation) await releaseAiQuota(reservation.userId, reservation.plan);
     logger.error("[/api/documents POST]", { error: e });
     return NextResponse.json(
       { error: FALLBACK_RESPONSES.api_error, code: "api_error" },

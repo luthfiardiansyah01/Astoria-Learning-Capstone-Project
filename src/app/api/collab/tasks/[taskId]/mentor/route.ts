@@ -12,7 +12,7 @@ import { retrieveForDocument } from "@/lib/rag-semantic";
 import { checkTeamBadges } from "@/lib/collab-badges";
 import { FALLBACK_RESPONSES } from "@/lib/fallback";
 import { preprocessUserInput } from "@/lib/fallback";
-import { guardAi } from "@/lib/rate-limit";
+import { guardAi, releaseAiQuota } from "@/lib/rate-limit";
 import { effectivePlan } from "@/lib/plans";
 import { mentorQuestionSchema, readBody } from "@/lib/validation";
 
@@ -54,9 +54,6 @@ export async function POST(
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Belum masuk." }, { status: 401 });
-
-    const limited = await guardAi(user.id, effectivePlan(user), user);
-    if (limited) return limited;
 
     const { taskId } = await params;
     const task = await db.task.findUnique({
@@ -111,6 +108,10 @@ export async function POST(
         "\nGunakan konteks dokumen di atas sebagai rujukan utama saat relevan dengan task.";
     }
 
+    const plan = effectivePlan(user);
+    const limited = await guardAi(user.id, plan, user);
+    if (limited) return limited;
+
     let reply: string;
     try {
       reply = await chatComplete(
@@ -132,6 +133,7 @@ export async function POST(
         { cache: true }
       );
     } catch (e) {
+      await releaseAiQuota(user.id, plan);
       logger.error("[/api/collab/tasks/[taskId]/mentor] AI gagal:", { error: e });
       if (isAiQuotaError(e)) {
         return NextResponse.json(

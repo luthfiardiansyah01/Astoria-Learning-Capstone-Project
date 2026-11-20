@@ -5,6 +5,7 @@ import {
   getRateLimitStatus,
   guardAi,
   rateLimit,
+  releaseAiQuota,
   secondsUntilWibMidnight,
   tooManyRequests,
   wibDayKey,
@@ -219,5 +220,52 @@ describe("guardAi", () => {
     // Lewat tengah malam WIB: counter harian baru, request kembali diizinkan.
     vi.advanceTimersByTime(24 * 60 * 60 * 1000);
     expect(await guardAi(id, "free")).toBeNull();
+  });
+});
+
+describe("releaseAiQuota", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-01T12:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("mengembalikan jatah harian dan per menit saat request gagal", async () => {
+    const id = uniqueId("refund");
+    expect(await guardAi(id, "free")).toBeNull();
+    expect(await guardAi(id, "free")).toBeNull();
+
+    let status = await getRateLimitStatus(aiDayCounterName(), id, 30, 60);
+    expect(status.used).toBe(2);
+    expect(status.remaining).toBe(28);
+
+    await releaseAiQuota(id, "free");
+
+    status = await getRateLimitStatus(aiDayCounterName(), id, 30, 60);
+    expect(status.used).toBe(1);
+    expect(status.remaining).toBe(29);
+
+    const minute = await getRateLimitStatus("ai-minute", id, 5, 60);
+    expect(minute.used).toBe(1);
+  });
+
+  it("tidak membuat counter negatif atau key baru", async () => {
+    const id = uniqueId("refund-floor");
+    await guardAi(id, "free");
+    await releaseAiQuota(id, "free");
+    await releaseAiQuota(id, "free");
+
+    const status = await getRateLimitStatus(aiDayCounterName(), id, 30, 60);
+    expect(status.used).toBe(0);
+    expect(status.remaining).toBe(30);
+
+    const fresh = uniqueId("refund-empty");
+    await releaseAiQuota(fresh, "free");
+    const empty = await getRateLimitStatus(aiDayCounterName(), fresh, 30, 60);
+    expect(empty.used).toBe(0);
+    expect(empty.remaining).toBe(30);
   });
 });

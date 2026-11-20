@@ -38,6 +38,10 @@ sehingga tidak memotong kuota.
   sebelum email diverifikasi. Pengguna lama di-backfill sebagai terverifikasi.
 - **Kuota AI harian direset setiap 00.00 WIB**, bukan 24 jam sejak request pertama.
   Kuota per menit tetap berlaku.
+- **Kuota dikembalikan bila AI gagal menjawab.** Reservasi baru dibuat setelah
+  input lolos validasi. Jika penyedia AI menolak atau error, jatah harian dan
+  per menit dikembalikan lewat `releaseAiQuota()`. Badge kuota membaca ulang
+  setiap 10 detik dan langsung diperbarui setelah aksi AI.
 - **Admin selalu Premium** tanpa perlu langganan.
 - **Pembayaran** memakai Midtrans/Xendit. Webhook diverifikasi signature/token,
   nominal dicocokkan, dan aktivasi bersifat idempoten.
@@ -69,7 +73,9 @@ sehingga tidak memotong kuota.
 5. **Transaksi pending lama** ditandai `expired` saat pengguna memulai checkout
    berikutnya (bukan lewat cron).
 6. **Kuota penyedia AI terpisah** dari kuota aplikasi. Batas 30/300 adalah batas
-   request aplikasi per pengguna, bukan kuota akun OpenRouter/OpenAI.
+   request aplikasi per pengguna, bukan kuota akun OpenRouter/OpenAI. Jika
+   penyedia menolak, pesan error menyebut hal itu dan kuota aplikasi tidak
+   berkurang.
 7. **Rate limit** memakai Upstash di produksi. Tanpa env Upstash, fallback memori
    tidak efektif di serverless.
 
