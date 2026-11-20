@@ -9,9 +9,17 @@ import { db } from "./db";
 import { clientIp, LIMITS, rateLimit } from "./rate-limit";
 import { emailConfigured, sendEmail } from "./email";
 import { newDeviceEmail } from "./security-email";
+import { sessionMaxAgeSeconds } from "./session-policy";
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt" },
+  // Sesi JWT berlaku maksimal 12 jam. Ini batas absolut, bukan diperpanjang
+  // setiap request, sehingga perangkat bersama tidak tertinggal dalam keadaan
+  // login ketika pengguna lupa logout. Bisa diubah lewat SESSION_MAX_HOURS.
+  session: {
+    strategy: "jwt",
+    maxAge: sessionMaxAgeSeconds(),
+    updateAge: sessionMaxAgeSeconds(),
+  },
   pages: { signIn: "/login" },
   providers: [
     CredentialsProvider({

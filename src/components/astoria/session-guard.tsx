@@ -12,17 +12,17 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type Revoked = {
-  activeDevice?: string | null;
-  activeSince?: string | null;
-};
+type Notice =
+  | { kind: "conflict"; activeDevice?: string | null; activeSince?: string | null }
+  | { kind: "expired" };
 
 /**
  * Memeriksa apakah sesi ini masih menjadi sesi aktif akun.
  * Jika pengguna login di perangkat lain, sesi lama diakhiri dan peringatan muncul.
+ * Jika sesi sudah melewati masa berlaku, pengguna diminta masuk lagi.
  */
 export function SessionGuard() {
-  const [revoked, setRevoked] = useState<Revoked | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
 
   useEffect(() => {
     let stopped = false;
@@ -38,8 +38,13 @@ export function SessionGuard() {
           activeSince?: string | null;
         };
         if (stopped) return;
-        if (data.authenticated && data.valid === false) {
-          setRevoked({
+        if (!data.authenticated) {
+          setNotice({ kind: "expired" });
+          return;
+        }
+        if (data.valid === false) {
+          setNotice({
+            kind: "conflict",
             activeDevice: data.activeDevice ?? null,
             activeSince: data.activeSince ?? null,
           });
@@ -71,14 +76,25 @@ export function SessionGuard() {
   }, []);
 
   return (
-    <AlertDialog open={Boolean(revoked)} onOpenChange={() => undefined}>
+    <AlertDialog open={Boolean(notice)} onOpenChange={() => undefined}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Akun ini aktif di perangkat lain</AlertDialogTitle>
+          <AlertDialogTitle>
+            {notice?.kind === "expired" ? "Sesi telah berakhir" : "Akun ini aktif di perangkat lain"}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Demi keamanan, satu akun hanya dapat digunakan pada satu perangkat. Sesi di perangkat
-            ini telah diakhiri karena akun yang sama baru saja masuk di perangkat lain.
-            {revoked?.activeDevice ? ` Perangkat yang aktif: ${revoked.activeDevice}.` : ""}
+            {notice?.kind === "expired" ? (
+              "Sesi berakhir karena sudah mencapai batas waktu. Silakan masuk lagi untuk melanjutkan."
+            ) : (
+              <>
+                Demi keamanan, satu akun hanya dapat digunakan pada satu perangkat. Sesi di
+                perangkat ini telah diakhiri karena akun yang sama baru saja masuk di perangkat
+                lain.
+                {notice?.kind === "conflict" && notice.activeDevice
+                  ? ` Perangkat yang aktif: ${notice.activeDevice}.`
+                  : ""}
+              </>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

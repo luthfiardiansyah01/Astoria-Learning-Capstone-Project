@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return NextResponse.json({ authenticated: false, valid: false });
+    return NextResponse.json({ authenticated: false, valid: false, reason: "expired" });
   }
 
   const user = await db.user.findUnique({
@@ -35,5 +35,6 @@ export async function GET() {
     activeSince: user.activeSessionAt,
     activeDevice: user.activeDevice,
     conflictCount: user.sessionConflictCount,
+    expiresAt: session.expires,
   });
 }

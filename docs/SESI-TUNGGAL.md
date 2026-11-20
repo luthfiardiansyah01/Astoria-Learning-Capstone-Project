@@ -49,13 +49,25 @@ Jika login berasal dari device ID berbeda dan email pengguna terverifikasi,
 sistem mengirim email "Login baru di SOBAT ADI" berisi waktu dan perangkat.
 Email keamanan ini tidak mengikuti toggle pengingat email.
 
-## 5. Verifikasi ulang aksi sensitif
+## 5. Masa berlaku sesi
+
+Sesi JWT berlaku maksimal **12 jam** secara absolut. Batas ini tidak diperpanjang
+setiap request, sehingga perangkat bersama tidak tertinggal dalam keadaan login
+ketika pengguna lupa logout.
+
+- Default dapat diubah lewat `SESSION_MAX_HOURS`.
+- Nilai dibatasi 1 sampai 168 jam.
+- Setelah batas tercapai, API mengembalikan 401 dan halaman menampilkan dialog
+  "Sesi telah berakhir" dengan tombol masuk lagi.
+- Masa berlaku dihitung dari waktu login, bukan dari aktivitas terakhir.
+
+## 6. Verifikasi ulang aksi sensitif
 
 Siaran admin wajib menyertakan password admin. Password diverifikasi ulang di
 server sebelum notifikasi dibuat. Password salah menghasilkan 403 dan tidak ada
 siaran yang dikirim.
 
-## 6. Data
+## 7. Data
 
 Kolom baru pada `User`:
 
@@ -73,13 +85,13 @@ Migrasi: `20261119090000_single_session` dan `20261119100000_device_binding`.
 `sessionConflictCount` bertambah setiap login menggantikan sesi lain, berguna
 untuk pemantauan indikasi sharing akun.
 
-## 4. Kompatibilitas
+## 8. Kompatibilitas
 
 Token lama yang belum memiliki `sessionId` tetap diterima selama
 `activeSessionId` masih kosong. Setelah pengguna login kembali, token lama
 otomatis tidak berlaku.
 
-## 5. Batasan
+## 9. Batasan
 
 - Fitur ini mencegah dua sesi login aktif, bukan menyalin cookie secara fisik.
   Jika token disalin ke perangkat lain, keduanya memakai `sessionId` yang sama
@@ -87,8 +99,10 @@ otomatis tidak berlaku.
 - Perangkat lama baru menampilkan peringatan pada pemeriksaan berikutnya
   (maksimal 30 detik) atau saat tab kembali aktif.
 - Pengguna yang sering berganti perangkat akan sering diminta login ulang.
+- Sesi berakhir setelah 12 jam sejak login, meskipun pengguna masih aktif.
+  Ini disengaja agar perangkat bersama tidak tetap login.
 
-## 6. Pengujian
+## 10. Pengujian
 
 - E2E `tests/e2e/single-session.spec.ts`: login di konteks kedua membuat sesi
   pertama tidak valid, dialog peringatan muncul, dan API mengembalikan 401.
