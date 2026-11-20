@@ -25,6 +25,8 @@ SOBAT ADI adalah platform pendamping belajar berbasis AI untuk mahasiswa, teruta
 | AI per menit | 5 | 20 | 20 |
 | Isi dokumen | 8.000 karakter | 20.000 karakter | 20.000 karakter |
 | PDF | 2 MB | 5 MB | 5 MB |
+| File teks | 1 MB | 1 MB | 1 MB |
+| Format | PDF, TXT, MD | PDF, TXT, MD | PDF, TXT, MD |
 | Tim yang dibuat | 1 | 10 | 10 |
 | Proyek per tim | 2 | 10 | 10 |
 | Tugas per proyek | 10 | 100 | 100 |

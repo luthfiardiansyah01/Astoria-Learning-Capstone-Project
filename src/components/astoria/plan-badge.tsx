@@ -291,7 +291,8 @@ export function PlanBadge({ className = "" }: { className?: string }) {
               <ul className="mt-3 space-y-1.5 text-xs text-muted-foreground">
                 <li>AI {PLAN_LIMITS.free.aiPerDay}/hari</li>
                 <li>Dokumen {PLAN_LIMITS.free.maxDocChars.toLocaleString("id-ID")} karakter</li>
-                <li>PDF maks 2 MB</li>
+                <li>PDF maks {Math.round(PLAN_LIMITS.free.maxPdfBytes / (1024 * 1024))} MB</li>
+                <li>File teks maks {Math.round(PLAN_LIMITS.free.maxTextBytes / (1024 * 1024))} MB</li>
                 <li>1 tim dibuat, 2 proyek, 10 tugas</li>
                 <li>Maks 3 anggota tim</li>
               </ul>
@@ -307,7 +308,8 @@ export function PlanBadge({ className = "" }: { className?: string }) {
               <ul className="mt-3 space-y-1.5 text-xs">
                 <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> AI {PLAN_LIMITS.premium.aiPerDay}/hari</li>
                 <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> Dokumen {PLAN_LIMITS.premium.maxDocChars.toLocaleString("id-ID")} karakter</li>
-                <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> PDF maks 5 MB</li>
+                <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> PDF maks {Math.round(PLAN_LIMITS.premium.maxPdfBytes / (1024 * 1024))} MB</li>
+                <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> File teks maks {Math.round(PLAN_LIMITS.premium.maxTextBytes / (1024 * 1024))} MB</li>
                 <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> 10 tim dibuat, 10 proyek, 100 tugas</li>
                 <li className="flex gap-1.5"><Check className="h-3 w-3 text-emerald-600 mt-0.5" /> Maks 30 anggota tim</li>
               </ul>

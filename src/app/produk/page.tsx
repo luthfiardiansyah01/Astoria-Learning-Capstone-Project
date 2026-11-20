@@ -24,6 +24,7 @@ const premiumFeatures = [
   "AI 300 request/hari",
   "Dokumen hingga 20.000 karakter",
   "PDF maksimal 5 MB",
+  "File teks maksimal 1 MB",
   "10 tim, 10 proyek, 100 tugas",
   "Maksimal 30 anggota tim",
 ];
@@ -32,6 +33,7 @@ const freeFeatures = [
   "AI 30 request/hari",
   "Dokumen hingga 8.000 karakter",
   "PDF maksimal 2 MB",
+  "File teks maksimal 1 MB",
   "1 tim, 2 proyek, 10 tugas",
   "Maksimal 3 anggota tim",
 ];
@@ -99,7 +101,7 @@ export default function ProdukPage() {
 
         <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: BookOpen, title: "Unggah modul", body: "PDF/TXT diekstrak menjadi materi yang bisa ditanyakan." },
+            { icon: BookOpen, title: "Unggah modul", body: "PDF, TXT, atau MD diekstrak menjadi materi yang bisa ditanyakan." },
             { icon: Sparkles, title: "Mentor AI", body: "Jawaban berbasis isi dokumen dengan referensi bagian." },
             { icon: Users, title: "Kolaborasi tim", body: "Tim, proyek, tugas Kanban, dan undangan anggota." },
             { icon: ShieldCheck, title: "Aman & terverifikasi", body: "Email terverifikasi dan akses dokumen terkontrol." },

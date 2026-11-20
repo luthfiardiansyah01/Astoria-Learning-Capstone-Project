@@ -399,7 +399,9 @@ export function UploadView() {  const { toast } = useToast();
                   <UploadCloud className="h-10 w-10 mx-auto text-muted-foreground/60" />
                   <p className="mt-3 font-medium">Tarik & lepas file, atau klik untuk memilih</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    PDF, TXT, atau MD · PDF maks {Math.round(limits.maxPdfBytes / (1024 * 1024))} MB, isi maks {limits.maxDocChars.toLocaleString("id-ID")} karakter
+                    PDF, TXT, atau MD · PDF maks {Math.round(limits.maxPdfBytes / (1024 * 1024))} MB,
+                    file teks maks {Math.round(limits.maxTextBytes / (1024 * 1024))} MB, isi maks{" "}
+                    {limits.maxDocChars.toLocaleString("id-ID")} karakter
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     PDF harus berbasis teks (bukan hasil scan)
@@ -589,13 +591,17 @@ export function UploadView() {  const { toast } = useToast();
               </div>
             )}
 
+            <p className="text-xs text-muted-foreground">
+              Setelah diproses, dokumen masuk moderasi admin. Kamu tetap bisa memakainya; pengguna
+              lain hanya melihat dokumen yang sudah disetujui.
+            </p>
+
             <div className="flex flex-wrap gap-2">
               <Button
                 data-testid="upload-submit"
                 onClick={submit}
                 disabled={processing || readingFile || !content.trim() || tooLong || Boolean(fileError)}
-              >
-                {processing ? (
+              >                {processing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Menganalisis dokumen…
                   </>
