@@ -258,7 +258,7 @@ function AstoriaPage() {
     <div className="min-h-screen flex flex-col bg-background">
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
-        <div className="mx-auto max-w-6xl px-3 sm:px-4">
+        <div className="mx-auto max-w-6xl px-3 sm:px-4 xl:max-w-7xl">
           <div className="flex h-16 items-center gap-3">
             {/* Logo */}
             <button
@@ -278,7 +278,7 @@ function AstoriaPage() {
             </button>
 
             {/* Navigasi desktop */}
-            <div className="mx-auto hidden lg:block">
+            <div className="mx-auto hidden xl:block">
               <NavPills
                 items={navItems}
                 view={view}
@@ -291,7 +291,7 @@ function AstoriaPage() {
             </div>
 
             {/* Aksi kanan */}
-            <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
+            <div className="ml-auto flex shrink-0 items-center gap-1 xl:ml-0">
               <PlanBadge />
               <AiQuotaBadge />
 
@@ -302,11 +302,11 @@ function AstoriaPage() {
                 className="flex items-center gap-1.5 rounded-full px-2 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <Users className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">Collab</span>
+                <span className="hidden 2xl:inline">Collab</span>
               </Link>
 
               <div
-                className="hidden items-center gap-1 rounded-full px-2 py-1.5 text-[13px] font-medium text-orange-600 md:flex dark:text-orange-400"
+                className="hidden items-center gap-1 rounded-full px-2 py-1.5 text-[13px] font-medium text-orange-600 xl:flex dark:text-orange-400"
                 title={`Streak belajar ${stats?.streak ?? 0} hari`}
               >
                 <Flame className="h-4 w-4" />
@@ -323,29 +323,29 @@ function AstoriaPage() {
                 <Progress value={pct} className="h-1.5" aria-label={`Progres XP level ${level}`} />
               </div>
 
-              <span className="mx-0.5 hidden h-5 w-px bg-border md:block" aria-hidden />
+              <span className="mx-0.5 hidden h-5 w-px bg-border xl:block" aria-hidden />
 
               <button
                 type="button"
                 onClick={() => setGuideOpen(true)}
                 data-testid="open-guide"
-                className="hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:flex"
+                className="hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground xl:flex"
                 aria-label="Buka panduan aplikasi"
                 title="Panduan aplikasi"
               >
                 <HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="hidden lg:inline">Panduan</span>
+                <span className="hidden 2xl:inline">Panduan</span>
               </button>
 
               <Link
                 href="/akun"
                 data-testid="account-link"
-                className="hidden sm:flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground xl:flex"
                 aria-label="Akun dan keamanan"
                 title="Akun & keamanan"
               >
                 <Settings className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Akun</span>
+                <span className="hidden 2xl:inline">Akun</span>
               </Link>
 
               <button
@@ -356,7 +356,7 @@ function AstoriaPage() {
                 title={`Keluar (${session?.user?.name ?? ""})`}
               >
                 <LogOut className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Keluar</span>
+                <span className="hidden 2xl:inline">Keluar</span>
               </button>
             </div>
           </div>
@@ -367,7 +367,7 @@ function AstoriaPage() {
       <main
         id="konten-utama"
         tabIndex={-1}
-        className="flex-1 mx-auto w-full max-w-6xl px-4 py-6 pb-24 lg:pb-6"
+        className="flex-1 mx-auto w-full max-w-6xl px-4 py-6 pb-24 xl:pb-6"
       >
         <EmailVerificationBanner />
         <PushOptIn />
@@ -408,7 +408,7 @@ function AstoriaPage() {
       <SessionGuard />
 
       {/* ── Footer (sticky bottom) ── */}
-      <footer className="mt-auto border-t bg-muted/40 pb-20 lg:pb-0">
+      <footer className="mt-auto border-t bg-muted/40 pb-20 xl:pb-0">
         <div className="mx-auto max-w-6xl px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
           <p className="flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-primary" />

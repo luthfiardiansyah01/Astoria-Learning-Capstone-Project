@@ -45,7 +45,7 @@ export function MobileNav({
   return (
     <nav
       aria-label="Navigasi bawah"
-      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)] xl:hidden"
     >
       <ul className="mx-auto flex max-w-6xl items-stretch px-1">
         {main.map((item) => {

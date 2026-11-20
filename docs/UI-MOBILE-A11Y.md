@@ -5,10 +5,13 @@ pengguna disabilitas. Perubahan bersifat UI; tidak ada perubahan skema database.
 
 ## 1. Navigasi mobile
 
-- Navigasi bawah tetap (`fixed`) dengan lima tujuan: Beranda, Mentor AI, Unggah,
-  Kuis, dan Lainnya.
-- "Lainnya" membuka sheet berisi Panduan aplikasi, Collab, Akun, dan Panel admin
-  (khusus admin).
+- Di bawah 1280 px, navigasi bawah tetap (`fixed`) dengan lima tujuan:
+  Beranda, Mentor AI, Unggah, Kuis, dan Lainnya.
+- Pada 1280 px ke atas, navigasi pil di header ditampilkan dan navigasi bawah
+  disembunyikan.
+- Header memadatkan label teks di bawah 1536 px agar tidak meluber.
+- "Lainnya" membuka sheet berisi Panduan aplikasi, Collab, Akun, Pernyataan
+  aksesibilitas, dan Panel admin (khusus admin).
 - Target sentuh minimal 56 px, di atas ambang 44 px.
 - Menghormati `env(safe-area-inset-bottom)` untuk perangkat dengan home indicator.
 - Konten utama dan footer diberi ruang bawah agar tidak tertutup navigasi.
@@ -55,9 +58,11 @@ anggota tim, dan pertanyaan mentor tugas.
 ## 4. Pengujian
 
 - `tests/e2e/mobile.spec.ts`: tidak ada overflow horizontal pada 375 px.
+- `tests/e2e/responsive.spec.ts`: halaman publik dan pengguna diuji pada 320,
+  768, 1024, dan 1440 px; panel admin pada 1024 dan 1440 px.
 - `tests/e2e/mobile-nav.spec.ts`: navigasi bawah, panduan interaktif, dan target
   sentuh minimal 44 px.
-- Seluruh tes: 158 unit, 15 E2E, build, typecheck, dan lint lulus.
+- Seluruh tes: 162 unit, 177 integrasi, 28 E2E, build, typecheck, dan lint lulus.
 
 ## 5. Batasan
 
