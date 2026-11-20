@@ -269,3 +269,109 @@ describe("releaseAiQuota", () => {
     expect(empty.remaining).toBe(30);
   });
 });
+
+describe("releaseAiQuota dengan Upstash", () => {
+  const saved = {
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  };
+
+  beforeEach(() => {
+    process.env.UPSTASH_REDIS_REST_URL = "https://redis.test";
+    process.env.UPSTASH_REDIS_REST_TOKEN = "token-test";
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    if (saved.url === undefined) delete process.env.UPSTASH_REDIS_REST_URL;
+    else process.env.UPSTASH_REDIS_REST_URL = saved.url;
+    if (saved.token === undefined) delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    else process.env.UPSTASH_REDIS_REST_TOKEN = saved.token;
+  });
+
+  it("mengirim EVAL untuk menurunkan counter tanpa membuat key baru", async () => {
+    const bodies: unknown[][] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        bodies.push(JSON.parse(String(init?.body)) as unknown[]);
+        return new Response(JSON.stringify([{ result: 1 }, { result: 1 }]), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      })
+    );
+
+    await releaseAiQuota("user-refund", "free");
+
+    expect(bodies).toHaveLength(1);
+    const commands = bodies[0] as unknown[][];
+    expect(commands).toHaveLength(2);
+    expect(commands[0][0]).toBe("EVAL");
+    expect(commands[1][0]).toBe("EVAL");
+  });
+
+  it("tetap selesai saat Upstash gagal", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("gagal", { status: 500 }))
+    );
+
+    await expect(releaseAiQuota("user-refund-gagal", "free")).resolves.toBeUndefined();
+  });
+});
+
+describe("getRateLimitStatus dengan Upstash", () => {
+  const saved = {
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  };
+
+  beforeEach(() => {
+    process.env.UPSTASH_REDIS_REST_URL = "https://redis.test";
+    process.env.UPSTASH_REDIS_REST_TOKEN = "token-test";
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    if (saved.url === undefined) delete process.env.UPSTASH_REDIS_REST_URL;
+    else process.env.UPSTASH_REDIS_REST_URL = saved.url;
+    if (saved.token === undefined) delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    else process.env.UPSTASH_REDIS_REST_TOKEN = saved.token;
+  });
+
+  it("memasang TTL pada key lama yang tidak punya kedaluwarsa", async () => {
+    const bodies: unknown[][] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        const body = JSON.parse(String(init?.body)) as unknown[][];
+        bodies.push(body);
+        if (body[0][0] === "EXPIRE") {
+          return new Response(JSON.stringify([{ result: 1 }]), { status: 200 });
+        }
+        return new Response(JSON.stringify([{ result: "2" }, { result: "-1" }]), {
+          status: 200,
+        });
+      })
+    );
+
+    const status = await getRateLimitStatus("unit-upstash", "user-ttl", 5, 60);
+
+    expect(status.used).toBe(2);
+    expect(status.remaining).toBe(3);
+    expect(status.resetAt).toBeGreaterThan(Date.now());
+    expect((bodies[1][0] as unknown[])[0]).toBe("EXPIRE");
+  });
+
+  it("jatuh ke memori saat Upstash gagal", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("gagal", { status: 500 }))
+    );
+
+    const status = await getRateLimitStatus("unit-gagal", "user-gagal", 5, 60);
+    expect(status.used).toBe(0);
+    expect(status.remaining).toBe(5);
+  });
+});
