@@ -12,6 +12,10 @@ import {
   Users,
 } from "lucide-react";
 import { CONTACT_EMAIL } from "@/lib/contact";
+import { PLAN_LIMITS } from "@/lib/plans";
+
+const premium = PLAN_LIMITS.premium;
+const free = PLAN_LIMITS.free;
 
 export const metadata: Metadata = {
   title: "SOBAT ADI Premium - Paket, Harga, dan Cara Berlangganan",
@@ -21,21 +25,21 @@ export const metadata: Metadata = {
 };
 
 const premiumFeatures = [
-  "AI 300 request/hari",
-  "Dokumen hingga 20.000 karakter",
-  "PDF maksimal 5 MB",
-  "File teks maksimal 1 MB",
-  "10 tim, 10 proyek, 100 tugas",
-  "Maksimal 30 anggota tim",
+  `AI ${premium.aiPerDay} request/hari`,
+  `Dokumen hingga ${premium.maxDocChars.toLocaleString("id-ID")} karakter`,
+  `PDF maksimal ${Math.round(premium.maxPdfBytes / (1024 * 1024))} MB`,
+  `File teks maksimal ${Math.round(premium.maxTextBytes / (1024 * 1024))} MB`,
+  `${premium.maxTeams} tim, ${premium.maxProjectsPerTeam} proyek, ${premium.maxTasksPerProject} tugas`,
+  `Maksimal ${premium.maxTeamMembers} anggota tim`,
 ];
 
 const freeFeatures = [
-  "AI 30 request/hari",
-  "Dokumen hingga 8.000 karakter",
-  "PDF maksimal 2 MB",
-  "File teks maksimal 1 MB",
-  "1 tim, 2 proyek, 10 tugas",
-  "Maksimal 3 anggota tim",
+  `AI ${free.aiPerDay} request/hari`,
+  `Dokumen hingga ${free.maxDocChars.toLocaleString("id-ID")} karakter`,
+  `PDF maksimal ${Math.round(free.maxPdfBytes / (1024 * 1024))} MB`,
+  `File teks maksimal ${Math.round(free.maxTextBytes / (1024 * 1024))} MB`,
+  `${free.maxTeams} tim, ${free.maxProjectsPerTeam} proyek, ${free.maxTasksPerProject} tugas`,
+  `Maksimal ${free.maxTeamMembers} anggota tim`,
 ];
 
 export default function ProdukPage() {
