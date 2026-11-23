@@ -6,15 +6,17 @@ operasional.
 ## Status aplikasi
 
 - **Produksi:** https://astoria-learning-capstone-project.vercel.app
-- **Fase selesai:** P0, P1, P2, P3
-- **Migrasi database:** 13
-- **RLS:** 19 tabel `public`, 0 policy publik
+- **Fase selesai:** P0, P1, P2, P3, Perf-1, Perf-2, P4, P5
+- **Fase berjalan:** P6 (pasca peluncuran), sebagian sudah live
+- **Migrasi database:** 18
+- **Tabel `public`:** 23, RLS aktif pada 22 tabel, 0 policy publik
 - **Verifikasi email + CAPTCHA:** aktif
 - **Pembayaran:** **ditahan** (16 Nov 2026) - Midtrans production terpasang, kanal belum disetujui, rekening manual belum diisi; aktivasi manual oleh admin tetap tersedia
-- **Test terakhir:** 158 unit, 161 integration, dan 13 E2E (18 Nov 2026)
-- **Akun & keamanan:** reset password, ganti password, ekspor & hapus akun aktif
-- **CSP:** **enforced** sejak 18 November 2026
-- **Verifikasi produksi terakhir:** 16 November 2026 (5 halaman 200, header keamanan lengkap)
+- **Test terakhir:** 171 unit, 180 integration, dan 28 E2E (23 Nov 2026)
+- **Cakupan:** 79,43% statement, 68,40% branch
+- **Akun & keamanan:** reset password, ganti password, ekspor & hapus akun, sesi tunggal, sesi maksimal 12 jam
+- **CSP:** enforced sejak 18 November 2026, masih memuat `unsafe-inline` dan `unsafe-eval`
+- **Verifikasi produksi terakhir:** 20 November 2026 (login, kuota AI, sesi 12 jam)
 
 ## Urutan baca
 
@@ -36,7 +38,14 @@ operasional.
 | Tech stack dalam format akademik (draf bab skripsi) | [`TECH-STACK-SKRIPSI.md`](./TECH-STACK-SKRIPSI.md) |
 | Baseline performa & rencana optimasi | [`PERFORMANCE-BASELINE.md`](./PERFORMANCE-BASELINE.md) |
 | Rencana implementasi (arsip Oktober 2026) | [`RENCANA-IMPLEMENTASI.md`](./RENCANA-IMPLEMENTASI.md) |
-| Roadmap fase P0–P5 & Perf-1/2 | [`ROADMAP.md`](./ROADMAP.md) |
+| Roadmap fase P0-P6 & Perf-1/2 | [`ROADMAP.md`](./ROADMAP.md) |
+| Validasi roadmap 23 November 2026 | [`VALIDASI-ROADMAP-2026-11-23.md`](./VALIDASI-ROADMAP-2026-11-23.md) |
+| Notifikasi, push, dan siaran admin | [`NOTIFIKASI.md`](./NOTIFIKASI.md) |
+| Pengaturan pengguna | [`PENGATURAN-PENGGUNA.md`](./PENGATURAN-PENGGUNA.md) |
+| Sesi tunggal dan masa berlaku sesi | [`SESI-TUNGGAL.md`](./SESI-TUNGGAL.md) |
+| Navigasi mobile dan aksesibilitas | [`UI-MOBILE-A11Y.md`](./UI-MOBILE-A11Y.md) |
+| Batas dan pemecahan dokumen | [`BATAS-UNGGAH.md`](./BATAS-UNGGAH.md) |
+| Backlog keamanan lanjutan | [`BACKLOG-KEAMANAN.md`](./BACKLOG-KEAMANAN.md) |
 | Rencana peningkatan kualitas | [`RENCANA-IMPLEMENTASI-KUALITAS.md`](./RENCANA-IMPLEMENTASI-KUALITAS.md) |
 | Proposal pilot kampus | [`PROPOSAL-PILOT-KAMPUS-SOBAT-ADI.md`](./PROPOSAL-PILOT-KAMPUS-SOBAT-ADI.md) |
 

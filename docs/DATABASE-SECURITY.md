@@ -2,39 +2,58 @@
 
 ## Status
 
-Sejak migrasi `20261105000000_enable_row_level_security`, **semua tabel di schema
-`public` memiliki RLS aktif** dan tidak memiliki policy publik.
-Per 18 November 2026 (diverifikasi ulang ke database produksi) ada **22 tabel**
-dan **13 migrasi** yang diterapkan, dengan **0 policy** di schema `public`.
+Per **23 November 2026**, database produksi memiliki:
 
-Tabel yang dicakup:
+| Pemeriksaan | Nilai |
+|---|---:|
+| Tabel schema `public` | 23 |
+| Tabel dengan RLS aktif | 22 |
+| Policy RLS publik | 0 |
+| Migrasi diterapkan | 18 |
+| Tabel tanpa RLS | `PushSubscription` |
+
+Tabel yang sudah memiliki RLS:
 
 `_prisma_migrations`, `User`, `Team`, `TeamBadge`, `Notification`, `TeamMember`,
 `Project`, `Task`, `Document`, `TaskChatMessage`, `ActivityEvent`, `Chunk`,
 `ChatMessage`, `QuizQuestion`, `QuizAttempt`, `Badge`, `Payment`, `TeamInvite`,
-`EmailVerificationToken`, `PasswordResetToken`, `AdminAuditLog`, `AnalyticsCache`.
+`EmailVerificationToken`, `PasswordResetToken`, `AdminAuditLog`,
+`AnalyticsCache`.
 
-Migrasi P3 `20261107030000_p3_constraints_indexes` juga menambahkan:
+Satu tabel baru, `PushSubscription`, belum memiliki RLS. Tabel ini dibuat pada
+migrasi `20261119080000_push_subscriptions` dan perlu migrasi susulan:
 
-- unique `(projectId, status, order)` pada `Task`,
-- index komposit untuk `Payment`, `QuizAttempt`, dan `Document`,
-- CHECK constraint untuk role/plan/status,
-- FK `Payment.userId` dengan `ON DELETE RESTRICT` agar riwayat pembayaran
-  tidak hilang saat user dihapus.
-- Migrasi P4 `20261118010000_p4_password_reset_consent` menambahkan tabel
-  `PasswordResetToken` (RLS aktif) dan kolom `Payment.consentAt` untuk bukti
-  persetujuan Syarat & Ketentuan.
-- Migrasi P5 `20261118030000_pgvector_2048_hnsw` menyesuaikan kolom
-  `Chunk.embeddingVec` ke `vector(2048)` dan membuat index HNSW
-  (`vector_cosine_ops`) bila ekstensi `vector` tersedia.
+```sql
+ALTER TABLE "public"."PushSubscription" ENABLE ROW LEVEL SECURITY;
+```
 
-## Kenapa aman untuk aplikasi
+Tanpa migrasi itu, klaim "semua tabel memiliki RLS" tidak benar.
 
-- Aplikasi mengakses database lewat **Prisma** menggunakan role `postgres`
-  (koneksi server-side), sehingga tidak terpengaruh RLS.
+## Kenapa aplikasi tetap berjalan
+
+- Aplikasi mengakses database lewat **Prisma** menggunakan role server
+  (`postgres`), sehingga tidak terpengaruh RLS.
 - Akses langsung melalui Supabase PostgREST dengan role `anon`/`authenticated`
-  tidak memiliki policy → data tidak terbaca/tertulis.
+  tidak memiliki policy, sehingga data tidak terbaca atau tertulis.
 - Service role key tidak boleh dipakai di frontend.
+
+Penting: dengan **0 policy**, RLS bukan isolasi data antarpengguna di dalam
+aplikasi. Isolasi tetap dilakukan oleh otorisasi route API: sesi, role admin,
+kepemilikan dokumen, dan keanggotaan tim. Jangan mengklaim RLS sebagai
+pengganti otorisasi aplikasi.
+
+## Riwayat migrasi terkait
+
+- `20261105000000_enable_row_level_security`: RLS untuk tabel inti.
+- `20261107010000_team_invite`: RLS `TeamInvite`.
+- `20261107020000_email_verification`: RLS `EmailVerificationToken`.
+- `20261107030000_p3_constraints_indexes`: unique `(projectId, status, order)`,
+  index komposit, CHECK role/plan/status, FK `Payment.userId` ON DELETE RESTRICT.
+- `20261118010000_p4_password_reset_consent`: RLS `PasswordResetToken`,
+  kolom `Payment.consentAt`.
+- `20261118020000_p5_audit_cache_vector`: RLS `AdminAuditLog`, `AnalyticsCache`.
+- `20261118040000_pgvector_halfvec_hnsw`: index HNSW halfvec(2048).
+- `20261119080000_push_subscriptions`: tabel baru, **belum RLS**.
 
 ## Verifikasi
 
@@ -46,7 +65,8 @@ WHERE n.nspname = 'public' AND c.relkind = 'r'
 ORDER BY c.relname;
 ```
 
-Semua baris harus `relrowsecurity = true`.
+Semua baris harus `relrowsecurity = true`, kecuali `PushSubscription` sampai
+migrasi susulan diterapkan.
 
 Uji akses anon:
 
@@ -72,10 +92,8 @@ memang ada kebutuhan akses publik yang disengaja.
 
 ## Catatan
 
-- Linter Supabase awalnya melaporkan 17 temuan `rls_disabled_in_public`; setelah
-  migrasi RLS dan dua tabel baru (`TeamInvite`, `EmailVerificationToken`),
-  seluruh **19 tabel** sudah memiliki RLS.
-- RLS bukan pengganti otorisasi aplikasi. Route API tetap memeriksa sesi,
-  role admin, kepemilikan dokumen, dan keanggotaan tim di sisi server.
+- RLS bukan pengganti otorisasi aplikasi.
 - `Payment` memakai `ON DELETE RESTRICT`; user dengan riwayat pembayaran harus
   diarsipkan/soft-delete, bukan dihapus langsung.
+- Audit 23 November 2026 menemukan `PushSubscription` belum RLS. Ini prioritas
+  keamanan berikutnya.

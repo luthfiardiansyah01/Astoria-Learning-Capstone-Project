@@ -1,7 +1,7 @@
 # Backlog Keamanan Sesi dan Akun
 
-Status: **belum dikerjakan**, disimpan untuk penerapan berikutnya.
-Tanggal dicatat: 19 November 2026.
+Status: **sebagian dikerjakan**, sisanya disimpan untuk penerapan berikutnya.
+Tanggal dicatat: 19 November 2026. Terakhir divalidasi: 23 November 2026.
 
 ## Kondisi saat ini
 
@@ -74,14 +74,19 @@ Kriteria selesai:
 ## 4. Masa berlaku sesi dan rotasi token
 
 **Prioritas:** sedang
-**Tujuan:** mengurangi jendela penyalahgunaan token.
+**Status:** sebagian selesai, 23 November 2026.
 
-Ruang lingkup:
+Sudah:
 
-- Turunkan `maxAge` sesi, misalnya 7 hari.
+- `maxAge` sesi 12 jam secara absolut, tidak diperpanjang tiap request.
+- Konfigurasi `SESSION_MAX_HOURS` dengan batas 1 sampai 168 jam.
+- Dialog "Sesi telah berakhir" dan tombol masuk lagi.
+
+Belum:
+
 - Idle timeout, misalnya 8 jam tanpa aktivitas.
-- Rotasi `sessionId` setelah login ulang atau perubahan password.
-- Cabut semua sesi setelah reset password.
+- Mencabut semua token setelah ganti atau reset password.
+- Rotasi `sessionId` setelah perubahan password.
 
 Kriteria selesai:
 
@@ -147,9 +152,26 @@ Kriteria selesai:
 - Error runtime memiliki jejak dan konteks.
 - Ada runbook singkat untuk merespons alert.
 
+## 8. RLS tabel `PushSubscription`
+
+**Prioritas:** tinggi
+**Tujuan:** menyamakan perlindungan tabel baru dengan 22 tabel lain.
+
+Ruang lingkup:
+
+- Migrasi `ALTER TABLE "public"."PushSubscription" ENABLE ROW LEVEL SECURITY;`
+- Verifikasi `relrowsecurity = true`.
+- Pastikan pengiriman push dari server tetap berjalan karena memakai role server.
+
+Kriteria selesai:
+
+- 23 dari 23 tabel `public` memiliki RLS.
+- Uji akses anon ke `PushSubscription` ditolak.
+- Dokumentasi `DATABASE-SECURITY.md` diperbarui.
+
 ## Catatan penerapan
 
-- Urutan prioritas terbaru: perketat CSP, 2FA, pemantauan uptime, kelola sesi, verifikasi admin, masa sesi, pemantauan konflik.
+- Urutan prioritas terbaru: RLS `PushSubscription`, perketat CSP, 2FA, pemantauan uptime, kelola sesi, verifikasi admin, rotasi sesi setelah ganti password, pemantauan konflik.
 - Item 2FA sudah tercatat pada bagian 1 dan tetap menjadi prioritas tinggi.
 - Setiap perubahan skema harus aditif dan punya jalur mundur.
 - Jangan mengikat sesi ke IP karena alamat IP mudah berubah dan tidak mewakili perangkat.

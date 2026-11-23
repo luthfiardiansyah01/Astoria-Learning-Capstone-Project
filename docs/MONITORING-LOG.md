@@ -7,7 +7,7 @@ verifikasi, dan sisa risiko tidak hilang.
 - **Produksi:** https://astoria-learning-capstone-project.vercel.app
 - **Repo:** `luthfiardiansyah01/Astoria-Learning-Capstone-Project`
 - **Runbook terkait:** `docs/OPERATIONS-RUNBOOK.md`
-- **Terakhir diperbarui:** 18 November 2026, setelah perbaikan stabilitas dan keamanan dependensi
+- **Terakhir diperbarui:** 23 November 2026, setelah validasi roadmap dan pembaruan dokumen
 
 ## Status ringkas
 
@@ -17,16 +17,19 @@ verifikasi, dan sisa risiko tidak hilang.
 | P1 | Selesai | `4764de7` | Body limit, moderasi, undangan, verifikasi email/CAPTCHA aktif |
 | P2 | Selesai | `6fc1afe` | Limit atomik, URL/quiz state, toast, XP, a11y, performa |
 | P3 | Selesai | `c1e96a2` | Index/CHECK, cleanup UI/deps, CSP report-only, docs sanitized, orphan team |
+| P4 | Selesai dengan catatan | `714a5e3` | Akun, reset password, kuota, sesi; monitoring belum penuh |
+| P5 | Selesai dengan catatan | `714a5e3` | Skala, pgvector, audit log; uji beban lokal |
+| P6 | Sebagian | `714a5e3` | Push, pengaturan, sesi, kuota, aksesibilitas; backlog keamanan tersisa |
 
 ## Status produksi saat ini
 
 | Pemeriksaan | Kondisi terakhir |
 |---|---|
-| Deployment | Production **Ready** (deploy terakhir 13 Nov) |
-| Commit kode | `c1e96a2` (P3); dokumentasi terakhir `c037472` |
+| Deployment | Production **Ready** (deploy terakhir 20 Nov 2026) |
+| Commit kode | `714a5e3` (batas sesi 12 jam) |
 | Region aplikasi | `hnd1` (Tokyo), sama dengan database `ap-northeast-1` |
-| Migrasi database | **13/13** diterapkan |
-| Tabel `public` | **22**, semuanya RLS aktif |
+| Migrasi database | **18/18** diterapkan |
+| Tabel `public` | **23**; RLS aktif pada **22**, `PushSubscription` belum |
 | Policy RLS publik | **0** |
 | CHECK constraint | **7** terpasang |
 | Index baru P3 | **5** terpasang |
@@ -34,13 +37,17 @@ verifikasi, dan sisa risiko tidak hilang.
 | Env pembayaran | `PAYMENT_PROVIDER`, `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION` terpasang |
 | Metode pembayaran | **Ditahan** (16 Nov 2026): kanal Midtrans belum disetujui, rekening manual belum diisi, `PAYMENT_MANUAL_ONLY=false` |
 | Tim orphan | `Anim Team` **dihapus** (backup di temp) |
-| Test | **158 unit** (18 Nov), **161 integration** (18 Nov), 13 E2E (18 Nov) |
+| Test | **171 unit**, **180 integration**, **28 E2E** (23 Nov 2026) |
+| Cakupan | **79,43%** statement, **68,40%** branch |
 | Dependensi kritis | Next **16.4.6**, sharp **0.35.5**; override lodash 4.18.1, postcss 8.5.33, nanoid 3.3.20, source-map-js 1.2.2 |
 | Advisory runtime | **0** pada paket runtime utama; sisa temuan hanya rantai perkakas dev/build |
 | Log produksi terakhir | **0 error, 0 respons 5xx** |
-| CSP | **Enforced** sejak 18 November 2026 |
-| Halaman publik | `/login`, `/register`, `/produk`, `/verify-email`, legal → **200** |
-| Webhook Midtrans | `GET /api/billing/webhook/midtrans` → **200** |
+| CSP | **Enforced** sejak 18 November 2026; masih memuat `unsafe-inline` dan `unsafe-eval` |
+| Halaman publik | `/login`, `/register`, `/produk`, `/verify-email`, legal -> **200** |
+| Webhook Midtrans | `GET /api/billing/webhook/midtrans` -> **200** |
+| Audit log admin | Tabel dan API siap; **0 baris** saat validasi 23 Nov |
+| Token penyedia AI | Belum dicatat; laporan masih estimasi |
+
 
 ## Checklist monitoring
 
@@ -576,6 +583,52 @@ Jangan menulis password, token, atau isi `.env` di dokumen ini.
 
 - Tidak ada item P5 yang tertunda. Optimasi lanjutan (mis. analisis bundle per
   chunk, tuning HNSW) bersifat opsional di luar cakupan P5.
+
+## Detail P6 - Pasca Peluncuran (19-20 November 2026)
+
+**Perubahan**
+
+- Web Push produksi: VAPID, service worker, `PushSubscription`, uji Android.
+- Notifikasi dalam aplikasi dan siaran admin dengan konfirmasi, password ulang,
+  audit log, serta batas 3 siaran per 10 menit.
+- Pengaturan pengguna: tema, ukuran teks 90-125%, gerak minimal, pengingat email.
+- Sesi tunggal, device ID, email login baru, dan peringatan perangkat lain.
+- Masa berlaku sesi absolut 12 jam melalui `SESSION_MAX_HOURS`.
+- Kuota AI dikembalikan bila penyedia gagal, badge 10 detik, pesan penyedia
+  dibedakan dari kuota aplikasi.
+- Banner verifikasi email permanen di halaman Unggah.
+- Konsistensi batas dokumen, format PDF/TXT/MD, dan pemecahan otomatis.
+- Navigasi mobile, skip link, dan Pernyataan Aksesibilitas.
+
+**Verifikasi**
+
+- Unit **171**, integration **180**, E2E **28**.
+- Coverage **79,43%** statement, **68,40%** branch.
+- Produksi: login, kuota 30/30, sesi kedaluwarsa 12 jam.
+- axe-core 0 pelanggaran.
+
+**Sisa risiko**
+
+- `PushSubscription` belum RLS.
+- Token lama belum dicabut setelah ganti/reset password.
+- CSP masih memuat `unsafe-inline` dan `unsafe-eval`.
+- Uptime check dan alert eksternal belum ada.
+- Token penyedia AI belum dicatat.
+
+## Validasi Roadmap (23 November 2026)
+
+**Hasil**
+
+- ROADMAP diperbarui ke P0-P6.
+- Angka uji, migrasi, tabel, dan RLS diselaraskan.
+- `PushSubscription` ditemukan sebagai satu-satunya tabel tanpa RLS.
+- Proposal dan pitch deck masih memakai angka 18 November dan perlu regenerasi.
+
+**Bukti**
+
+- `docs/VALIDASI-ROADMAP-2026-11-23.md`.
+- Database produksi: 23 tabel, 22 RLS, 0 policy, 18/18 migrasi.
+- 226 chunk bervektor, audit log 0 baris, 1 pembayaran lunas.
 
 ## Template entri tahap berikutnya
 

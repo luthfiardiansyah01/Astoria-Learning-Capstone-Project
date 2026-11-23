@@ -106,4 +106,4 @@ otomatis tidak berlaku.
 
 - E2E `tests/e2e/single-session.spec.ts`: login di konteks kedua membuat sesi
   pertama tidak valid, dialog peringatan muncul, dan API mengembalikan 401.
-- Seluruh suite: 158 unit, 176 integrasi, 23 E2E.
+- Seluruh suite: 171 unit, 180 integrasi, 28 E2E (23 November 2026).

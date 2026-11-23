@@ -216,11 +216,11 @@ Jika `DIRECT_URL` kosong saat Production, build sengaja **gagal lebih awal** den
 - CSP kini dikirim sebagai **`Content-Security-Policy`** (enforced). Jika ada
   fitur baru yang memuat skrip/frame eksternal, tambahkan domainnya ke
   `next.config.ts` sebelum deploy.
-- Per 16 November 2026, diverifikasi ulang terhadap produksi: **8 migrasi**,
-  **19/19 tabel `public` dengan RLS**, **0 policy publik**, **7 CHECK constraint**,
-  dan **5 index P3**; header HSTS, `nosniff`, `X-Frame-Options: DENY`, dan
-  `Permissions-Policy` terkirim; `/login`, `/register`, `/produk`,
-  `/verify-email`, dan halaman legal merespons **200**.
+- Per 23 November 2026, diverifikasi ulang terhadap produksi: **18 migrasi**,
+  **23 tabel `public`**, **22 dengan RLS**, **0 policy publik**, **7 CHECK constraint**,
+  dan **5 index P3**; `PushSubscription` belum RLS. Header HSTS, `nosniff`,
+  `X-Frame-Options: DENY`, dan `Permissions-Policy` terkirim; `/login`,
+  `/register`, `/produk`, `/verify-email`, dan halaman legal merespons **200**.
 
 ## 9. Riwayat verifikasi
 
@@ -228,5 +228,6 @@ Jika `DIRECT_URL` kosong saat Production, build sengaja **gagal lebih awal** den
 |---|---|---|
 | 2026-11-08 | Env email/CAPTCHA, migrasi, RLS, CSP | 8 migrasi, 19 RLS, CSP report-only |
 | 2026-11-18 | CSP enforced + P4 | 10 migrasi, 20 tabel RLS, CSP enforced |
+| 2026-11-23 | Validasi roadmap | 18 migrasi, 23 tabel, 22 RLS, `PushSubscription` belum RLS |
 | 2026-11-16 | Region, env pembayaran, halaman publik, header | `hnd1`; 21 env produksi; 5 halaman 200; webhook 200 |
 

@@ -4,7 +4,8 @@ Dokumen ini mencatat **kondisi awal terukur** sebelum optimasi. Semua angka
 diambil pada commit `522253e` (Next 16.4.6) dengan skrip di `scripts/perf/`.
 
 > Tujuan: memastikan optimasi berikutnya punya pembanding yang sama, bukan
-> klaim tanpa angka.
+> klaim tanpa angka. Jumlah test di dokumen ini adalah snapshot 18 November
+> 2026. Angka terbaru ada di `ROADMAP.md` bagian 7.
 
 ## 1. Metode
 
